@@ -1,0 +1,15 @@
+<tr><td><TMPL_VAR lang_rcpt_email>:</td><td><input type="text" name="link_rcpt" class="myForm" size=24 maxlength=42></td></tr>
+<tr><td><TMPL_VAR lang_link_pass>:</td><td><input type="text" name="link_pass" class="myForm" size=8></td></tr>
+<tr><td><label for="file_adult">Adult file:</label></td><td><input type="checkbox" id="file_adult" name="file_adult" value="1"></td></tr>
+<tr>
+	<td>Upload to folder:</td>
+	<td>
+		<Select name="to_folder">
+		<option value="">--</option>
+		<option value="0"> / </option>
+		<TMPL_LOOP folders_tree>
+		<option value="<TMPL_VAR fld_id>"><TMPL_VAR pre><TMPL_VAR fld_name></option>
+		</TMPL_LOOP>
+		</Select>
+	</td>
+</tr>

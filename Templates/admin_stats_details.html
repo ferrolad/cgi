@@ -1,0 +1,20 @@
+<table class="tbl1" style="width: 80%">
+<tr class="hdr">
+   <td>Day</td>
+   <td>Uploads</td>
+   <td>Downloads</td>
+   <td>Registered</td>
+   <td>Bandwidth</td>
+   <td>Paid</td>
+</tr>
+<TMPL_LOOP list>
+<tr align="center">
+   <td><TMPL_VAR day></td>
+   <td><TMPL_VAR uploads></td>
+   <td><TMPL_VAR downloads></td>
+   <td><TMPL_VAR registered></td>
+   <td><TMPL_VAR bandwidth> Mb</td>
+   <td>$<TMPL_VAR paid></td>
+</tr>
+</TMPL_LOOP>
+</table>

@@ -1,0 +1,11 @@
+<HTML>
+<BODY>
+<b>Received payment from user <u><TMPL_VAR usr_login></u>.</b>
+<br><br>
+Payment received: $<TMPL_VAR amount>
+<br>
+Added Premium days: <TMPL_VAR days>
+<br>
+Premium account expiration date: <TMPL_VAR expire>
+<br><br>
+<a href="<TMPL_VAR site_url>/?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR site_url>/?op=admin_user_edit&usr_id=<TMPL_VAR usr_id></a>

@@ -1,0 +1,26 @@
+<h2><TMPL_VAR lang_last_downloads></h2>
+
+<Form>
+<input type="hidden" name="op" value="admin_downloads">
+Downloader login: <input type="text" name="usr_login" value="<TMPL_VAR usr_login>" size=16><br>
+Downloader IP: <input type="text" name="ip" value="<TMPL_VAR ip>" size=15><br>
+<input type="submit" value="Filter">
+</Form>
+<br>
+
+<Table class="tbl1" cellpadding=3 cellspacing=1>
+<TR class="hdr"><TD>Date</TD><TD><TMPL_VAR lang_file_name></TD><TD>Money</TD><TD>User</TD><TD>IP</TD><TMPL_IF m_n_100_complete><TD>Finished</TD></TMPL_IF><TD>Referer</TD><TD>Status</TD</TR>
+<TMPL_LOOP list>
+<TR align=center>
+    <TD><TMPL_VAR created></TD>
+    <TD align=left><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a></TD>
+    <TD><TMPL_VAR money></TD>
+    <TD><a href="?op=admin_downloads&usr_login=<TMPL_VAR usr_login>"><TMPL_VAR usr_login></a></TD>
+    <TD><a href="?op=admin_downloads&ip=<TMPL_VAR ip>"><TMPL_VAR ip></a><TMPL_IF ip_country> / <TMPL_VAR ip_country></TMPL_IF></TD>
+    <TMPL_IF m_n_100_complete><TD nowrap=""><TMPL_VAR finished> (<TMPL_VAR percent> %)</TD></TMPL_IF>
+    <TD align=left><TMPL_VAR referer></TD>
+    <TD align=center><TMPL_IF status><TMPL_VAR status><TMPL_ELSE>Payed</TMPL_IF></TD>
+</TR>
+</TMPL_LOOP>
+</Table>
+<TMPL_VAR paging>

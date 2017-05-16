@@ -1,0 +1,15 @@
+<br>
+<div class="rrd">
+
+<h2 style="margin:0;"><TMPL_VAR lang_pass_recovery></h2><br>
+
+<Form method="POST">
+<input type="hidden" name="op" value="forgot_pass">
+<input type="hidden" name="rand" value="<TMPL_VAR rand>">
+<b><TMPL_VAR lang_enter_login_email>:</b><br><input type="text" name="usr_login" value="<TMPL_VAR usr_login>"><br>
+<TMPL_IF msg><font class="err"><TMPL_VAR msg></font><br><br></TMPL_IF><input type="submit" value=" Reset my password ">
+<TMPL_IF ihtml><table style="width: 600px"><tr><td align="center"><TMPL_VAR ihtml></td></tr></table></TMPL_IF>
+
+</Form>
+</div>
+<br><br>

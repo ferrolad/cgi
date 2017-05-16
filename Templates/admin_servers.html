@@ -1,0 +1,92 @@
+<h2>Servers management</h2>
+
+<TMPL_IF warnings>
+<span class="err" style="background:#ffc;padding:7px;"><TMPL_VAR warnings></span><br><br>
+</TMPL_IF>
+
+<br>
+<a href="<TMPL_VAR site_url>/?op=admin_transfer_list">Transfer queue</a>
+
+<br><br>
+<TMPL_IF msg><b class="ok"><TMPL_VAR msg></b><br><br></TMPL_IF>
+
+
+<Form method="POST">
+<input type="hidden" name="op" value="admin_servers">
+<Table class="tbl1" cellspacing=1 cellpadding=3>
+<TR class="hdr">
+<TD></TD>
+<TD>ID</TD>
+<TD><TMPL_VAR lang_server_name></TD>
+<TD><TMPL_VAR lang_status></TD>
+<TD><TMPL_VAR lang_users></TD>
+<TD><TMPL_VAR lang_files_hdr></TD>
+<TD><TMPL_VAR lang_disk_used></TD>
+<TD>IP</TD>
+<TD>&nbsp;</TD>
+<TD>&nbsp;</TD>
+</TR>
+<TMPL_LOOP servers>
+<TR align=center>
+<TD><input type="checkbox" name="srv_id" value="<TMPL_VAR srv_id>"></TD>
+<TD><TMPL_VAR srv_id></TD>
+<TD align=left><a href="?op=admin_server_add&srv_id=<TMPL_VAR srv_id>"><b><TMPL_VAR srv_name></b></a></TD>
+<TD><TMPL_VAR srv_status></TD>
+<TD><TMPL_VAR user_types></TD>
+<TD><a href="?op=admin_files&srv_id=<TMPL_VAR srv_id>"><TMPL_VAR srv_files></a></TD>
+<TD align=left><b><TMPL_VAR srv_disk_percent>%</b> (<TMPL_VAR srv_disk> <TMPL_VAR lang_of> <TMPL_VAR srv_disk_max> Gb)</TD>
+<TD><TMPL_VAR srv_ip></TD>
+<TD><a href="?op=admin_server_del&srv_id=<TMPL_VAR srv_id>" onClick="return confirm('WARNING: Delete server and all its files?')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
+<TD><a href="?op=admin_server_import&srv_id=<TMPL_VAR srv_id>"><TMPL_VAR lang_import_files></a></TD>
+</TR>
+</TMPL_LOOP>
+<TR><TD colspan=10>
+<input type="submit" name="admin_update_srv_stats" value="<TMPL_VAR lang_update_srv_stats>" class="">
+</TD></TR>
+</Table>
+<br>
+<input type="button" value="+ <TMPL_VAR lang_add_new_server> " onClick="document.location='?op=admin_server_add'" style="width: 140px;">
+&nbsp;
+<input type="button" value="+ Add new CDN " onClick="document.location='?op=admin_server_add&cdn=1'" style="width: 140px;">
+
+<br><br>
+</Form>
+<Form method="POST">
+<input type="hidden" name="op" value="admin_servers_transfer">
+<Table class="tbl1 transfer_files" cellpadding=4 cellspacing=1 style="width: 300px">
+<TR class="hdr"><TD>Transfer Files</TD></TR>
+<TR><TD>
+From 
+<select name="srv_id1">
+        <TMPL_LOOP servers>
+        <TMPL_IF not_off><option value="<TMPL_VAR srv_id>"><TMPL_VAR srv_id> - <TMPL_VAR srv_name></option></TMPL_IF>
+        </TMPL_LOOP>
+</select> 
+To 
+<select name="srv_id2">
+        <TMPL_LOOP servers>
+        <TMPL_IF not_off><option value="<TMPL_VAR srv_id>"><TMPL_VAR srv_id> - <TMPL_VAR srv_name></option></TMPL_IF>
+        </TMPL_LOOP>
+</select>
+</TD></TR>
+<TR><TD>
+Number of files: <input type="text" name="files_num" size=5>
+</TD></TR>
+<TR><TD>
+File Order: 
+<select name="order">
+<option value="size_desc">Biggest first</option>
+<option value="size_enc">Smallest first</option>
+<option value="id_desc">New first</option>
+<option value="id_enc">Old first</option>
+</select>
+</TD></TR>
+<TR><TD>
+File downloads >= <input type="text" name="filter_downloads_more" size=3><br>
+File downloads < <input type="text" name="filter_downloads_less" size=3>
+</TD></TR>
+<TR><TD align=center>
+<input type="submit" value="  Transfer  ">
+</TD></TR>
+</Table>
+<style>.transfer_files td { text-align: center; }</style>

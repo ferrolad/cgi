@@ -1,0 +1,19 @@
+<TR align=center>
+<TMPL_LOOP files>
+<TD>
+
+<TMPL_IF img_preview2>
+ <div class="icon"><a href="<TMPL_VAR download_link>" style="background:url(<TMPL_VAR img_preview2>) #F3F3F3 no-repeat center center"></a></div>
+<TMPL_ELSE>
+ <a href="<TMPL_VAR download_link>"><img src="<TMPL_VAR img_preview>" class="cat_img"></a>
+</TMPL_IF>
+<div class="link"><a href="<TMPL_VAR download_link>" target="_blank"><TMPL_VAR file_name_txt></a></div>
+<TMPL_VAR file_size><br>
+<TMPL_VAR lang_uploaded> <TMPL_VAR created> <TMPL_VAR lang_days_ago>
+<br>
+<TMPL_VAR file_downloads> <TMPL_VAR lang_downloads>
+<TMPL_IF add_to_account><div id="am<TMPL_VAR file_id>"><a href="#" class="url2" onClick="return jah('<TMPL_VAR site_url>/?op=my_files&add_my_acc=<TMPL_VAR file_code>','am<TMPL_VAR file_id>');">+ <TMPL_VAR lang_add_to_my_account></a></div></TMPL_IF>
+
+</TD>
+<TMPL_IF tr></TR><TR align=center></TMPL_IF>
+</TMPL_LOOP>

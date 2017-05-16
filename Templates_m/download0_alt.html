@@ -1,0 +1,77 @@
+<style>
+#pay_modes input {border:1px solid #c6c6c6;font-weight:bold;color:#555;background:#f6f6f6;margin-right:8px;font-family:Tahoma;padding:2px 5px;border-radius:2px;}
+#pay_modes input.active {border:1px solid #a3a3a3;background:#e3e3e3;}
+.pay_sub {display:none;}
+.pay_block {width:180px;background:#eee;border:1px solid #aaa;float:left;margin:20px;border-radius:5px;}
+.pb_hdr {background:#bbb;font: bold 13px Verdana;padding:5px;color:#333;}
+.pb_main {text-align:center;padding:3px;}
+.pb_info {padding:2px 7px;}
+</style>
+
+<div style="width:680px;border: 1px dashed #f0f0f0;text-align:left;">
+
+<h2>File: <font style="color:darkred"><TMPL_VAR file_name></font> [<font style="color:#114"><TMPL_VAR fsize></font>]</h2>
+<br>
+
+<div id="pay_modes">
+<b>Payment methods:</b> 
+<TMPL_LOOP payment_types>
+<input type="button" value="<TMPL_VAR title>" onClick="changePayMode(this,'<TMPL_VAR name>')">
+</TMPL_LOOP>
+<TMPL_IF free_download><input type="button" value="Free" onClick="changePayMode(this,'free')"></TMPL_IF>
+</div>
+
+
+
+<div id="pay_div">
+
+<TMPL_LOOP plans></TMPL_LOOP>
+<TMPL_LOOP payment_types>
+<div id="plans_<TMPL_VAR name>" class="pay_sub">
+<!-- <TMPL_VAR image> -->
+<TMPL_LOOP plans>
+<div class="pay_block">
+<div class="pb_hdr">Period: <TMPL_VAR days> <TMPL_VAR lang_days></div>
+<div class="pb_info">Only for <TMPL_VAR per_day> <TMPL_VAR currency_code> per day</div>
+<div class="pb_main"><a href="<TMPL_VAR site_url>/?op=payments&amp;amount=<TMPL_VAR amount>&amp;type=<TMPL_VAR name>&amp;r=<TMPL_VAR rand>"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" border=0 alt="PayPal"></a></div>
+<div class="pb_info">Total: <TMPL_VAR amount> <TMPL_VAR currency_code></div>
+</div>
+</TMPL_LOOP>
+</div>
+</TMPL_LOOP>
+
+<TMPL_IF free_download>
+<div id="plans_free" class="pay_sub">
+<br><br>
+<center>
+<Form method="POST" action='' data-ajax="false">
+<input type="hidden" name="op" value="download1">
+<input type="hidden" name="usr_login" value="<TMPL_VAR usr_login>">
+<input type="hidden" name="id" value="<TMPL_VAR file_code>">
+<input type="hidden" name="fname" value="<TMPL_VAR file_name>">
+<input type="hidden" name="referer" value="<TMPL_VAR referer>">
+<input type="submit" name="method_free" value="<TMPL_VAR lang_free_download>">
+</Form>
+</center>
+</div>
+</TMPL_IF>
+
+</div>
+<br clear=all>
+
+<TMPL_IF ads>
+<br>ADS HERE<br>
+</TMPL_IF>
+
+</div>
+
+<script>
+function changePayMode(obj,name)
+{
+   $("#pay_div div.pay_sub").hide();
+   $("#plans_"+name).show();
+   $("#pay_modes input").removeClass('active');
+   $(obj).addClass('active');
+}
+$("#pay_modes input:first").click();
+</script>

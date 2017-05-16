@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD>
+  <Title><TMPL_VAR file_title></Title>
+  <link rel="stylesheet" type="text/css" href="/main.css">
+</HEAD>
+<BODY<TMPL_IF m_j_instant> onLoad="document.F1.submit();"</TMPL_IF>>
+
+<center>
+	<TMPL_IF msg>
+	<div style="padding-top:200px;">
+		<h3><TMPL_VAR msg></h3>
+	</div>
+	<TMPL_ELSE>
+	<div style="padding-top:200px;">
+		<h1><TMPL_VAR file_name></h1>
+		<form name="F1" method="post" action="<TMPL_VAR site_url>/<TMPL_IF m_j_hide>dl<TMPL_ELSE><TMPL_VAR file_code></TMPL_IF>">
+		<input type="hidden" name="op" value="download1">
+		<input type="hidden" name="id" value="<TMPL_VAR file_code>">
+		<input type="submit" name="go" value=" Proceed to file " style="font-size:17px;font-weight:bold; padding:10px;">
+		</form>
+	</div>
+	</TMPL_IF>
+</center>
+
+<Script language="JavaScript">
+
+</Script>
+</BODY>
+</HTML>

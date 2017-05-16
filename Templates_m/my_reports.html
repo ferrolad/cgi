@@ -1,0 +1,44 @@
+<h3><TMPL_VAR lang_my_reports></h3>
+
+<Form>
+<input type="hidden" name="op" value="my_reports">
+From <input type="text" name="date1" value="<TMPL_VAR date1>" size=9> to <input type="text" name="date2" value="<TMPL_VAR date2>" size=9>
+<input type="submit" value="Show">
+</Form>
+
+<br>
+
+<embed src="<TMPL_VAR site_url>/FCF_MSLine.swf?chartWidth=600&chartHeight=360" flashVars="&dataXML=<TMPL_VAR data_xml>" quality="high" width="600" height="360" name="Column3D" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" />
+
+<br><br>
+
+<Table class="tbl1" cellpadding=2>
+<TR class="hdr">
+    <td>Date</td>
+    <td>Downloads</td>
+    <td>Premium Sales</td>
+    <td>Referrals</td>
+    <TMPL_IF m_x><td>Websites</td></TMPL_IF>
+    <td>Total</td>
+</TR>
+<TMPL_LOOP list>
+<TR align=center>
+    <TD><TMPL_VAR day></TD>
+    <TD><TMPL_VAR downloads> / $<TMPL_VAR profit_dl></TD>
+    <TD><TMPL_VAR sales> / $<TMPL_VAR profit_sales></TD>
+    <TD>$<TMPL_VAR profit_refs></TD>
+    <TMPL_IF m_x><TD>$<TMPL_VAR profit_site></TD></TMPL_IF>
+    <TD>$<TMPL_VAR profit_total></TD>
+</TR>
+</TMPL_LOOP>
+<TR class="hdr">
+    <td></td>
+    <td><TMPL_VAR sum_downloads> / $<TMPL_VAR sum_profit_dl></td>
+    <td><TMPL_VAR sum_sales> / $<TMPL_VAR sum_profit_sales></td>
+    <td>$<TMPL_VAR sum_profit_refs></td>
+    <TMPL_IF m_x><td>$<TMPL_VAR sum_profit_site></td></TMPL_IF>
+    <td>$<TMPL_VAR sum_profit_total></td>
+</TR>
+</Table>
+
+

@@ -1,0 +1,48 @@
+<Form method="POST">
+<input type="hidden" name="op" value="<TMPL_VAR op>">
+<input type="hidden" name="file_id" value="<TMPL_VAR file_id>">
+<Table class="tbl1" cellpadding=3 cellspacing=1>
+<TR class="hdr"><TD colspan=2><TMPL_VAR lang_edit> <TMPL_VAR lang_fname_descr></TD></TR>
+<TR><TD align=right><b><TMPL_VAR lang_file_name></b></TD><TD><input type="text" name="file_name" value="<TMPL_VAR file_name>"></TD></TR>
+<TR><TD align=right valign=top><b><TMPL_VAR lang_description></b></TD><TD><textarea name="file_descr" rows=7><TMPL_VAR file_descr></textarea></TD></TR>
+<TR><TD align=right><b><TMPL_VAR lang_password></b></TD><TD><input type="text" name="file_password" value="<TMPL_VAR file_password>"></TD></TR>
+<TR><TD align=right><b><TMPL_VAR lang_public></b></TD><TD><input type="checkbox" name="file_public" value="1"<TMPL_IF file_public> checked</TMPL_IF>></TD></TR>
+<TMPL_IF adm_mode>
+<TR><TD align=right><b>file_code</b></TD><TD><input type="text" name="file_code" value="<TMPL_VAR file_code>" size=13></TD></TR>
+<TR><TD align=right><b>file_real</b></TD><TD><a href="?op=admin_files&file_real=<TMPL_VAR file_real>"><TMPL_VAR file_real></a></TD></TR>
+</TMPL_IF>
+<TMPL_IF smartp><TR><TD align=right><b>Premium Only</b></TD><TD><input type="checkbox" name="file_premium_only" value="1"<TMPL_IF file_premium_only> checked</TMPL_IF>></TD></TR></TMPL_IF>
+</Table>
+<input type="submit" name="save" value=" <TMPL_VAR lang_submit> ">
+</Form>
+<br><br>
+
+<TMPL_IF rar_files>
+<Form method="POST">
+<input type="hidden" name="op" value="<TMPL_VAR op>">
+<input type="hidden" name="file_id" value="<TMPL_VAR file_id>">
+
+<Table class="tbl1" cellpadding=3 cellspacing=1>
+<TR class="hdr"><TD colspan=2>RAR archive management</TD></TR>
+
+<TMPL_IF rar_password>
+<tr><td colspan=2 align=center>
+<b>File is password protected.</b><br>
+Current password:<input type="text" name="rar_pass" size=12><br>
+<input type="submit" name="rar_pass_remove" value="Remove password from archive">
+</td></tr>
+</TMPL_IF>
+
+<TMPL_LOOP rar_files>
+<tr><td><input type="checkbox" name="fname" value="<TMPL_VAR fname>"></td><td><TMPL_VAR fname2></td></tr>
+</TMPL_LOOP>
+<tr><td colspan=2 align=center><input type="submit" name="rar_files_delete" value="Delete selected files from archive"></td></tr>
+<tr><td colspan=2 align=center><input type="submit" name="rar_files_extract" value="Extract selected files from archive"></td></tr>
+<tr><td colspan=2 align=center>
+    Split <TMPL_VAR file_size2> MB file into <input type="text" name="part_size" value="100" size=3>MB parts<br>
+    <input type="submit" name="rar_split" value="Split archive">
+</td></tr>
+</Table>
+</Form>
+<br>
+</TMPL_IF>

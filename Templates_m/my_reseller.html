@@ -1,0 +1,76 @@
+<h2><TMPL_VAR lang_my_reseller></h2>
+
+<br>
+
+<TMPL_IF msg><font class="ok"><TMPL_VAR msg></font><br><br></TMPL_IF>
+<TMPL_VAR lang_acc_balance>: <b>$<TMPL_VAR usr_money></b>
+
+
+<br><br>
+<form method="post">
+<input type="hidden" name="op" value="payments">
+<input type="hidden" name="reseller" value="1">
+Add money to reseller balance: $<input type="text" name="amount" value="50.00" size=6>
+<select name="type">
+<TMPL_LOOP payment_types>
+<option value="<TMPL_VAR name>"><TMPL_VAR title></option>
+</TMPL_LOOP>
+</select>
+<input type="submit" name="submit" value="Add money">
+</form>
+<br><br>
+
+<Table class="tbl1">
+<tr class="hdr"><td>Premium time</td><td>Your Price</td><td>Generate</td></tr>
+<TMPL_IF plans>
+<TMPL_LOOP plans>
+<tr>
+<td><TMPL_VAR time></td>
+<td>$<TMPL_VAR price></td>
+<td><input type="button" value="Generate Premium Key" onClick="window.location='?op=my_reseller&generate=<TMPL_VAR price>'"<TMPL_UNLESS enough> disabled</TMPL_UNLESS>></td>
+</tr>
+</TMPL_LOOP>
+<TMPL_ELSE>
+<tr><td colspan="3"></td></tr>
+</TMPL_IF>
+</Table>
+
+<br><br>
+
+<Table class="tbl1" cellpadding=2>
+<TR class="hdr">
+    <td>Premium Key</td>
+    <td>Premium time</td>
+    <td>Status</td>
+</TR>
+<TMPL_IF keys>
+<TMPL_LOOP keys>
+<TR>
+    <TD><TMPL_VAR key_id><TMPL_VAR key_code></TD>
+    <TD align=center><TMPL_VAR key_time></TD>
+    <TD><TMPL_IF usr_id_activated>Used on <TMPL_VAR key_activated><TMPL_ELSE>PENDING <a href="?op=my_reseller&del=<TMPL_VAR key_id>" onClick="return confirm('Delete this key?')"><img src="<TMPL_VAR site_url>/images/del.gif" border=0></a></TMPL_IF></TD>
+</TR>
+</TMPL_LOOP>
+<TMPL_ELSE>
+<tr><td colspan="3"></td></tr>
+</TMPL_IF>
+</Table>
+
+<TMPL_VAR paging>
+
+<br><br>
+
+<Table class="tbl1" cellpadding=2>
+<TR class="hdr">
+    <td>Reseller API</td>
+</TR>
+<TR>
+    <TD><TMPL_VAR site_url>/?op=api_reseller&u=<TMPL_VAR my_login>&p=PASSWORD&t=TIME<br>
+        PASSWORD = your account password<br>TIME = premium time, possible values: <TMPL_LOOP plans><TMPL_VAR time1> </TMPL_LOOP>
+    </TD>
+</TR>
+</Table>
+
+<br><br>
+
+

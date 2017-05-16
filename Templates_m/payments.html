@@ -1,0 +1,14 @@
+<h2><TMPL_VAR lang_premium_features></h2>
+
+<TMPL_INCLUDE comparison.html>
+
+<br>
+
+<TMPL_IF premium>
+<h2><TMPL_VAR lang_extend_account></h2>
+<b><TMPL_VAR lang_prem_valid_until>:</b><br><TMPL_VAR expire_elapsed><br><br>
+<TMPL_ELSE>
+<h2><TMPL_VAR lang_become_premium></h2>
+</TMPL_IF>
+
+<TMPL_INCLUDE payment_buy_with.html>

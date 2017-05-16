@@ -1,0 +1,86 @@
+<Form method="POST">
+<input type="hidden" name="op" value="admin_user_edit">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
+<input type="hidden" name="usr_id" value="<TMPL_VAR usr_id>">
+<Table class="tbl1" cellpadding=2 cellspacing=1 style="width: 600px">
+<TR class="hdr"><TD colspan=2>User edit</TD></TR>
+<TR><TD align=right><b>Username</b></TD><TD><input type="text" name="usr_login" value="<TMPL_VAR usr_login>" size=24></TD></TR>
+<TR><TD align=right><b>E-mail</b></TD><TD><input type="text" name="usr_email" value="<TMPL_VAR usr_email>" size=32></TD></TR>
+<TR><TD align=right><b>User files</b></TD><TD><a href="?op=admin_files&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR files_num></a></TD></TR>
+<TR><TD align=right><b><TMPL_VAR lang_change_password></b></TD><TD><input type="text" name="usr_password" value="" size=20></TD></TR>
+
+<TMPL_IF m_d><TR><TD align=right><b>Moderator</b></TD><TD><input type="checkbox" name="usr_mod" value="1" id="umod"<TMPL_IF usr_mod> checked</TMPL_IF>><label for="umod"><TMPL_VAR lang_enabled></label></TD></TR></TMPL_IF>
+
+<TR><TD align=right valign=top><b>Status</b></TD><TD>
+<Select name="usr_status">
+<option name="OK"<TMPL_VAR status_OK>>OK</option>
+<option name="PENDING"<TMPL_VAR status_PENDING>>PENDING</option>
+<option name="BANNED"<TMPL_VAR status_BANNED>>BANNED</option>
+</Select>
+</TD></TR>
+<TR><TD align=right valign=top><b>Premium expiration</b></TD><TD><input type="text" name="usr_premium_expire" value="<TMPL_VAR usr_premium_expire>" size=20><TMPL_IF expire_elapsed><br><small>(<TMPL_VAR expire_elapsed>)</small></TMPL_IF></TD></TR>
+<TR><TD align=right><b>Money</b></TD><TD><TMPL_VAR currency_symbol><input type="text" name="usr_money" value="<TMPL_VAR usr_money>" size=8></TD></TR>
+<TR><TD align=right><b><TMPL_VAR lang_disk_space_limit></b></TD><TD><input type="text" name="usr_disk_space" value="<TMPL_VAR usr_disk_space>" size=7> Mb (0 = default)</TD></TR>
+<TR><TD align=right><b>Uploads per <TMPL_VAR up_limit_days> <TMPL_VAR lang_days></b></TD><TD><input type="text" name="usr_up_limit" value="<TMPL_VAR usr_up_limit>" size=7> Mb (0 = default)</TD></TR>
+<TR><TD align=right><b><TMPL_VAR lang_max_bandw_last></b></TD><TD><input type="text" name="usr_bw_limit" value="<TMPL_VAR usr_bw_limit>" size=7> Mb per <TMPL_VAR bw_limit_days> days</TD></TR>
+<TR><TD align=right><b>Max URL Leech</b></TD><TD><input type="text" name="usr_max_rs_leech" value="<TMPL_VAR usr_max_rs_leech>" size=7> Mb per 1 day</TD></TR>
+<TR><TD align=right><b>Affiliate ID</b></TD><TD><input type="text" name="usr_aff_id" value="<TMPL_VAR usr_aff_id>" size=5></TD></TR>
+<TR><TD align=right><b>Approved affiliate</b></TD><TD><input type="checkbox" name="usr_aff_enabled" value="1"<TMPL_IF usr_aff_enabled> checked</TMPL_IF>></TD></TR>
+<TMPL_IF m_d><TR><TD align=right><b>DMCA agent</b></TD><TD><input type="checkbox" name="usr_dmca_agent" value="1"<TMPL_IF usr_dmca_agent> checked</TMPL_IF>></TD></TR></TMPL_IF>
+<TMPL_IF m_y>
+<TR><TD align=right valign=top><b>Profit mode</b></TD><TD>
+<Select name="usr_profit_mode">
+<option name="PPD"<TMPL_VAR usr_profit_mode_PPD>>PPD</option>
+<option name="PPS"<TMPL_VAR usr_profit_mode_PPS>>PPS</option>
+<option name="MIX"<TMPL_VAR usr_profit_mode_MIX>>MIX</option>
+</Select>
+</TD></TR>
+</TMPL_IF>
+<TMPL_IF m_k_manual><TR><TD align=right><b>Reseller account</b></TD><TD><input type="checkbox" name="usr_reseller" value="1"<TMPL_IF usr_reseller> checked</TMPL_IF>></TD></TR></TMPL_IF>
+<TR><TD colspan="2" align="center"><a href="<TMPL_VAR site_url>/?login_as=<TMPL_VAR usr_id>">Login</a></TD></TR>
+<TR><TD align=left colspan=2><b>Notes:</b><br><textarea name="usr_notes" cols=32 rows=7 style="width:98%"><TMPL_VAR usr_notes></textarea></TD></TR>
+</Table>
+<input type="submit" name="save" value=" Save user details ">
+</Form>
+
+<TMPL_IF referrals>
+<br><br>
+<Table class="tbl1" cellpadding=2 cellspacing=1>
+<TR class="hdr"><TD colspan=4>User Referrals</TD></TR>
+<TR class="hdr"><TD>Date</TD><TD>Username</TD><TD>Money</TD><TD></TD></TR>
+<TMPL_LOOP referrals>
+<TMPL_IF more>
+<TR><TD colspan=4><a href="?op=admin_user_referrals&usr_id=<TMPL_VAR usr_aff_id>">More...</a></TD></TR>
+<TMPL_ELSE>
+<TR align=center>
+    <TD><TMPL_VAR usr_created></TD>
+    <TD><a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></TD>
+    <TD align=right><TMPL_VAR currency_symbol><TMPL_VAR usr_money></TD>
+    <TD><a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id1>&ref_del=<TMPL_VAR usr_id>"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
+</TR>
+</TMPL_IF>
+</TMPL_LOOP>
+</Table>
+</TMPL_IF>
+
+<TMPL_IF transactions>
+<br><br>
+<Table class="tbl1" cellpadding=2 cellspacing=1>
+<TR class="hdr"><TD colspan=4>Payment Transactions</TD></TR>
+<TR class="hdr"><TD>Transaction ID</TD><TD>Date</TD><TD>Amount</TD><TD>Verified</TD></TR>
+<TMPL_LOOP transactions>
+<TR align=center><TD><TMPL_VAR id></TD><TD><TMPL_VAR created></TD><TD><TMPL_VAR amount></TD><TD><TMPL_IF verified><img src="<TMPL_VAR site_url>/images/done.gif" title="Verified"></TMPL_IF></TD></TR>
+</TMPL_LOOP>
+</Table>
+</TMPL_IF>
+
+<TMPL_IF payments>
+<br><br>
+<Table class="tbl1" cellpadding=2 cellspacing=1>
+<TR class="hdr"><TD colspan=4>Profit payments sent to user</TD></TR>
+<TR class="hdr"><TD>Date</TD><TD>Amount</TD><TD>Status</TD></TR>
+<TMPL_LOOP payments>
+<TR align=center><TD><TMPL_VAR created></TD><TD><TMPL_VAR amount></TD><TD><TMPL_VAR status></TD></TR>
+</TMPL_LOOP>
+</Table>
+</TMPL_IF>

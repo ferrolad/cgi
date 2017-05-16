@@ -1,0 +1,42 @@
+<table cellpadding="3" cellspacing="1" class="tbl1">
+<tr align="center">
+    <td align=right><b><TMPL_VAR lang_max_file_size></b></td>
+    <TMPL_IF enabled_prem><td><TMPL_VAR max_upload_filesize_prem></td></TMPL_IF>
+</tr>
+<tr align="center">
+    <td align=right><b><TMPL_VAR lang_disk_space_limit></b></td>
+    <TMPL_IF enabled_prem><td><TMPL_VAR disk_space_prem></td></TMPL_IF>
+</tr>
+<tr align="center">
+    <td align=right><b><TMPL_VAR lang_download_volume></b></td>
+    <TMPL_IF enabled_prem><td><TMPL_VAR bw_limit_prem></td></TMPL_IF>
+</tr>
+<tr align="center">
+    <td align=right><b><TMPL_VAR lang_url_upload></b></td>
+    <TMPL_IF enabled_prem><td><TMPL_IF remote_url_prem><img src="<TMPL_VAR site_url>/images/yep.gif" width=24 height=24 alt='Yes'><TMPL_ELSE>-</TMPL_IF></td></TMPL_IF>
+</tr>
+<tr align="center">
+    <td align=right><b><TMPL_VAR lang_down_acc_support></b></td>
+    <TMPL_IF enabled_prem><td><TMPL_IF direct_links_prem><img src="<TMPL_VAR site_url>/images/yep.gif" width=24 height=24 alt='Yes'><TMPL_ELSE>-</TMPL_IF></td></TMPL_IF>
+</tr>
+<tr align="center">
+    <td align=right><b><TMPL_VAR lang_downloads_resume></b></td>
+    <TMPL_IF enabled_prem><td><TMPL_IF direct_links_prem><img src="<TMPL_VAR site_url>/images/yep.gif" width=24 height=24 alt='Yes'><TMPL_ELSE>-</TMPL_IF></td></TMPL_IF>
+</tr>
+<tr align="center">
+    <td align=right><b><TMPL_VAR lang_downloads_delay></b></td>
+    <TMPL_IF enabled_prem><td><TMPL_IF download_countdown_prem><TMPL_VAR download_countdown_prem> <TMPL_VAR lang_seconds><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/yep.gif" width=24 height=24 alt='Yes'></TMPL_IF></td></TMPL_IF>
+</tr>
+<tr align="center">
+    <td align=right><b><TMPL_VAR lang_no_captcha></b></td>
+    <TMPL_IF enabled_prem><td><TMPL_IF captcha_prem>-<TMPL_ELSE><img src="<TMPL_VAR site_url>/images/yep.gif" width=24 height=24 alt='Yes'></TMPL_IF></td></TMPL_IF>
+</tr>
+<tr align="center">
+    <td align=right><b><TMPL_VAR lang_advertisements></b></td>
+    <TMPL_IF enabled_prem><td><TMPL_IF ads_prem>-<TMPL_ELSE><img src="<TMPL_VAR site_url>/images/yep.gif" width=24 height=24 alt='Yes'></TMPL_IF></td></TMPL_IF>
+</tr>
+<tr align="center">
+    <td align=right><b><TMPL_VAR lang_when_files_deleted></b></td>
+    <TMPL_IF enabled_prem><td><TMPL_VAR files_expire_prem></td></TMPL_IF>
+</tr>
+</table>

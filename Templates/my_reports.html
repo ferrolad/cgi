@@ -1,0 +1,101 @@
+<h2><TMPL_VAR lang_my_reports></h2>
+
+<Form>
+<input type="hidden" name="op" value="my_reports">
+From <input type="text" class="date" name="date1" value="<TMPL_VAR date1>" size=10> to <input type="text" class="date" name="date2" value="<TMPL_VAR date2>" size=10>
+<input type="submit" value="Show">
+</Form>
+
+<br>
+
+<div id="chart_div" style="width: 100%; height: 360px"></div>
+
+<br><br>
+
+<Table class="tbl1" cellpadding=2>
+<TR class="hdr">
+    <td>Date</td>
+    <td>Downloads</td>
+    <td>Premium Sales</td>
+    <td>Rebills</td>
+    <td>Referrals</td>
+    <TMPL_IF m_x><td>Websites</td></TMPL_IF>
+    <td>Total</td>
+</TR>
+<TMPL_LOOP list>
+<TR align=center>
+    <TD><TMPL_VAR day></TD>
+    <TD align="center">
+	 	<TMPL_IF has_dl_details><a href="<TMPL_VAR site_url>/?op=my_reports&day=<TMPL_VAR day>&section=downloads"></TMPL_IF>
+    	<TMPL_VAR downloads> / <TMPL_VAR currency_symbol><TMPL_VAR profit_dl>
+    	<TMPL_IF has_dl_details></a></TMPL_IF>
+         <TMPL_IF has_dl_details></TMPL_IF>
+    </TD>
+    <TD align="center"><a href="<TMPL_VAR site_url>/?op=my_reports&day=<TMPL_VAR day>&section=sales"><TMPL_VAR sales> / <TMPL_VAR currency_symbol><TMPL_VAR profit_sales></a></TD>
+    <TD align="center"><a href="<TMPL_VAR site_url>/?op=my_reports&day=<TMPL_VAR day>&section=rebills"><TMPL_VAR rebills> / <TMPL_VAR currency_symbol><TMPL_VAR profit_rebills></a></TD>
+    <TD align="center"><a href="<TMPL_VAR site_url>/?op=my_reports&day=<TMPL_VAR day>&section=refs"><TMPL_VAR currency_symbol><TMPL_VAR profit_refs></a></TD>
+    <TMPL_IF m_x><TD align="center"><a href="<TMPL_VAR site_url>/?op=my_reports&day=<TMPL_VAR day>&section=sites"><TMPL_VAR currency_symbol><TMPL_VAR profit_site></a></TD></TMPL_IF>
+    <TD align="center"><TMPL_VAR currency_symbol><TMPL_VAR profit_total></TD>
+</TR>
+</TMPL_LOOP>
+<TR class="hdr">
+    <td></td>
+    <td><TMPL_VAR sum_downloads> / <TMPL_VAR currency_symbol><TMPL_VAR sum_profit_dl></td>
+    <td><TMPL_VAR sum_sales> / <TMPL_VAR currency_symbol><TMPL_VAR sum_profit_sales></td>
+    <td><TMPL_VAR sum_rebills> / <TMPL_VAR currency_symbol><TMPL_VAR sum_profit_rebills></td>
+    <td><TMPL_VAR currency_symbol><TMPL_VAR sum_profit_refs></td>
+    <TMPL_IF m_x><td><TMPL_VAR currency_symbol><TMPL_VAR sum_profit_site></td></TMPL_IF>
+    <td><TMPL_VAR currency_symbol><TMPL_VAR sum_profit_total></td>
+</TR>
+</Table>
+
+
+<style>
+embed, div { margin: auto; }
+</style>
+<link href="<TMPL_VAR site_url>/css/jquery-ui.css" rel="stylesheet"/>
+<script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>
+<script>
+    $('.date').datepicker({
+        dateFormat: 'yy-mm-dd',
+    });
+</script>
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script>
+  var data = <TMPL_VAR data>;
+  google.load("visualization", "1", {packages:["corechart"]});
+  google.setOnLoadCallback(drawChart);
+  function drawChart() {
+    var table_data = [['Day', 'Downloads', 'Premium Sales', 'Rebills', 'Websites', 'Total']];
+    $(data).each(function(_, row)
+    {
+        table_data.push([row.day2,
+            parseFloat(row.profit_dl),
+            parseFloat(row.profit_sales),
+            parseFloat(row.profit_rebills),
+            parseFloat(row.profit_site),
+            parseFloat(row.profit_total),
+            ]);
+    });
+
+    var table = google.visualization.arrayToDataTable(table_data);
+
+    $(table_data[0]).each(function(i, _)
+    {
+	    var formatter = new google.visualization.NumberFormat({ fractionDigits: 2, suffix: ' <TMPL_VAR currency_code>' });
+	    if (i >= 1) formatter.format(table, i);
+    });
+
+    var options = {
+      hAxis: {titleTextStyle: {color: '#333'} },
+      vAxis: {minValue: 0, format: '<TMPL_VAR currency_symbol>#.##', textStyle: { fontSize: 12 } },
+      chartArea: { width: 600, height: 300, backgroundColor: { stroke: 'black' } },
+      legend: { position: 'bottom', textStyle: { fontSize: 12 } },
+      series: { 0: { color: 'blue' }, 1: { color: 'red' }, 2: { color: 'orange' }, 3 : { color: 'darkviolet' }, 4 : { color: 'green' } },
+    };
+
+    var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+    <TMPL_IF list>chart.draw(table, options);</TMPL_IF>
+  }
+</script>

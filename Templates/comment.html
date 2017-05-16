@@ -1,0 +1,15 @@
+							<li id="cmt_<TMPL_VAR cmt_id>">
+								<div class="comment_header">
+									<span class="comment_mailto"><a href="#"><img src="<TMPL_VAR site_url>/images/dog.png"></a></span>
+									<span class="comment_user"><TMPL_VAR cmt_name></span>
+									<TMPL_IF admin>
+									<span class="comment_userip"><TMPL_VAR ip></span>
+									<span class="comment_deletemessage"><a href="#" class="cmt_del" onclick="delComment(<TMPL_VAR cmt_id>); return(false);"><img src="<TMPL_VAR site_url>/images/icon_delete.png"></a></span>
+									</TMPL_IF>
+									<span class="comment_date"><b><TMPL_VAR date></b> at <TMPL_VAR time></span>
+									<div class="clear"></div>
+								</div>
+								<div class="comment_body">
+									<TMPL_VAR cmt_text>
+								</div>
+							</li>

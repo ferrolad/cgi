@@ -1,0 +1,18 @@
+<h2>Add new users</h2>
+<TMPL_IF result>
+<b>Created users:</b><br>
+<TMPL_VAR result><br><br>
+</TMPL_IF>
+<Form method="POST">
+Generate <input type="text" name="num" size=2> users with <input type="text" name="prem_days" size=2> premium days<br><input type="submit" name="generate" value="Generate"><br><br>
+<input type="hidden" name="op" value="admin_users_add">
+Format: login:password:premium_days:email<br>
+(premium_days and email fields are optional)
+<br><br>
+e.g.: 3473581:q6bftuakez:14<br>
+or<br>
+login1:password1:21:xxx@gmail.com<br>
+One user per line<br>
+<Textarea name="list" cols=28 rows=16><TMPL_VAR list></Textarea>
+<br><input type="submit" name="create" value="Create users above">
+</Form>

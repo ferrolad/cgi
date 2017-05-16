@@ -1,0 +1,66 @@
+					<!-- Start Folder Navigation -->
+					<tr class="curfolder">
+						<td class="foldername" colspan="5"><TMPL_VAR current_folder><a href="#" id="publish_link">
+						<img src="<TMPL_VAR site_url>/images/icon_publink.png">Publish link</a></td>
+					</tr>
+					<!-- End Folder Navigation -->
+					
+					<tr class="tablesep" colspan="5"></tr><!--spacer -->
+					
+					<!--Start Folders -->
+					<TMPL_IF folders>
+					<TMPL_LOOP folders>
+					<TMPL_IF fld_id>
+					<tr class="folderrow">
+						<td class="icontd"><img src="<TMPL_VAR site_url>/images/icon_<TMPL_IF trash>trash<TMPL_ELSE>folder</TMPL_IF>.png"></td>
+						<td class="filename"><a href="?op=my_files&amp;fld_id=<TMPL_VAR fld_id>"><TMPL_VAR fld_name_txt></a></a></td>
+						<td class="howfiles" nowrap align="center"><img src="<TMPL_VAR site_url>/images/icon_howfiles.png"><TMPL_VAR files_total></td>
+						<TMPL_IF trash>
+						<td class="icontd" colspan="2"></td>
+						<TMPL_ELSE>
+						<td class="icontd"><a href="?op=fld_edit&amp;fld_id=<TMPL_VAR fld_id>"><img src="<TMPL_VAR site_url>/images/icon_edit.png"></a></td>
+						<td class="icontd"><a href="?op=my_files&amp;fld_id=<TMPL_VAR folder_id>&amp;del_folder=<TMPL_VAR fld_id>&amp;token=<TMPL_VAR token>"><img src="<TMPL_VAR site_url>/images/icon_delete.png" onClick="return confirm('<TMPL_VAR lang_delete_folder>')"></a></td>
+						</TMPL_IF>
+					</tr>
+					<TMPL_ELSE>
+					<!-- Start Back to Folder -->
+					<tr class="backfolder">
+						<td class="icontd"><a href="?op=my_files&amp;fld_id=<TMPL_VAR fld_id>"><img src="<TMPL_VAR site_url>/images/icon_back.png"></a></td>
+						<td class="filename" colspan="4"><a href="?op=my_files&amp;fld_id=<TMPL_VAR fld_id>">..</a></td>	
+					</tr>
+					<!-- End Back to Folder -->
+					</TMPL_IF>
+					</TMPL_LOOP>
+					<TMPL_ELSE>
+					<tr class="folderrow">
+						<td>No folders</td>
+					</tr>
+					</TMPL_IF>
+					<!--End Folders -->
+					<tr class="tablesep" colspan="5"></tr><!--spacer -->
+					<!-- Start Create Folder -->
+					<TMPL_UNLESS trash>
+					<tr>
+						<th colspan="5">
+						<input type="text" size="18" name="create_new_folder" class="input1">
+						<input value="" class="f-btn-green" type="submit">
+						</th>
+					</tr>
+					</TMPL_UNLESS>
+					<!-- End Create Folder -->
+
+					<script src="<TMPL_VAR site_url>/js/selall.js"></script>
+					<script>
+					$(document).ready(function()
+					{
+						$('#publish_link').click(function()
+						{
+							var input = $('<input type="text" readonly>');
+							$(input).css('width', '97%');
+							$(input).attr('value', '<TMPL_VAR site_url>/users/<TMPL_VAR my_login>/<TMPL_IF current_fld_id><TMPL_VAR current_fld_id>/<TMPL_VAR current_folder></TMPL_IF>');
+							$(this).parent().html(input);
+							$(input).select();
+							$(this).remove();
+						});
+					});
+					</script>

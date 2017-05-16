@@ -1,0 +1,12 @@
+<table class="tbl1" style="width: 80%">
+<tr class="hdr">
+   <td>Plugin</td>
+   <td>Sales</td>
+</tr>
+<TMPL_LOOP list>
+<tr align="center">
+   <td><TMPL_VAR plugin></td>
+   <td><TMPL_VAR sales> / $<TMPL_VAR profit_sales></td>
+</tr>
+</TMPL_LOOP>
+</table>

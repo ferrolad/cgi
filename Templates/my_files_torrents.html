@@ -1,0 +1,11 @@
+<TR class="hdr"><td colspan=6>Torrents running<br><small>Progress updating every 15 seconds</small></td></TR>
+<TMPL_LOOP torrents>
+<TR>
+    <TD onmouseover="return tooltip('<TMPL_VAR file_list>','Torrent files');" onmouseout="return hideTip();"><TMPL_IF title><TMPL_VAR title><TMPL_ELSE>[waiting to start]</TMPL_IF></TD>
+    <TD align=right><TMPL_VAR done> of <TMPL_VAR total> Mb (<TMPL_VAR percent>%)</TD>
+    <TD align=right><TMPL_VAR down_speed>/s</TD>
+    <TD align=right><TMPL_VAR up_speed>/s</TD>
+    <TD><TMPL_VAR working></TD>
+    <TD><a href="?op=my_files;del_torrent=<TMPL_VAR sid>" onClick="return confirm('<TMPL_VAR lang_delete_file>')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
+</TR>
+</TMPL_LOOP>

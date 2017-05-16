@@ -1,0 +1,21 @@
+<h2>Referrals or <TMPL_VAR usr_login></h2>
+
+<br>
+
+<Table class="tbl1" cellpadding=2 cellspacing=1>
+<TR class="hdr"><TD colspan=4>User Referrals</TD></TR>
+<TR class="hdr"><TD>Date</TD><TD>Username</TD><TD>Money</TD></TR>
+<TMPL_LOOP referrals>
+<TMPL_IF more>
+<TR><TD colspan=3><a href="?op=admin_user_referrals&usr_id=<TMPL_VAR usr_aff_id>">More...</a></TD></TR>
+<TMPL_ELSE>
+<TR align=center><TD><TMPL_VAR usr_created></TD><TD><a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></TD><TD><TMPL_VAR usr_money></TD></TR>
+</TMPL_IF>
+</TMPL_LOOP>
+</Table>
+
+<br>
+
+<a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>">Back to user details</a>
+
+<br>

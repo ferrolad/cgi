@@ -1,0 +1,56 @@
+<graph  caption='' 
+                animation='0'
+                numberPrefix='$'
+                lineThickness='2' 
+                showValues='0'
+                formatNumberScale='0' 
+                anchorRadius='3' 
+                anchorSides='4'
+                divLineAlpha='20' 
+                divLineColor='101010' 
+                showAlternateHGridColor='1' 
+                alternateHGridColor='333333' 
+                shadowAlpha='40'  
+                numvdivlines='<TMPL_VAR divlines>' 
+                chartLeftMargin='0'
+                chartTopMargin='10'
+                chartBottomMargin='0'
+                chartRightMargin='10' 
+                bgColor='F9F9F9' 
+                alternateHGridAlpha='5' 
+                limitsDecimalPrecision='2' 
+                divLineDecimalPrecision='2' 
+                decimalPrecision='2'>
+
+<categories>
+<TMPL_LOOP list>
+        <category name='<TMPL_VAR day2>'/>
+</TMPL_LOOP>
+</categories>
+
+<dataset seriesName='Downloads' color='1D8BD1' anchorBorderColor='1D8BD1' anchorBgColor='1D8BD1'>
+<TMPL_LOOP list>
+        <set value='<TMPL_VAR profit_dl>'/>
+</TMPL_LOOP>
+</dataset>
+
+<dataset seriesName='Sales' color='F1683C' anchorBorderColor='F1683C' anchorBgColor='F1683C'>
+<TMPL_LOOP list>
+        <set value='<TMPL_VAR profit_sales>'/>
+</TMPL_LOOP>
+</dataset>
+
+<dataset seriesName='Referrals' color='434343' anchorBorderColor='434343' anchorBgColor='434343'>
+<TMPL_LOOP list>
+        <set value='<TMPL_VAR profit_refs>'/>
+</TMPL_LOOP>
+</dataset>
+<TMPL_IF m_x>
+<dataset seriesName='Websites' color='66F366' anchorBorderColor='66F366' anchorBgColor='66F366'>
+<TMPL_LOOP list>
+        <set value='<TMPL_VAR profit_site>'/>
+</TMPL_LOOP>
+</dataset>
+</TMPL_IF>
+
+</graph>

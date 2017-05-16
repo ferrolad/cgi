@@ -1,0 +1,41 @@
+<a name="comments"></a>
+<TMPL_LOOP comments>
+<a name="<TMPL_VAR cmt_id>"></a>
+<div class="cmt" id="cm<TMPL_VAR cmt_id>">
+<div class="cmt_hdr">
+<b><TMPL_VAR cmt_name></b>
+<TMPL_IF email> &nbsp; <a href="mailto:<TMPL_VAR email>">@</a></TMPL_IF>
+<TMPL_IF adm> &nbsp; <a href="#" onClick="return jah('<TMPL_VAR site_url>/?op=cmt_del&amp;i=<TMPL_VAR cmt_id>')">[X]</a> <TMPL_VAR ip></TMPL_IF>
+ &nbsp; <TMPL_VAR date>
+</div>
+<p><TMPL_VAR cmt_text></p>
+</div>
+</TMPL_LOOP>
+<div id="cnew"></div>
+
+<center><a href="#" id="showcmt"><TMPL_VAR lang_comment_on_this></a></center>
+
+<div id="cmt_form" style="display:none">
+<Form method="POST" action="<TMPL_VAR site_url>/" onSubmit="return submitCommentsForm(this)">
+<h3><TMPL_VAR lang_leave_reply></h3>
+<input type="hidden" name="cmt_type" value="<TMPL_VAR cmt_type>">
+<input type="hidden" name="cmt_ext_id" value="<TMPL_VAR cmt_ext_id>">
+<TMPL_UNLESS my_login>
+<input type="text" name="name" value="" style="display:none">
+<input type="text" name="cmt_name" value="<TMPL_VAR cmt_name>" size=18><b><TMPL_VAR lang_name></b> <small>(<TMPL_VAR lang_required>)</small><br>
+<input type="text" name="email" value="" style="display:none">
+<input type="text" name="cmt_email" value="<TMPL_VAR cmt_email>" size=24><b>E-mail</b> <small>(<TMPL_VAR lang_wont_be_published>)</small><br>
+</TMPL_UNLESS>
+<Textarea name="text" style="width:100%;display:none;" cols=24 rows=3></Textarea>
+<Textarea name="cmt_text" style="width:100%;display:block;" cols=24 rows=3 id='cmt_txt'></Textarea>
+<input type="submit" value="<TMPL_VAR lang_leave_reply>">
+</Form>
+</div>
+
+<script>
+$("#showcmt").click( function(){
+    $("#showcmt").hide("normal");
+    $("#cmt_form").show("normal");
+    return false;
+});
+</script>

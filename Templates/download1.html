@@ -1,0 +1,293 @@
+	<script src="<TMPL_VAR site_url>/js/share.js"></script>
+	<script src="<TMPL_VAR site_url>/js/countdown.js"></script>
+	<div id="content" style="width: 980px">
+		<div id="container">
+			<!--start fileinfo panel-->
+			<table class="filepanel" cellpadding="0" cellspacing="1">
+				<tr>
+					<td width="585">
+						<img src="<TMPL_VAR site_url>/images/icon_file.png" style="float: left;">
+						<div class="dfile">
+							<span class="dfilename"><TMPL_VAR file_name></span>
+							<span class="report">
+								<img src="<TMPL_VAR site_url>/images/icon_flag.png">
+								<a href="<TMPL_VAR site_url>/?op=report_file&amp;id=<TMPL_VAR file_code>"><TMPL_VAR lang_report_abuse></a>
+							</span>
+							<div class="clear"></div>
+							<div style="font-size: 11px;">
+								Uploaded on 
+								<b><TMPL_VAR created_date></b> 
+								<TMPL_VAR created_time>
+								<TMPL_IF file_usr_login>
+								by 
+								<a href="<TMPL_VAR site_url>/users/<TMPL_VAR file_usr_login>" style="text-decoration: none;"><TMPL_VAR file_usr_login></a>
+								</TMPL_IF>
+							</div>
+						</div>
+					</td>
+					<td>
+						<span class="statd">Downloaded</span>
+						<span><TMPL_VAR file_downloads> times</span>
+					</td>
+					<td>
+						<span class="statd">Size</span>
+						<span><b><TMPL_VAR fsize></b></span>
+					</td>
+					<td>
+						<ul>
+							<li><a href="javascript:share_facebook(document.location)" class="fb" title="Facebook"></a></li>
+							<li><a href="javascript:share_twitter(document.location)" class="tw" title="Twitter"></a></li>
+							<li><a href="javascript:share_vk(document.location)" class="vk" title="Vk"></a></li>
+							<li><a href="javascript:share_gplus(document.location)" class="gplus" title="Google+"></a></li>
+						</ul>
+					</td>
+				</tr>
+			</table>
+			<div class="clear"></div>
+			<!--end fileinfo panel-->
+			<br>
+			<!--start left column-->
+			<div class="leftcol">
+				<TMPL_IF video_code>
+				<TMPL_IF video_ads>
+				<TMPL_VAR m_a_css>
+				<div style="position: relative;">
+				 <div id="player_img" style="width: <TMPL_VAR vid_width>px; height: <TMPL_VAR vid_height>px;">
+				    <a href="#" onclick="return player_start();"><img src="<TMPL_VAR site_url>/images/<TMPL_IF divx>player_divx.png<TMPL_ELSE>player_flv.png</TMPL_IF>" style="display:block;width:100%;height:<TMPL_VAR vid_height>px;border:0;"></a>
+				    <a href="#" onclick="return player_start();" id="vid_play" style="background-image: url(<TMPL_VAR site_url>/images/player_play.png)"></a>
+				    <div id="player_ads">
+				      <div style="padding:15px;text-align:center;">
+				      <!-- Video ADs code start here -->
+				      <center><TMPL_VAR m_a_code></center>
+				      <!-- Video ADs code end here -->
+				      </div>
+				    </div>
+				 </div>
+				</div>
+				<script>
+				</script>
+				</TMPL_IF>
+				<div id="player_code" class="player" style="width: 600px;height:<TMPL_VAR vid_height>px"><TMPL_VAR video_code></div>
+				</TMPL_IF>
+				<TMPL_IF song_url>
+				<script type='text/javascript' src='<TMPL_VAR site_url>/player/swfobject.js'></script>
+				<div id='mp3player'>This text will be replaced</div>
+				<script type='text/javascript'>
+				var so = new SWFObject('<TMPL_VAR site_url>/player/jw5.swf','mpl','100%','24','9');
+				so.addParam('allowfullscreen','true');
+				so.addParam('allowscriptaccess','always');
+				so.addParam('wmode','opaque');
+				so.addVariable('duration','<TMPL_VAR mp3_secs>');
+				so.addVariable('file','<TMPL_VAR song_url>');
+				<TMPL_IF mp3_mod_autoplay>so.addVariable('autostart','true');</TMPL_IF>
+				so.write('mp3player');
+				</script>
+				</TMPL_IF>
+				<TMPL_IF docviewer_url><iframe src="<TMPL_VAR docviewer_url>" style="height:500px;" frameborder="0"></iframe></TMPL_IF>
+				<TMPL_IF image_url>
+				<script src="<TMPL_VAR site_url>/js/scaleimg.js"></script>
+				<img id="img-preview" src="<TMPL_VAR image_url>" style="border: 1px #e4e4e4 solid" class="pic" alt="<TMPL_VAR file_name>" GALLERYIMG="no" onload="scaleImg(this, 980);">
+				</TMPL_IF>
+				<TMPL_IF file_adult>
+				<!-- Adult ads -->
+				<TMPL_ELSE>
+				<!-- Family-safe ads -->
+				</TMPL_IF>
+				<div class="sharetabs">
+					<div class="section">
+						<ul class="tabs">
+							<li class="current">Download link</li>
+							<li>Link for forums</li>
+							<li>HTML code</li>
+							<TMPL_IF embed_code>
+							<li>Embed code</li>
+							<TMPL_IF video_embed_code><li>Embed code 2</li></TMPL_IF>
+							</TMPL_IF>
+						</ul>
+						
+						<div class="box visible">
+							<div class="tabcontent">
+								<textarea readonly="" style="width: 100%"><TMPL_VAR download_link></textarea>
+							</div>
+						</div>
+						<div class="box">
+							<div class="tabcontent">
+								<textarea readonly="" style="width: 100%">[URL=<TMPL_VAR download_link>]<TMPL_VAR file_name> - <TMPL_VAR fsize>[/URL]</textarea>
+							</div>
+						</div>
+						<div class="box">
+							<div class="tabcontent">
+								<textarea readonly="" style="width: 100%"><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name> - <TMPL_VAR fsize></a></textarea>
+							</div>
+						</div>
+						<TMPL_IF video_embed_code>
+						<div class="box">
+							<div class="tabcontent">
+								<textarea readonly="" style="width: 100%"><IFRAME SRC="<TMPL_VAR site_url>/embed-<TMPL_VAR file_code>-<TMPL_VAR vid_width>x<TMPL_VAR vid_height>.html" FRAMEBORDER=0 MARGINWIDTH=0 MARGINHEIGHT=0 SCROLLING=NO WIDTH=<TMPL_VAR vid_width> HEIGHT=<TMPL_VAR vid_height2> ALLOWFULLSCREEN></IFRAME></textarea>
+							</div>
+						</div>
+						<div class="box">
+							<div class="tabcontent">
+							<textarea readonly="" style="width: 100%">
+<object classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' width='<TMPL_VAR vid_width>' height='<TMPL_VAR vid_height>'>
+<param name='movie' value='<TMPL_VAR site_url>/player/jw5.swf'>
+<param name='allowfullscreen' value='true'>
+<param name='allowscriptaccess' value='always'>
+<param name='wmode' value='transparent'>
+<param name='flashvars' value='file=<TMPL_VAR site_url>/vidembed-<TMPL_VAR file_code>.<TMPL_VAR ext>&image=<TMPL_VAR video_img_url>&provider=http'>
+<embed src='<TMPL_VAR site_url>/player/jw5.swf' width='<TMPL_VAR vid_width>' height='<TMPL_VAR vid_height>' bgcolor='#000000' allowscriptaccess='always' allowfullscreen='true' flashvars='file=<TMPL_VAR site_url>/vidembed-<TMPL_VAR file_code>.<TMPL_VAR ext>&image=<TMPL_VAR video_img_url>&provider=http' />
+</object></textarea>
+							</div>
+						</div>
+						</TMPL_IF>
+						<TMPL_IF mp3_embed_code>                                                                                                              
+						<div class="box">
+							<textarea id="ic4-<TMPL_VAR file_id>" style="width:98%;" cols=24 rows=3 onFocus="copy(this);"><object classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' width='450' height='24'>
+<param name='movie' value='<TMPL_VAR site_url>/player/player.swf'>
+<param name='allowfullscreen' value='true'>
+<param name='allowscriptaccess' value='always'>
+<param name='wmode' value='transparent'>
+<param name='flashvars' value='file=<TMPL_VAR site_url>/mp3embed-<TMPL_VAR file_code>.mp3&duration=<TMPL_VAR mp3_secs>'>
+<embed src='<TMPL_VAR site_url>/player/player.swf' width='450' height='24' allowscriptaccess='always' allowfullscreen='true' flashvars='file=<TMPL_VAR site_url>/mp3embed-<TMPL_VAR file_code>.mp3&duration=<TMPL_VAR mp3_secs>' />
+</object></textarea>
+						</div>
+						</TMPL_IF>
+						
+						<div class="clear"></div>
+					</div>					
+				</div>
+				
+				<TMPL_IF enable_file_comments>
+				<form>
+					<input type="hidden" name="op" value="comment_add">
+					<input type="hidden" name="cmt_ext_id" value="<TMPL_VAR file_id>">
+					<input type="hidden" name="cmt_type" value="1">
+					<div id="comments">
+						<h2>Comments</h2>
+						<ul id="comments_list">
+							<TMPL_LOOP comments>
+							<TMPL_INCLUDE comment.html>
+							</TMPL_LOOP>
+						</ul>
+						<Textarea name="cmt_text" style="width:578px;display:block;" cols=24 rows=3 id='cmt_txt'></Textarea>
+						<br/>
+						<div style="text-align: center;">
+							<input type="button" id="comment_btn" value="Comment on this">
+						</div>	
+						<br/>
+						<br/>
+					</div> 
+				</form>
+				</TMPL_IF>
+				
+			</div>
+			<!--end left column-->
+			
+			<!--start right column-->
+			<form name="F1" method="POST" action="">
+			<input type="hidden" name="op" value="download2">
+			<input type="hidden" name="id" value="<TMPL_VAR file_code>">
+			<input type="hidden" name="rand" value="<TMPL_VAR rand>">
+			<input type="hidden" name="referer" value="<TMPL_VAR referer>">
+			
+			<input type="hidden" name="method_free" value="<TMPL_VAR method_free>">
+			<input type="hidden" name="method_premium" value="<TMPL_VAR method_premium>">
+
+			<div class="rightcol">
+				<TMPL_IF video_code>
+				<div class="fileinfo">
+					<h2>File info</h2>
+					<ul>
+						<li><span class="infoname">Codec:</span><span><TMPL_VAR vid_codec></span></li>
+						<li><span class="infoname">Resolution:</span><span><TMPL_VAR vid_width> x <TMPL_VAR vid_height></span></li>
+						<li><span class="infoname">Framerate:</span><span><TMPL_VAR vid_fps> fps</span></li>
+						<li><span class="infoname">Bitrate:</span><span><TMPL_VAR vid_bitrate> Kbps</span></li>
+						<li><span class="infoname">Audio info:</span><span><TMPL_VAR vid_audio_codec>, <TMPL_VAR vid_audio_bitrate> kbps, <TMPL_VAR vid_audio_rate> Hz</span></li>
+						<li><span class="infoname">Description:</span><span><TMPL_VAR file_descr></span></li>
+						<li><span class="snap">Snapshot:</span>
+							<span>
+								<img src="<TMPL_VAR video_thumb_url>" style="border: 1px #ddd solid">
+							</span>
+						</li>
+					</ul>
+				</div>
+				</TMPL_IF>
+				<TMPL_IF song_url>
+				<div class="fileinfo">
+					<h2>File info</h2>
+					<ul>
+						<TMPL_IF mp3_artist><li><span class="infoname">Song Artist:</span><span><TMPL_VAR mp3_artist></span></li></TMPL_IF>
+						<TMPL_IF mp3_title><li><span class="infoname">Song Title:</span><span><TMPL_VAR mp3_title></span></li></TMPL_IF>
+						<TMPL_IF mp3_album><li><span class="infoname">Song Album:</span><span><TMPL_VAR mp3_album> </span></li></TMPL_IF></td></tr>
+					</ul>
+				</div>
+				</TMPL_IF>
+				<div class="clear"></div>
+				<TMPL_IF msg><br><div class="err"><TMPL_VAR msg></div></TMPL_IF>
+				<TMPL_UNLESS no_link>
+				<TMPL_IF countdown>
+				<br><span id="countdown"><TMPL_VAR lang_wait> <span class="seconds"><TMPL_VAR countdown></span> <TMPL_VAR lang_seconds></span>
+				</TMPL_IF>
+				<TMPL_IF ihtml><br/><TMPL_VAR ihtml></TMPL_IF>
+				<TMPL_IF bittorrent>
+				<br>
+				You may only download this file with BitTorrent as it has reached a download limit.
+				<br>
+				<button id="dl_bittorent" class="downloadbtn">
+					<span class="bicon">
+						<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_download_b.png">
+						<img class="barrow van move-bot" src="<TMPL_VAR site_url>/images/icon_ardown.png">
+					</span>
+					<span class="btext">Download with BitTorrent</span>
+				</button>
+				<TMPL_ELSE>
+				<button id="downloadbtn" class="downloadbtn">
+					<span class="bicon">
+						<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_download_b.png">
+						<img class="barrow van move-bot" src="<TMPL_VAR site_url>/images/icon_ardown.png">
+					</span>
+					<span class="btext">Create download link</span>
+				</button>	
+				</TMPL_IF>
+				<TMPL_IF pass_required><br><b><TMPL_VAR lang_password>:</b> <input type="password" name="password" class="myForm"><br></TMPL_IF>
+				</TMPL_UNLESS>
+			</div>
+			</form>
+			<!--end right column-->
+		</div> <!-- end container -->
+	</div> <!-- end content -->
+	<script>
+	$('#downloadbtn').click(function()
+	{
+		this.form.submit();
+	});
+	$('#dl_bittorent').click(function(evt)
+	{
+		evt.preventDefault();
+		document.location = "<TMPL_VAR site_cgi>/tracker.cgi?file_code=<TMPL_VAR file_code>";
+	});
+	$('#comment_btn').click(function(evt)
+	{
+		evt.preventDefault();
+		$.ajax({ url: '<TMPL_VAR site_url>/', type: "POST", data: $(this.form).serializeArray(), success: function(data)
+		{
+			$('#comments_list').append(data);
+			$(document.forms[0].cmt_text).val('');
+		}});
+	});
+	function delComment(cmt_id)
+	{
+		var postdata = { op: 'cmt_del', cmt_id: cmt_id };
+		$.ajax({ url: '<TMPL_VAR site_url>/', type: "POST", data: postdata, success: function(data)
+		{
+			$('#cmt_' + cmt_id.toString()).remove();
+		}});
+	}
+	function player_start()
+	{
+		$('#player_ads').hide();
+		$('#player_img').hide();
+		$('#player_code').css('visibility', 'visible');
+		return false;
+	}
+	</script>

@@ -1,0 +1,19 @@
+<script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>
+<link href="<TMPL_VAR site_url>/css/jquery-ui.css" type="text/css" rel="stylesheet" />
+
+<TMPL_IF msg>
+<script>
+var div = $('<div>');
+$(div).attr("title", "Thanks for reporting this case!");
+$(div).html("<TMPL_VAR msg>");
+$(div).dialog({ modal: true });
+</script>
+</TMPL_IF>
+
+<h2>Mass takedown</h2>
+<form action="" method="POST">
+<input type="hidden" name="op" value="mass_dmca">
+<textarea name="urls" style="width:98%" rows="20"></textarea>
+<br><br>
+<input type="submit" value="Process >>">
+</form>

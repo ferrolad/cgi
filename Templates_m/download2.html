@@ -1,0 +1,38 @@
+<h3><TMPL_VAR lang_link_generated></h3>
+<table class="file_slot"><tr><td>
+<nobr><TMPL_VAR lang_file_name>: <b><TMPL_VAR file_name></b></nobr><br>
+<TMPL_VAR lang_file_size>: <TMPL_VAR fsize> <small>(<TMPL_VAR file_size> bytes)</small><br>
+<TMPL_IF usr_public><TMPL_VAR lang_uploaded_by>: <a href="<TMPL_VAR site_url>/<TMPL_VAR usr_login>"><TMPL_VAR usr_login></a><br></TMPL_IF>
+<TMPL_IF file_descr><br><b><TMPL_VAR lang_file_descr>:</b><TMPL_VAR file_descr></TMPL_IF>
+</td></tr></table>
+<br>
+
+<TMPL_IF video_code>
+<table cellpadding=0 cellspacing=0 style="margin:auto;margin-top:5px;border:1px solid #555;border-bottom:none;"><tr><td>
+<TMPL_IF video_ads>
+<TMPL_VAR m_a_css>
+<div style="position: relative;">
+ <div id="player_img">
+    <a href="#" onclick="return player_start();"><img src="<TMPL_VAR site_url>/images/<TMPL_IF divx>player_divx.png<TMPL_ELSE>player_flv.png</TMPL_IF>" style="display:block;width:100%;height:<TMPL_VAR vid_height>px;border:0;"></a>
+    <a href="#" onclick="return player_start();" id="vid_play" style="background-image: url(<TMPL_VAR site_url>/images/player_play.png)"></a>
+    <div id="player_ads">
+      <div style="padding:15px;text-align:center;">
+      <!-- Video ADs code start here -->
+      <center><table style="background:#f9f9f9;border:3px solid #c3c3c3;width:200px;height:160px;"><tr><td align=center>MY SAMPLE VIDEO ADS</td></tr></table></center>
+      <!-- Video ADs code end here -->
+      </div>
+    </div>
+ </div>
+</div>
+</TMPL_IF>
+<div id="player_code"><TMPL_VAR video_code></div>
+</td></tr></table>
+<br>
+</TMPL_IF>
+
+<TMPL_VAR lang_will_be_available> <TMPL_VAR symlink_expire> <TMPL_VAR lang_hours><br><br>
+
+<span style="background:#f9f9f9;border:1px dotted #bbb;padding:7px;">
+<a href="<TMPL_VAR direct_link>"><TMPL_VAR file_name></a>
+</span>
+<br><br><br>

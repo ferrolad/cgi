@@ -1,0 +1,15 @@
+<h2><TMPL_VAR day></h2>
+<table class="tbl1" width="50%">
+<tr class="hdr">
+   <td>Date</td>
+   <td>User</td>
+   <td>Amount</td>
+</tr>
+<TMPL_LOOP list>
+<tr>
+   <td align="center"><TMPL_VAR created></td>
+   <td align="center"><TMPL_VAR usr_login_from></td>
+   <td align="center">$<TMPL_VAR amount></td>
+</tr>
+</TMPL_LOOP>
+</table>

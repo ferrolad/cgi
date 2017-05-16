@@ -1,0 +1,56 @@
+<h2>Banned users/ IPs</h2>
+
+<TMPL_VAR paging>
+
+<form method="POST" action="">
+	<input type="hidden" name="op" value="admin_bans_list">
+	Search User / IP: <input type="text" name="key" value="<TMPL_VAR key>"> <input type="submit"> <input type="submit" name="unban_all" value="Clear All">
+</form>
+<table width="800">
+	<tr>
+		<td valign="top" width="50%">
+			<table class="tbl1" name="banned_users" width="100%">
+			<tr class="hdr">
+				<td>User</td>
+				<td>Reason</td>
+				<td>Date</td>
+				<td>
+			</tr>
+         <TMPL_IF list_users>
+			<TMPL_LOOP list_users>
+			<tr>
+				<td><a href="/?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></td>
+				<td align="center"><TMPL_VAR reason></td>
+				<td align="center"><TMPL_VAR created></td>
+				<td align="center"><a href="?op=admin_bans_list;unban_user=<TMPL_VAR usr_id>" alt="Unban"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></td>
+			</tr>
+			</TMPL_LOOP>
+         <TMPL_ELSE>
+         <tr><td colspan="4"></td></tr>
+         </TMPL_IF>
+			</table>
+		</td>
+		<td valign="top" width="50%">
+			<table class="tbl1" name="banned_ips" width="100%">
+			<tr class="hdr">
+				<td>IP</td>
+				<td>Reason</td>
+				<td>Date</td>
+				<td></td>
+			</tr>
+         <TMPL_IF list_ips>
+			<TMPL_LOOP list_ips>
+			<tr>
+				<td><TMPL_VAR ip></td>
+				<td align="center"><TMPL_VAR reason></td>
+				<td align="center"><TMPL_VAR created></td>
+				<td align="center"><a href="?op=admin_bans_list;unban_ip=<TMPL_VAR ip>" alt="Unban"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></td>
+			</tr>
+			</TMPL_LOOP>
+         <TMPL_ELSE>
+         <tr><td colspan="4"></td></tr>
+         </TMPL_IF>
+			</table>
+		</td>
+	</tr>
+</table>

@@ -1,0 +1,42 @@
+<br>
+
+<div class="rrd">
+
+<h3 style="margin:0;"><TMPL_VAR lang_user_login></h3>
+
+<form method="POST" action="<TMPL_VAR site_url>/" name="FL">
+<input type="hidden" name="op" value="login">
+<input type="hidden" name="redirect" value="<TMPL_VAR redirect>">
+<table>
+<tr>
+<td><TMPL_VAR lang_username>:</td><td><input type="text" id="login" name="login" value="<TMPL_VAR login>" class="myForm"></td>
+</tr>
+<tr>
+<td><TMPL_VAR lang_password>:</td><td><input type="password" id="password" name="password" class="myForm"></td>
+</tr>
+</table>
+<TMPL_IF msg><b class='err'><TMPL_VAR msg></b><br></TMPL_IF>
+<input type="submit" value="<TMPL_VAR lang_submit>">
+</form>
+
+</div>
+
+<TMPL_IF m_c>
+<div class="rrd">
+	<TMPL_IF facebook_app_id><a href="<TMPL_VAR site_url>/?op=login&method=facebook"><img src="<TMPL_VAR site_url>/images/facebook.png" alt="Login with Facebook"></a></TMPL_IF>
+	<a href="<TMPL_VAR site_url>/?op=login&method=twitter"><img src="<TMPL_VAR site_url>/images/twitter.png" alt="Login with Twitter"></a>
+	<TMPL_IF google_app_id><a href="<TMPL_VAR site_url>/?op=login&method=google"><img src="<TMPL_VAR site_url>/images/google+.png" alt="Login with Google"></a></TMPL_IF>
+	<TMPL_IF vk_app_id><a href="<TMPL_VAR site_url>/?op=login&method=vk"><img src="<TMPL_VAR site_url>/images/vk.png" alt="Login with Vk.com"></a></TMPL_IF>
+</div>
+</TMPL_IF>
+
+<br><br>
+<Script>
+$("div[data-role*='page']").live('pageinit', function(event, ui) { 
+	<TMPL_IF login>
+	$('#password').focus();
+	<TMPL_ELSE>
+	$('#login').focus();
+	</TMPL_IF>
+});
+</Script>

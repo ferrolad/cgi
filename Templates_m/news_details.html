@@ -1,0 +1,9 @@
+<div style="width:600px;text-align:left;" id="news" class="sinput">
+<a href="n<TMPL_VAR news_id>-<TMPL_VAR news_title2>.html" class="title"><TMPL_VAR news_title></a>
+<br><small><TMPL_VAR created_txt></small>
+<p><TMPL_VAR news_text></p>
+<br>
+<TMPL_IF enable_file_comments>
+<TMPL_INCLUDE comments.html>
+</TMPL_IF>
+</div>

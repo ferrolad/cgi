@@ -1,0 +1,55 @@
+<div style="width:720px;">
+<h2><TMPL_VAR lang_latest_files> <TMPL_VAR date></h2>
+
+<Form method="GET" action="">
+<input type="hidden" name="op" value="catalogue">
+<input type="text" name="k" value="<TMPL_VAR k>" size=16>
+<input type="submit" value=" <TMPL_VAR lang_search> ">
+<br>
+<a href="#" onClick="this.style.display='none';$$('advs').style.display='block';return false;" class="txt12">Advanced search</a>
+<div id="advs" style="display:none;width:450px;">
+File type:
+<select name="ftype">
+<option value="">Any</option>
+<option value="vid">Video</option>
+<option value="aud">Audio</option>
+<option value="img">Image</option>
+<option value="arc">Archive</option>
+<option value="app">Application</option>
+</select>
+<br>
+File size
+<select name="fsize_logic"><option value="gt">&gt;</option><option value="lt">&lt;</option></select>
+<input type="text" name="fsize" value="<TMPL_VAR fsize>" size=3> Mb
+</div>
+
+</Form>
+
+
+<TMPL_VAR paging>
+
+<Table class="file_block">
+<TR align=center>
+<TMPL_LOOP files>
+<TD>
+
+<TMPL_IF img_preview2>
+ <div class="icon"><a href="<TMPL_VAR download_link>" style="background:url(<TMPL_VAR img_preview2>) #F3F3F3 no-repeat center center"></a></div>
+<TMPL_ELSE>
+ <a href="<TMPL_VAR download_link>"><img src="<TMPL_VAR img_preview>" class="cat_img"></a>
+</TMPL_IF>
+<div class="link"><a href="<TMPL_VAR download_link>" target="_blank"><TMPL_VAR file_name_txt></a></div>
+<TMPL_VAR file_size><br>
+<TMPL_IF file_descr><br><small><TMPL_VAR file_descr></small></TMPL_IF>
+<TMPL_VAR lang_uploaded> <TMPL_VAR created> <TMPL_VAR lang_days_ago>
+<br>
+<TMPL_VAR file_downloads> <TMPL_VAR lang_downloads>
+<TMPL_IF add_to_account><div id="am<TMPL_VAR file_id>"><a href="#" class="url2" onClick="return jah('?op=my_files&add_my_acc=<TMPL_VAR file_code>','am<TMPL_VAR file_id>');">+ <TMPL_VAR lang_add_to_my_account></a></div></TMPL_IF>
+
+</TD>
+<TMPL_IF tr></TR><TR align=center></TMPL_IF>
+</TMPL_LOOP>
+</TD></Table>
+
+<TMPL_VAR paging>
+</div>

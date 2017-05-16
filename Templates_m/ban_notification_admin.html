@@ -1,0 +1,29 @@
+Some of users / IPs were automatically banned by system.<br>
+<table>
+<TMPL_IF bans_users>
+   <TMPL_LOOP bans_users>
+   <tr>
+      <td><TMPL_VAR usr_login></td>
+      <td><TMPL_VAR reason></td>
+      <td><TMPL_VAR created></td>
+   </tr>
+   </TMPL_LOOP>
+</TMPL_IF>
+<TMPL_IF bans_ips>
+   <TMPL_LOOP bans_ips>
+   <tr>
+      <td><TMPL_VAR ip2></td>
+      <td><TMPL_VAR reason></td>
+      <td><TMPL_VAR created></td>
+   </tr>
+   </TMPL_LOOP>
+</table>
+</TMPL_IF>
+<br>
+<a href="<TMPL_VAR site_url>/?op=admin_bans_list">Go to Management Console</a>
+<style>
+table {
+   width: 640px;
+   text-align: center;
+}
+</style>

@@ -1,0 +1,37 @@
+<br><br>
+<TMPL_IF msg><font class="ok"><TMPL_VAR msg></font><br><br></TMPL_IF>
+<TMPL_VAR lang_you_collected> <b>$<TMPL_VAR usr_money></b>
+
+<Form method="POST">
+<input type="hidden" name="op" value="request_money">
+
+<TMPL_IF enabled_prem>
+<TMPL_IF convert_days>
+<TMPL_IF convert_money>
+    <br>
+    <input type="submit" name="convert_ext_acc" value="<TMPL_VAR lang_extend_my_account> <TMPL_VAR convert_days> <TMPL_VAR lang_days_for> $<TMPL_VAR convert_money>"<TMPL_UNLESS convert_enough> disabled</TMPL_UNLESS>>
+    <br><br>
+    <input type="submit" name="convert_new_acc" value="<TMPL_VAR lang_create_a_new> <TMPL_VAR convert_days> <TMPL_VAR lang_day_accounts_for> $<TMPL_VAR convert_money>"<TMPL_UNLESS convert_enough> disabled</TMPL_UNLESS>>
+</TMPL_IF>
+</TMPL_IF>
+</TMPL_IF>
+
+
+<br><br><input type="submit" name="convert_profit" value="<TMPL_VAR lang_request_payout>: $<TMPL_VAR usr_money>"<TMPL_UNLESS payout_enough> disabled</TMPL_UNLESS>>
+<TMPL_UNLESS payout_enough><br><TMPL_VAR lang_min_payout> $<TMPL_VAR min_payout></TMPL_UNLESS>
+
+<br><br>
+<TMPL_IF payment_request><TMPL_VAR lang_pending_payment>: <b>$<TMPL_VAR payment_request></b><br><br></TMPL_IF>
+
+</Form>
+
+<TMPL_IF payments>
+<br><br>
+<Table class="tbl1" cellpadding=2 cellspacing=1>
+<TR class="hdr"><TD colspan=4>Payments history</TD></TR>
+<TR class="hdr"><TD>Date</TD><TD>Amount</TD><TD>Status</TD></TR>
+<TMPL_LOOP payments>
+<TR align=center><TD><TMPL_VAR created2></TD><TD>$<TMPL_VAR amount></TD><TD><TMPL_VAR status></TD></TR>
+</TMPL_LOOP>
+</Table>
+</TMPL_IF>

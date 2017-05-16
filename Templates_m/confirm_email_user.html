@@ -1,0 +1,29 @@
+<HTML>
+<HEAD>
+<Style>
+BODY {background-color: #FFFFFF; font: 13px Arial;}
+.DTable  {margin-top: 4px; border: 1px solid #e0e0e0; background-color: #e0e0e0;}
+.DTable TR TD {font: 13px Arial, Helvetica, sans-serif; background-color: #FFFFFF;}
+.DTable TR.style1 TD {background-color: #F6F6F6;}
+.DTable TR.style2 TD {background-color: #F0FFF0;}
+</Style>
+</HEAD>
+<BODY>
+<b>Somebody sent you these files using <TMPL_VAR site_name>:</b><br><br>
+
+<TMPL_LOOP files>
+<TMPL_UNLESS error>
+<Table border=0 cellspacing=1 cellpadding=2 class="DTable">
+<TR><TD><b>Filename:</b></TD><TD><TMPL_VAR file_name></TD></TR>
+<TR><TD><b>Filesize:</b></TD><TD><TMPL_VAR file_size></TD></TR>
+<TMPL_IF descr><TR><TD><b>Description:</b></TD><TD><TMPL_VAR descr></TD></TR></TMPL_IF>
+<TR><TD><b>Download Link:</b></TD><TD><a href="<TMPL_VAR download_link>"><TMPL_VAR download_link></a></TD></TR>
+</Table>
+<br>
+</TMPL_UNLESS>
+</TMPL_LOOP>
+
+<br>
+
+</BODY>
+</HTML>

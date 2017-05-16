@@ -1,0 +1,17 @@
+<h2><TMPL_VAR day></h2>
+<table class="tbl1" width="50%">
+<tr class="hdr">
+   <td>Id</td>
+   <td>File</td>
+   <td>Country</td>
+   <td>Premium Price</td>
+</tr>
+<TMPL_LOOP list>
+<tr>
+   <td align="center"><b><TMPL_VAR id></b></td>
+   <td align="center"><TMPL_IF file_name><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a><TMPL_ELSE> - </TMPL_IF></td>
+   <td align="center"><TMPL_VAR country></td>
+   <td align="center"><TMPL_VAR currency_status><TMPL_VAR amount></td>
+</tr>
+</TMPL_LOOP>
+</table>

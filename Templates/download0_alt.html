@@ -1,0 +1,18 @@
+<br>
+<Form method="POST" action=''>
+	<input type="hidden" name="op" value="download1">
+	<input type="hidden" name="usr_login" value="<TMPL_VAR usr_login>">
+	<input type="hidden" name="id" value="<TMPL_VAR file_code>">
+	<input type="hidden" name="fname" value="<TMPL_VAR file_name>">
+	<input type="hidden" name="referer" value="<TMPL_VAR referer>">
+	<input type="submit" id="method_free" name="method_free" value="<TMPL_VAR lang_free_download> >>">
+</Form>
+
+<br><br>
+<TMPL_INCLUDE payment_buy_with.html>
+
+<TMPL_IF ads>
+<br>ADS HERE<br>
+</TMPL_IF>
+
+</div>

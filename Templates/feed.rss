@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+<title><TMPL_VAR site_name> - Recently published files</title>
+<link><TMPL_VAR site_url></link>
+<description>Recently published files</description>
+
+<TMPL_LOOP list>
+<item>
+<title><TMPL_VAR file_name></title>
+<link><TMPL_VAR download_link></link>
+<guid isPermaLink="true"><TMPL_VAR download_link></guid>
+<description><TMPL_VAR file_descr></description>
+<pubDate><TMPL_VAR date></pubDate>
+</item>
+</TMPL_LOOP>
+
+</channel>
+</rss>

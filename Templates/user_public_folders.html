@@ -1,0 +1,9 @@
+<TMPL_IF fld_id>
+<TR><TD width="1%"><img src="<TMPL_VAR site_url>/images/folder2.gif"></TD><TD><a href="<TMPL_VAR site_url>/users/<TMPL_VAR login><TMPL_IF fld_parent_id>/<TMPL_VAR fld_parent_id>/<TMPL_VAR parent_name></TMPL_IF>"><b>. .</b></a></TD></TR>
+</TMPL_IF>
+
+<TMPL_LOOP folders>
+<TR>
+<TD width="1%"><img src="<TMPL_VAR site_url>/images/folder2.gif"></TD><TD><a href="<TMPL_VAR site_url>/users/<TMPL_VAR usr_login>/<TMPL_VAR fld_id>/<TMPL_VAR fld_name>"><b><TMPL_VAR fld_name></b></a></TD>
+</TR>
+</TMPL_LOOP>

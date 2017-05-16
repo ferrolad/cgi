@@ -1,0 +1,40 @@
+<h2><TMPL_VAR lang_adm_abuse></h2>
+<TMPL_IF history>
+<a href="?op=admin_reports"><TMPL_VAR lang_adm_abuse></a>
+<TMPL_ELSE>
+<a href="?op=admin_reports&history=1"><TMPL_VAR lang_reports_history></a>
+</TMPL_IF>
+<form action="" method="POST">
+<input type="hidden" name="op" value="admin_reports">
+<Table cellpadding=2 cellspacing=1 class="tbl1" width="500">
+<tr class="hdr">
+   <td width="1%"><input type="checkbox" name="id" class="selall"></td>
+   <td><TMPL_VAR lang_file_name></td>
+   <td><TMPL_VAR lang_username></td>
+   <td><TMPL_VAR lang_reported_by></td>
+   <td><TMPL_VAR lang_created></td>
+   <td><TMPL_VAR lang_reason></td>
+</tr>
+<TMPL_LOOP list>
+<tr>
+   <td width="1%"><input type="checkbox" name="id" value="<TMPL_VAR id>"></td>
+   <td><TMPL_IF file_code><a href="<TMPL_VAR site_url>/<TMPL_VAR file_code>/<TMPL_VAR file_name>.html" target="_blank"><TMPL_VAR file_name></a><TMPL_ELSE><TMPL_VAR filename> (<TMPL_VAR lang_rep_file_deleted>)</TMPL_IF></td>
+   <td align="center"><a href="?op=admin_files&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></td>
+   <td align="center"><TMPL_VAR name> (<TMPL_VAR email>, <TMPL_VAR ip>)</td>
+   <td align="center"><TMPL_VAR created></td>
+   <td><a href="<TMPL_VAR site_url>/?op=admin_reports&view=<TMPL_VAR id>"><TMPL_VAR reason></a></td>
+</tr>
+</TMPL_LOOP>
+<tr class="actionpanel">
+	<td colspan="10">
+		<input name="del_selected" value="Delete selected" type="submit" onclick="return confirm('Delete selected files?')">
+		<input name="ban_selected" value="Ban selected" type="submit" onclick="return confirm('Delete and ban selected files?')">
+		<input name="decline_selected" value="Decline selected" type="submit">
+	</td>
+</tr>
+</Table>
+</form>
+<br>
+<TMPL_VAR paging>
+
+<script src="<TMPL_VAR site_url>/js/selall.js"></script>

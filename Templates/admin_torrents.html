@@ -1,0 +1,53 @@
+<h2><TMPL_VAR lang_torrents></h2>
+
+<Table class="tbl1" style="width: 600px">
+<TR class="hdr">
+    <td>Server</td>
+    <td>Torrent engine</td>
+    <td></td>
+</TR>
+<TMPL_LOOP servers>
+<TR align=center>
+    <TD><b><TMPL_VAR srv_name></b></TD>
+    <TMPL_IF active>
+    <TD><b style="color:green">Working</b></TD>
+    <TD><input type="button" value="Stop engine" onClick="window.location='?op=admin_torrents&kill=1&srv_id=<TMPL_VAR srv_id>';" class=""></TD>
+    <TMPL_ELSE>
+    <TD><b style="color:red">Disabled</b></TD>
+    <TD><input type="button" value="Start engine" onClick="window.location='<TMPL_VAR srv_cgi_url>/Torrents/start.cgi';" class=""></TD>
+    </TMPL_IF>
+</TR>
+</TMPL_LOOP>
+</Table>
+
+<br><br>
+
+<Table class="tbl1" style="width: 600px">
+<TR class="hdr"><TD colspan=8>Torrents running</TD></TR>
+<TR class="hdr">
+    <td>Torrent</td>
+    <td>Progress</td>
+    <td>Download</td>
+    <td>Upload</td>
+    <td>Working</td>
+    <td>User</td>
+    <td colspan="2">SrvID</td>
+</TR>
+<TMPL_LOOP torrents>
+<TR>
+    <TD onmouseover="return tooltip('<TMPL_VAR file_list>','Torrent files');" onmouseout="return hideTip();"><TMPL_VAR title></TD>
+    <TD align=right><TMPL_VAR done> of <TMPL_VAR total> Mb (<TMPL_VAR percent>%)</TD>
+    <TD align=right><TMPL_VAR down_speed>/s</TD>
+    <TD align=right><TMPL_VAR up_speed>/s</TD>
+    <TD><TMPL_VAR working></TD>
+    <TD><a href="<TMPL_VAR site_url>/?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></TD>
+    <TD><TMPL_VAR srv_id></TD>
+    <TD><a href="?op=admin_torrents;del_torrent=<TMPL_VAR sid>" onClick="return confirm('<TMPL_VAR lang_delete_file>')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
+</TR>
+</TMPL_LOOP>
+</Table>
+<br><br>
+<script type="text/javascript" src="<TMPL_VAR site_url>/js/tips.js"></script>
+<div id="tiplayer" style="position:absolute; visibility:hidden; z-index:10000;"></div>
+
+

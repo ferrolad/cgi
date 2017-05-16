@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+<HEAD>
+<Title><TMPL_VAR site_name></Title>
+<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/main.css">
+<script language="JavaScript" type="text/javascript" CHARSET="UTF-8" src="<TMPL_VAR site_url>/jquery-1.3.2.min.js"></script>
+<script language="JavaScript" type="text/javascript" CHARSET="UTF-8" src="<TMPL_VAR site_url>/xupload.js"></script>
+<META http-equiv=Content-Type content="text-html; charset=UTF-8">
+</HEAD>
+<BODY style="background:black;color:#<TMPL_VAR txt>;"<TMPL_IF lang_rtl> style="direction:rtl;"</TMPL_IF>>
+
+<Script type="text/javascript">
+var ext_allowed='<TMPL_VAR ext_allowed>';
+var ext_not_allowed='<TMPL_VAR ext_not_allowed>';
+var max_upload_files='<TMPL_VAR max_upload_files>';
+var max_upload_size='<TMPL_VAR max_upload_size>';
+var descr_mode='<TMPL_VAR enable_file_descr>';
+var utype='<TMPL_VAR utype>';
+var public_on='<TMPL_VAR enable_catalogue>';
+var lang_description='<TMPL_VAR lang_description>:';
+var lang_published='<TMPL_VAR lang_public>';
+</Script>
+
+
+<TMPL_IF msg><font class="ok"><TMPL_VAR msg></font><br><br></TMPL_IF>
+
+<div id="upload_div" style="width:100%;">
+
+<div id="div_file">
+<form name="file" enctype="multipart/form-data" action="<TMPL_VAR srv_cgi_url>/upload.cgi?upload_id=&box=1" method="post">
+<input type="hidden" name="upload_type" value="file">
+<input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
+<input type="hidden" name="srv_tmp_url" value="<TMPL_VAR srv_tmp_url>">
+<input type="hidden" name="xbg" value="<TMPL_VAR bg>">
+<input type="hidden" name="xtxt" value="<TMPL_VAR txt>">
+<table cellpadding=0 cellspacing=0 id="div_uf1" class="div1" style="width:auto;position:static;background:#<TMPL_VAR bg>;color:#<TMPL_VAR txt>;"><tr><td valign=top>
+<b>Upload file up to <TMPL_VAR max_upload_filesize> Mb</b><br>
+<div class="upload_input"><input id="my_file_element" type="file" name="file_1" size=30 onchange="this.form.submit()"></div>
+<!--div id="files_list"></div-->
+
+
+</td></tr></table>
+</form>
+</div>
+
+
+<div id="progress_div">
+<iframe src="blank.html" id="progress_frame" name="transfer2" SCROLLING=NO frameborder=0 style="width:99%; height:200px;"></iframe>
+</div>
+
+</div>
+
+
+<Script type="text/javascript">
+document.getElementById('progress_frame').allowTransparency="true";
+</Script>
+
+</BODY>
+</HTML>

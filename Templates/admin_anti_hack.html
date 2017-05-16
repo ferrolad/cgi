@@ -1,0 +1,57 @@
+<h2>Anti-hacker Center</h2>
+
+<br>
+Top Stats for last 48 hours
+<br><br>
+
+<Table class="tbl1" cellpadding=3 cellspacing=1>
+<TR class="hdr"><TD colspan=3>Top money generated IPs</TD></TR>
+<TR class="hdr">
+    <TD>IP</TD>
+    <TD>Money</TD>
+    <TD>Downloads</TD>
+</TR>
+<TMPL_LOOP gen_ip>
+<TR align=center>
+    <TD><a href="?op=admin_users&key=<TMPL_VAR ip_txt>"><TMPL_VAR ip_txt></a></TD>
+    <TD><TMPL_VAR currency_symbol><TMPL_VAR money></TD>
+    <TD><a href="?op=admin_downloads&ip=<TMPL_VAR ip_txt>"><TMPL_VAR downloads></a></TD>
+</TR>
+</TMPL_LOOP>
+</Table>
+
+<br>
+
+<Table class="tbl1" cellpadding=3 cellspacing=1>
+<TR class="hdr"><TD colspan=3>Top money generated Users</TD></TR>
+<TR class="hdr">
+    <TD>Username</TD>
+    <TD>Money</TD>
+    <TD>Downloads</TD>
+</TR>
+<TMPL_LOOP gen_user>
+<TR align=center>
+    <TD><a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></TD>
+    <TD><TMPL_VAR currency_symbol><TMPL_VAR money></TD>
+    <TD><a href="?op=admin_downloads&usr_login=<TMPL_VAR usr_login>"><TMPL_VAR downloads></a></TD>
+</TR>
+</TMPL_LOOP>
+</Table>
+
+<br>
+
+<Table class="tbl1" cellpadding=3 cellspacing=1>
+<TR class="hdr"><TD colspan=3>Top money received Users</TD></TR>
+<TR class="hdr">
+    <TD>Username</TD>
+    <TD>Money</TD>
+    <TD>Downloads</TD>
+</TR>
+<TMPL_LOOP rec_user>
+<TR align=center>
+    <TD><a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></TD>
+    <TD><TMPL_VAR currency_symbol><TMPL_VAR money></TD>
+    <TD><a href="?op=admin_downloads&owner_login=<TMPL_VAR usr_login>"><TMPL_VAR downloads></a></TD>
+</TR>
+</TMPL_LOOP>
+</Table>

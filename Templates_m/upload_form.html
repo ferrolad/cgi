@@ -1,0 +1,169 @@
+<Script type="text/javascript">
+var ext_allowed='<TMPL_VAR ext_allowed>';
+var ext_not_allowed='<TMPL_VAR ext_not_allowed>';
+var max_upload_files='<TMPL_VAR max_upload_files>';
+var descr_mode='<TMPL_VAR enable_file_descr>';
+var utype='<TMPL_VAR utype>';
+var public_on='<TMPL_VAR enable_catalogue>';
+var adult_on='<TMPL_VAR m_i_adult>';
+var lang_description='<TMPL_VAR lang_description>:';
+var lang_published='<TMPL_VAR lang_public>';
+var max_upload_filesize='<TMPL_VAR max_upload_filesize>';
+//var srv_tmp_url='<TMPL_VAR srv_tmp_url>';
+</Script>
+<Script>
+var dragging = 0;
+if(document.body.addEventListener) {
+    // Not supported by IE < 9
+	document.body.addEventListener('dragover', function(event) {
+	    $('#drag_container').css('display', 'block');
+	    event.preventDefault();
+	});
+	document.body.addEventListener('dragenter', function(event) {
+	    dragging++;
+	});
+	document.body.addEventListener('dragleave', function(event) {
+	    dragging--;
+	    if(dragging == 0) {
+	    	setTimeout(function() {
+            $('#drag_container').css('display', 'none');
+		    }, 100);
+	    }
+	    event.preventDefault();
+	});
+	document.body.addEventListener('drop', function(event) {
+	    $('#drag_container').css('display', 'none');
+	});
+}
+</Script>
+<script type="text/javascript" src="<TMPL_VAR site_url>/swfobject.js"></script>
+
+<TMPL_IF msg><font class="ok"><TMPL_VAR msg></font><br><br></TMPL_IF>
+
+<div id="upload_div">
+
+<div id="uploadtab" class="upload_block">
+	<form id="uploadfile" action="<TMPL_VAR srv_cgi_url>/upload.cgi?upload_type=file" method="POST">
+		<input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
+		<input type="hidden" name="utype" value="<TMPL_VAR utype>">
+		<div class="browsebtn">
+			<input type="file" multiple="multiple" id="file_0" class="uploadbtn" data-role="none">
+			<span class="bicon">
+				<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_browse.png">
+				<span class="bfolder van move"></span>
+			</span>
+			<span class="btext">
+			Browse
+			</span>
+		</div>
+		<div class="progress_div"></div>
+		<table id="upload_controls" style="display: none">
+			<tr><td colspan="2"><span id="files_list" width="100%"></span></td><tr>
+			<tr><td colspan="2">
+				<a href="#" style="line-height:20px;" onClick="$$('optidiv').style.position='static';this.style.display='none';return false;"><TMPL_VAR lang_show_advanced></a>
+		<div id="optidiv" class="optidiv">
+		<table>
+		<TMPL_INCLUDE show_advanced_options.html>
+		</table>
+		</div>
+			</td></tr>
+			<tr>
+				<td align="left" style="overflow: hidden;">
+					<div id="files_container">
+						<input type="button" id="add_more" name="" value=" Add More Files " class="btn_white">
+						<input type="button" id="submit_btn" value=" Start Upload " class="btn_blue">
+					</div>
+				</td>
+			</tr>
+		</table>
+	</form>
+	<a href="#" onclick="changeUploadType('url')">URL Upload</a>
+</div>
+
+
+<div id="div_url" class="upload_block">
+<TMPL_IF remote_url>
+<form name="url" enctype="multipart/form-data" action="<TMPL_VAR srv_cgi_url>/upload.cgi?upload_id=" method="post" onSubmit="return StartUpload(this);">
+<input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
+<input type="hidden" name="upload_type" value="url">
+<input type="hidden" name="srv_tmp_url" value="<TMPL_VAR srv_tmp_url>">
+<TMPL_LOOP site_logins>
+<input type="hidden" name="<TMPL_VAR name>" value="<TMPL_VAR value>">
+</TMPL_LOOP>
+
+<table cellpadding=0 cellspacing=0 id="div_uf2" class="div1" style="position:static;"><tr><td valign=top>
+<!--<b><TMPL_VAR lang_up_to> <TMPL_VAR max_upload_filesize> Mb, <TMPL_VAR max_upload_files> <TMPL_VAR lang_files_max></b><br>-->
+<TMPL_VAR lang_you_can_leech> <b><TMPL_VAR leech_left_mb></b> MB <TMPL_VAR lang_rs_files_today>
+
+<div id="url_mass">
+<TMPL_VAR lang_can_enter_up_to> <TMPL_VAR max_upload_files> <TMPL_VAR lang_one_per_row>
+<Textarea name="url_mass" style="width:100%;font:11px Arial;" cols=36 rows=5></Textarea>
+<TMPL_IF mmrr><TMPL_IF leech_on><TMPL_VAR lang_url_leech_supported>: <TMPL_VAR supported_sites></TMPL_IF></TMPL_IF>
+</div>
+
+<div id="optidiv3" class="optidiv" data-role="collapsible">
+<h1><TMPL_VAR lang_show_advanced></h1>
+<table>
+<tr><td>Proxy URL:</td><td><input type="text" name="url_proxy" value="" size=40 class="myForm"><br><small>(e.g. 111.222.333.444:8008)</small></td></tr>
+<TMPL_INCLUDE show_advanced_options.html>
+</table>
+</div>
+<br>
+<center>
+<label for="tos2">I agree with <a href="tos.html"><TMPL_VAR lang_tos_short></a></label> <input type="checkbox" name="tos" value="1" id="tos2" checked onClick="if(this.checked){this.form.submit_btn.disabled=false}else{this.form.submit_btn.disabled=true};this.blur();"><br>
+<input name="submit_btn" type="submit" value=" <TMPL_VAR lang_upload_btn> " class="fileinput-button">
+</center>
+<br>
+</td></tr></table>
+</form>
+<TMPL_ELSE>
+
+<b><TMPL_IF my_login><a href="?op=payments"><TMPL_VAR lang_upgrade_account></a><TMPL_ELSE><a href="?op=registration"><TMPL_VAR lang_register_on_site></a></TMPL_IF><br><TMPL_VAR lang_to_use> <TMPL_VAR lang_url_upload></b>
+
+</TMPL_IF>
+<br>
+<a href="#" onclick="changeUploadType('file')">File Upload</a>
+</div>
+
+</div>
+
+<TMPL_INCLUDE text-link-ads.html>
+
+<script src="<TMPL_VAR site_url>/js/upload.js"></script>
+
+<script>
+var uploader = new FileUploader('#uploadfile', { return_url: '<TMPL_VAR site_url>/?op=upload_result&' });
+
+function MobileSelector(element, file_input, opts)
+{
+	var inner_files = [];
+
+	$(file_input).off('change');
+   $(file_input).change(function()
+   {
+      $('.browsebtn').hide();
+      $(element).show();
+   });
+	$(file_input).change(addFileCallback);
+
+	$('#add_more').off('change');
+	$("#add_more").change(addFileCallback);
+
+	$('#submit_btn').off('click');
+	$('#submit_btn').click(function()
+	{
+		if(opts.oncomplete) opts.oncomplete(inner_files);
+	});
+
+	function addFileCallback()
+	{
+		$(this.files).each(function(_, file)
+		{
+			inner_files.push(file);
+		});
+	}
+}
+
+var selector = new MobileSelector('#upload_controls', '#file_0', { oncomplete: uploader.start });
+</script>
+<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/upload.css"/>

@@ -1,0 +1,21 @@
+<h2><TMPL_VAR day></h2>
+<table class="tbl1" width="50%">
+<tr class="hdr">
+   <td>File</td>
+   <td>User</td>
+   <td>Country</td>
+   <td>Domain</td>
+   <td>Premium</td>
+   <td>Amount</td>
+</tr>
+<TMPL_LOOP list>
+<tr>
+   <td align="center"><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a></td>
+   <td align="center"><TMPL_VAR usr_login></td>
+   <td align="center"><TMPL_VAR country></td>
+   <td align="center"><TMPL_VAR domain></td>
+   <td align="center"><TMPL_VAR premium></td>
+   <td align="center">$<TMPL_VAR money></td>
+</tr>
+</TMPL_LOOP>
+</table>

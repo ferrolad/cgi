@@ -1,0 +1,19 @@
+<input type="button" value="Hide current deleted files" onclick="window.location='?op=my_files_deleted&hide=1'">
+
+<br><br>
+
+<Table class="tbl1" cellpadding=2>
+<TR>
+    <TH>File Name</TH>
+    <TH>File code</TH>
+    <TH>Deleted, ago</TH>
+</TR>
+<TMPL_LOOP files>
+<TR>
+    <TD><TMPL_VAR file_name></TD>
+    <TD><TMPL_VAR file_code></TD>
+    <TD><TMPL_VAR ago></TD>
+</TR>
+</TMPL_LOOP>
+</Table>
+

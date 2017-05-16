@@ -1,0 +1,55 @@
+<h2>Transfer queue</h2>
+
+<Table class="tbl1">
+<tr class="hdr"><td colspan=2>Server statistics</td></tr>
+<TMPL_LOOP srv_list>
+<tr><td><TMPL_VAR srv_name></td><td>
+<TMPL_IF num_pending><TMPL_VAR num_pending> pending</TMPL_IF>
+<TMPL_IF num_moving><TMPL_VAR num_moving> moving</TMPL_IF>
+<TMPL_IF num_stucked><TMPL_VAR num_stucked> stucked</TMPL_IF>
+<TMPL_IF num_error><TMPL_VAR num_error> errors</TMPL_IF>
+</td></tr>
+</TMPL_LOOP>
+</Table>
+
+<br>
+
+<TMPL_IF restartall><input type="button" value="Restart all stucked" onclick="window.location='?op=admin_transfer_list&restart_all=1&ids=<TMPL_VAR restartall>'"></a><br><br></TMPL_IF>
+
+<form method="POST" action="">
+<input type="hidden" name="op" value="admin_transfer_list">
+<Table class="tbl1" cellspacing=1 cellpadding=3 id="xfiles">
+<TR class="hdr">
+<TD>Title</TD>
+<TD>Size</TD>
+<TD>User</TD>
+<TD>Added</TD>
+<TD title="Source Server ID">SrvFrom</TD>
+<TD title="Target Server ID">SrvTo</TD>
+<TD>Progress</TD>
+<TD>&nbsp;</TD>
+</TR>
+<TMPL_LOOP list>
+<TR align=center<TMPL_UNLESS __ODD__> class="hi"</TMPL_UNLESS>>
+<TD align=left><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a><TMPL_VAR qstatus></TD>
+<TD align=right><TMPL_VAR file_size></TD>
+<TD><TMPL_IF usr_id><a href="?op=admin_files&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_id></a></TMPL_IF></TD>
+<TD nowrap><small><TMPL_VAR created2></small></TD>
+<TD><TMPL_VAR srv_name1> [<TMPL_VAR srv_id1>]</TD>
+<TD><TMPL_VAR srv_name2> [<TMPL_VAR srv_id2>]</TD>
+<TD align=left class="enc_td"><div style="position:relative;"><div class="enc_status" style="width:<TMPL_VAR progress>%;"></div><div class="enc_value"><TMPL_VAR progress>%<TMPL_IF transferred> (<TMPL_VAR transferred_mb> of <TMPL_VAR file_size>, <TMPL_VAR speed> KB/s)</TMPL_IF></div></div></TD>
+<TD><a href="?op=admin_transfer_list&del_id=<TMPL_VAR file_real>"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
+</TR>
+</TMPL_LOOP>
+<TR>
+<TD colspan="7">
+   <input type="submit" name="del_all" value="Delete all">
+   <input type="submit" name="restart_all" value="Restart all">
+</TD>
+</TR>
+</Table>
+</form>
+
+<TMPL_VAR paging>
+
+

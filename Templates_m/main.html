@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="user-scalable=no, width=device-width, height=device-height, initial-scale=1.0" />
+<link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css">
+<link rel="stylesheet" href="<TMPL_VAR site_url>/css/mobile.css">
+<script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+<script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
+</head>
+<body>
+
+<div data-role="page" id="pageone" data-theme="d">
+      <div data-role="header">
+      	 <a class="navicon mtoggle" href="#" style="z-index:1">&nbsp;</a>
+         <h1 id="title">&nbsp;</h1>
+         <div align="center" style="position: absolute; top: 8px; left: 0px; width: 100%;">
+          <a href="<TMPL_VAR site_url>"><img src="<TMPL_VAR site_url>/images/logo.png" class="logo"></a>
+          </div>
+      </div>
+
+      <div id="mmenu"  data-role="panel" data-position="left" data-display="push">
+        <ul data-role="listview">
+			<TMPL_IF my_login>
+			<li><a href="<TMPL_VAR site_url>/?op=my_account"><TMPL_VAR lang_my_account></a></li>
+			<li><a href="<TMPL_VAR site_url>/?op=upload"><TMPL_VAR lang_upload_files></a></li>
+			<li><a href="<TMPL_VAR site_url>/?op=my_files"><TMPL_VAR lang_my_files></a></li>
+			<TMPL_IF menu_stats><li><a href="<TMPL_VAR site_url>/?op=my_reports"><TMPL_VAR lang_my_reports></a></li></TMPL_IF>
+			<TMPL_IF enabled_prem><li><a href="<TMPL_VAR site_url>/?op=payments"><TMPL_IF premium><TMPL_VAR lang_renew_premium><TMPL_ELSE><TMPL_VAR lang_buy_premium></TMPL_IF></a></li></TMPL_IF>
+			<li><a class="btn_blue" href="<TMPL_IF mangle>#<TMPL_ELSE><TMPL_VAR site_url>/?op=logout</TMPL_IF>"><TMPL_VAR lang_logout></a></li>
+			<TMPL_ELSE>
+			
+			<TMPL_IF enabled_reg>
+			<li><a href="<TMPL_VAR site_url>/login.html"><TMPL_VAR lang_login></a></li>
+			<li><a class="btn_blue" href="<TMPL_VAR site_url>/?op=registration"><TMPL_VAR lang_signup></a></li>
+			<li><a href="<TMPL_VAR site_url>/?op=forgot_pass"><TMPL_VAR lang_forgot_pass></a></li>
+			</TMPL_IF>
+			
+			</TMPL_IF>
+        </ul>
+      </div>
+
+      <div data-role="content">
+        <center><TMPL_VAR tmpl></center>
+      </div>
+      <div data-role="footer" data-position="fixed" data-theme="c">
+        <center><small>© Sibsoft.net, All Rights Reserved&nbsp;<a href="<TMPL_VAR site_url>/?design=0" data-ajax="false">Full Version</a></small></center>
+      </div>
+
+</div> 
+
+<script>
+$("div[data-role*='page']").live('pageinit', function(event, ui) { 
+    $('#mmenu').panel();
+    $('.mtoggle').click(function() {
+        $.mobile.activePage.find('#mmenu').panel("open");
+    });
+    $('#title').click(function() {
+    	document.location = '<TMPL_VAR site_url>';
+    });
+});
+</script>
+
+</body>
+</html>

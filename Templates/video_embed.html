@@ -1,0 +1,32 @@
+<HTML>
+<HEAD>
+<script language="JavaScript" type="text/javascript" CHARSET="UTF-8" src="<TMPL_VAR site_url>/js/jquery-1.9.1.min.js"></script>
+<Script>
+function $$(elem){return document.getElementById(elem);}
+function player_start()
+{
+    $$('player_ads').style.display = 'none';
+    $$('player_img').style.display = 'none';
+    $$('player_code').style.visibility = 'visible';
+    if($$('np_vid')) $$('np_vid').Play();
+    return false;
+}
+</Script>
+</HEAD>
+<BODY topmargin=0 leftmargin=0>
+<TMPL_IF video_ads>
+<TMPL_VAR m_a_css>
+<div style="position: relative;">
+ <div id="player_img">
+    <a href="#" onclick="return player_start();"><img src="<TMPL_VAR site_url>/images/<TMPL_IF divx>player_divx.png<TMPL_ELSE>player_flv.png</TMPL_IF>" style="display:block;width:100%;height:<TMPL_VAR vid_height>px;border:0;"></a>
+    <a href="#" onclick="return player_start();" id="vid_play" style="background-image: url(<TMPL_VAR site_url>/images/player_play.png)"></a>
+    <div id="player_ads">
+      <div style="padding:15px;text-align:center;">
+      <center><TMPL_VAR m_a_code></center>
+      </div>
+    </div>
+ </div>
+</div>
+</TMPL_IF>
+<div id="player_code"><TMPL_VAR video_code></div>
+</BODY></HTML>

@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+<HEAD>
+<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/main.css">
+<META http-equiv=Content-Type content="text-html; charset=UTF-8">
+</HEAD>
+<BODY style="background:#000000;color:#<TMPL_VAR txt>;"<TMPL_IF lang_rtl> style="direction:rtl;"</TMPL_IF>>
+
+<div style="margin: 30px">
+<TMPL_LOOP links>
+<table cellspacing=0 cellpadding=3 style="background:#<TMPL_VAR bg>">
+<TR><TD>
+Download link:<br>
+<input type="text" class="myForm" size=48 style="width:340px" onFocus="this.select();" value="<TMPL_VAR download_link>">
+</TD></TR>
+</Table>
+</TMPL_LOOP>
+</div>
+
+</BODY>
+</HTML>

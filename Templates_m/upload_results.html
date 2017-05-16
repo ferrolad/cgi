@@ -1,0 +1,83 @@
+<script type="text/javascript">
+var tab_cookie='tab_upres';
+</script>
+
+<h2><TMPL_VAR lang_files_uploaded></h2>
+
+<table cellspacing=0 cellpadding=3 border=0 class="result_slot" width=98%>
+<!-- Errors list -->
+<TMPL_LOOP links>
+<TMPL_IF error>
+<tr>
+    <td colspan=2><b class="err">Error:</b> <TMPL_VAR error></td>
+</tr>
+</TMPL_IF>
+</TMPL_LOOP>
+
+<!-- Controls -->
+<TMPL_LOOP links>
+<tr>
+    <td align=right width="5%" nowrap><b><TMPL_VAR lang_file_name>:</b></td>
+    <td><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a><TMPL_IF my_login><TMPL_IF file_code> &nbsp; <a href="?op=file_edit&amp;file_code=<TMPL_VAR file_code>"><img src="<TMPL_VAR site_url>/images/edit.gif" border=0></a></TMPL_IF></TMPL_IF></td>
+</tr>
+<tr>
+    <td align=right><b><TMPL_VAR lang_file_size>:</b></td>
+    <td><TMPL_VAR file_size></td>
+</tr>
+<TMPL_IF descr>
+<tr>
+    <td align=right><b><TMPL_VAR lang_file_descr>:</b></td>
+    <td><TMPL_VAR file_descr></td>
+</tr>
+</TMPL_IF>
+</TMPL_LOOP>
+
+
+<tr><td colspan=2>
+<div class="tabber" style="text-align:left;">
+
+<div class="tabbertab">
+<h2><TMPL_VAR lang_download_link></h2>
+<textarea id="ic0-<TMPL_VAR file_id>" style="width:98%;" rows=3 onFocus="copy(this);"><TMPL_LOOP links><TMPL_VAR download_link>
+</TMPL_LOOP></textarea>
+</div>
+
+<div class="tabbertab">
+<h2><TMPL_VAR lang_html_code></h2>
+<textarea id="ic2-<TMPL_VAR file_id>" style="width:98%;" rows=3 onFocus="copy(this);"><TMPL_LOOP links><TMPL_VAR html_code>
+</TMPL_LOOP></textarea>
+</div>
+
+<div class="tabbertab">
+<h2><TMPL_VAR lang_delete_link></h2>
+<textarea id="ic3-<TMPL_VAR file_id>" style="width:98%;" rows=3 onFocus="copy(this);"><TMPL_LOOP links><TMPL_VAR delete_link>
+</TMPL_LOOP></textarea>
+</div>
+
+<TMPL_IF has_video_embed_code>
+<div class="tabbertab">
+<h2><TMPL_VAR lang_emded_code></h2>
+<textarea id="ic4-<TMPL_VAR file_id>" style="width:98%;" rows=3 onFocus="copy(this);"><TMPL_LOOP links><TMPL_IF video_embed_code><IFRAME SRC="<TMPL_VAR site_url>/embed-<TMPL_VAR file_code>.html" FRAMEBORDER=0 MARGINWIDTH=0 MARGINHEIGHT=0 SCROLLING=NO WIDTH=<TMPL_VAR vid_width> HEIGHT=<TMPL_VAR vid_height>></IFRAME>
+</TMPL_IF></TMPL_LOOP></textarea>
+</div>
+</TMPL_IF>
+
+<TMPL_IF has_image_url>
+<div class="tabbertab">
+<h2><TMPL_VAR lang_direct_link></h2>
+<textarea style="width:99%" onFocus="copy(this);"><TMPL_LOOP links><TMPL_VAR image_url>
+</TMPL_LOOP></textarea>
+</TMPL_IF>
+
+<TMPL_IF has_deurl>
+<div class="tabbertab">
+<h2><TMPL_VAR lang_short_link></h2>
+<textarea style="width:99%" onFocus="copy(this);"><TMPL_LOOP links><TMPL_VAR deurl>
+</TMPL_LOOP></textarea>
+</TMPL_IF>
+
+</div>
+</td></tr>
+
+</table>
+<br><br>

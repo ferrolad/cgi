@@ -1,0 +1,55 @@
+<script type="text/javascript">
+document.write('<style type="text/css">.tabber{display:none;}<\/style>');
+var tab_cookie='tab_upres';
+</script>
+
+<h2><TMPL_VAR lang_files_uploaded></h2>
+
+<div style="width: 600px; margin: 0 auto">
+<div style="text-align: left">
+<TMPL_LOOP links>
+<TMPL_IF error>
+<b class="err">Error:</b> <TMPL_VAR error><br>
+<TMPL_ELSE>
+<b><TMPL_VAR lang_file_name>:</b>
+    <a href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a><TMPL_IF my_login><TMPL_IF file_code> &nbsp; <a href="?op=file_edit&amp;file_code=<TMPL_VAR file_code>"><img src="<TMPL_VAR site_url>/images/icon_edit.png" border=0></a></TMPL_IF></TMPL_IF>
+<br>
+<b><TMPL_VAR lang_file_size>:</b>
+<TMPL_VAR file_size>
+<br>
+</TMPL_IF>
+</TMPL_LOOP>
+</div>
+
+<TMPL_IF successfull_count>
+<table>
+	<div class="sharetabs">
+		<div class="section">
+			<ul class="tabs">
+		        <li class="current"><TMPL_VAR lang_download_link></li>
+		        <li><TMPL_VAR lang_forum_code></li>
+		        <li><TMPL_VAR lang_html_code></li>
+		        <li><TMPL_VAR lang_delete_link></li>
+                <TMPL_IF has_video_embed_code><li><TMPL_VAR lang_emded_code></li></TMPL_IF>
+                <TMPL_IF has_image_url><li><TMPL_VAR lang_direct_link></li></TMPL_IF>
+                <TMPL_IF has_deurl><li><TMPL_VAR lang_short_link></li></TMPL_IF>
+			</ul>
+		    <div class="box visible"><textarea style="width: 100%"><TMPL_LOOP links><TMPL_VAR download_link>
+</TMPL_LOOP></textarea></div>
+		    <div class="box"><textarea style="width: 100%"><TMPL_LOOP links><TMPL_VAR forum_code>
+</TMPL_LOOP></textarea></div>
+		    <div class="box"><textarea style="width: 100%"><TMPL_LOOP links><TMPL_VAR html_code>
+</TMPL_LOOP></textarea></div>
+		    <div class="box"><textarea style="width: 100%"><TMPL_LOOP links><TMPL_VAR delete_link>
+</TMPL_LOOP></textarea></div>
+		    <TMPL_IF has_video_embed_code><div class="box"><textarea style="width: 100%"><TMPL_LOOP links><TMPL_IF video_embed_code><IFRAME SRC="<TMPL_VAR site_url>/embed-<TMPL_VAR file_code>.html" FRAMEBORDER=0 MARGINWIDTH=0 MARGINHEIGHT=0 SCROLLING=NO WIDTH=<TMPL_VAR vid_width> HEIGHT=<TMPL_VAR vid_height>></IFRAME>
+</TMPL_IF></TMPL_LOOP></textarea></div></TMPL_IF>
+		    <TMPL_IF has_image_url><div class="box"><textarea style="width: 100%"><TMPL_LOOP links><TMPL_VAR image_url>
+</TMPL_LOOP></textarea></div></TMPL_IF>
+		    <TMPL_IF has_deurl><div class="box"><textarea style="width: 100%"><TMPL_LOOP links><TMPL_VAR deurl>
+</TMPL_LOOP></textarea></div></TMPL_IF>
+		</div>
+	</div>
+</table>
+</TMPL_IF>
+</div>

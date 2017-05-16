@@ -1,0 +1,23 @@
+<h2><TMPL_VAR lang_adm_news></h2>
+
+<input type="button" value="<TMPL_VAR lang_add_news>" onClick="document.location='?op=admin_news_edit'"><br><br>
+
+<Table class="tbl1" cellspacing=1 cellpadding=3 style="width: 600px">
+<TR class="hdr">
+<TD><TMPL_VAR lang_title></TD>
+<TD><TMPL_VAR lang_comments_short></TD>
+<TD><TMPL_VAR lang_published></TD>
+<TD>&nbsp;</TD>
+<TD>&nbsp;</TD>
+</TR>
+<TMPL_LOOP news>
+<TR>
+<TD><a href="<TMPL_VAR site_url>/n<TMPL_VAR news_id>-<TMPL_VAR news_title2>.html"><TMPL_VAR news_title></a></TD>
+<TD align=center><TMPL_VAR comments></TD>
+<TD><TMPL_VAR created></TD>
+<TD><a href="?op=admin_news_edit&news_id=<TMPL_VAR news_id>"><img src="<TMPL_VAR site_url>/images/icon_edit.png" border=0></a></TD>
+<TD><a href="?op=admin_news&del_id=<TMPL_VAR news_id>&token=<TMPL_VAR token>" onClick="return confirm('<TMPL_VAR lang_delete_news>')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
+</TR>
+</TMPL_LOOP>
+</Table>
+<TMPL_VAR paging>

@@ -1,0 +1,19 @@
+<table class="tbl1" style="width: 80%">
+	<tr class="hdr">
+		<td colspan="5">Webmaster earnings</td>
+	</tr>
+	<tr class="hdr">
+		<td>Day</td>
+		<td>Domain</td>
+		<td>Owner</td>
+		<td>Sales</td>
+	</tr>
+<TMPL_LOOP list_sites>
+	<tr align="center">
+		<td><TMPL_VAR day></td>
+		<td align=left><a href="http://<TMPL_VAR domain>"><TMPL_VAR domain></a></td>
+		<td><a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></td>
+		<td><TMPL_VAR sales> / <TMPL_VAR currency_symbol><TMPL_VAR profit_sales></td>
+	</tr>
+</TMPL_LOOP>
+</table>

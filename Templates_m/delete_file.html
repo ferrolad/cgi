@@ -1,0 +1,18 @@
+<h3><TMPL_VAR lang_del_file></h3>
+
+<TMPL_IF error><font class="err"><TMPL_VAR error></font></TMPL_IF>
+
+<TMPL_IF status><font class="ok"><TMPL_VAR status></font><br><br></TMPL_IF>
+
+<TMPL_IF confirm>
+<TMPL_VAR lang_do_you_want_delete>: <b><TMPL_VAR fname></b> ?<br><br>
+<Form method="POST" action="<TMPL_VAR site_url>/">
+<input type="hidden" name="op" value="del_file">
+<input type="hidden" name="id" value="<TMPL_VAR id>">
+<input type="hidden" name="del_id" value="<TMPL_VAR del_id>">
+<input type="hidden" name="confirm" value="yes">
+<input type="submit" value=" <TMPL_VAR lang_del_file> "> &nbsp; 
+<input type="button" value="<TMPL_VAR lang_cancel>" onClick="window.location='<TMPL_VAR site_url>'">
+</Form>
+</TMPL_IF>
+<br><br>

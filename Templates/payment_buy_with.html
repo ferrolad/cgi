@@ -1,0 +1,15 @@
+			<table class="extend_premium invisible" style="width: 400px">
+			<tr>
+				<TMPL_LOOP plans>
+				<td>
+				<div class="paybox" style="margin-bottom: 100px">
+					<div class="days"><TMPL_VAR days> days</div>
+					<div class="price"><TMPL_VAR currency_symbol><TMPL_VAR amount></div>
+					<TMPL_LOOP payment_types>
+					<a href="<TMPL_VAR site_url>/?op=payments&amp;amount=<TMPL_VAR amount>&amp;type=<TMPL_VAR name>&amp;r=<TMPL_VAR rand>"><div class="paysys"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" alt="<TMPL_VAR name>"></div></a>
+					</TMPL_LOOP>
+				</div>
+				</td>
+				</TMPL_LOOP>
+			</tr>
+			</table>

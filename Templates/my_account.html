@@ -1,0 +1,132 @@
+<Form method="POST" onSubmit="if(this.password_new.value!=this.password_new2.value){alert('<TMPL_VAR lang_pass_dont_match>');return false;}return true;">
+<input type="hidden" name="op" value="my_account">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
+<input type="hidden" name="settings_save" value="1">
+
+<Table>
+<TR><TD style="width:35%"><TMPL_VAR lang_username></TD><TD><b><TMPL_VAR my_login></b></TD></TR>
+
+<TMPL_IF premium>
+<TR><TD><TMPL_VAR lang_prem_valid_until></TD><TD><b><TMPL_VAR premium_expire></b> <input type="button" class="" value="<TMPL_VAR lang_extend_account>" onClick="document.location='?op=payments'"></TD></TR>
+</TMPL_IF>
+
+<TMPL_IF m_k><TR><TD><TMPL_VAR lang_apply_prem_key></TD><TD><b><input type="text" name="premium_key" value="" size=24 class="myForm">&nbsp;<input type="submit" name="premium_key_apply" value="<TMPL_VAR lang_apply>" class=""></b></TD></TR></TMPL_IF>
+
+<TR><TD><TMPL_VAR lang_acc_balance></TD><TD><b><TMPL_VAR currency_symbol><TMPL_VAR usr_money></b>&nbsp;<TMPL_UNLESS usr_reseller><input type="button" class="" value="<TMPL_VAR lang_request_payout>" onClick="document.location='?op=request_money'"></TMPL_UNLESS>
+        <TMPL_IF rsl> <input type="button" class="" value="<TMPL_VAR lang_my_reseller>" onClick="document.location='?op=my_reseller'"></TMPL_IF>
+    </TD>
+</TR>
+
+<TR><TD><TMPL_VAR lang_used_disk_space></TD><TD><b><TMPL_VAR total_size><TMPL_IF disk_space> <TMPL_VAR lang_of> <TMPL_VAR disk_space></TMPL_IF> GB</b></TD></TR>
+<TR><TD><TMPL_VAR lang_traffic_available></TD><TD><b><TMPL_IF traffic_left><TMPL_VAR traffic_left> Mb<TMPL_ELSE>Unlimited</TMPL_IF></b></TD></TR>
+<TR><TD><TMPL_VAR lang_my_public_link></TD><TD colspan=2><a href="<TMPL_VAR site_url>/users/<TMPL_VAR usr_login>" target=_blank><TMPL_VAR site_url>/users/<TMPL_VAR usr_login></a></TD></TR>
+<TR><TD><TMPL_VAR lang_my_affiliate_link></TD><TD colspan=2><a href="<TMPL_VAR site_url>/free<TMPL_VAR usr_id>.html"><TMPL_VAR site_url>/free<TMPL_VAR usr_id>.html</a></TD></TR>
+<TR><TD><TMPL_VAR lang_my_referrals></TD><TD><a href="?op=my_referrals"><TMPL_VAR referrals></a></TD></TR>
+<TMPL_IF usr_aff_enabled>
+<TR><TD>Max download file size for free users</TD><TD><input type="text" name="usr_aff_max_dl_size" value="<TMPL_VAR usr_aff_max_dl_size>" size="5"> Mb <small>(0 = use global settings)</small></TD></TR>
+</TMPL_IF>
+</Table>
+
+<br>
+
+<TMPL_IF msg><font class="ok"><TMPL_VAR msg></font><br><br></TMPL_IF>
+
+<Table class="tbl1" cellpadding=2 cellspacing=1 width=420>
+<TR class="hdr"><TD colspan=2><TMPL_VAR lang_my_settigns></TD></TR>
+<TMPL_IF login_change>
+<TR><TD><TMPL_VAR lang_username></TD><TD><input type="text" name="usr_login" size="24" value="<TMPL_VAR usr_login>" style="width:97%;"></TD></TR>
+</TMPL_IF>
+<TR><TD><TMPL_VAR lang_email></TD><TD><input type="text" name="usr_email" size="24" value="<TMPL_VAR usr_email>"<TMPL_IF usr_security_lock> disabled</TMPL_IF>></TD></TR>
+<TMPL_IF show_password_input>
+<TMPL_IF usr_password>
+<TR><TD style="width:35%">Old password</TD><TD><input type="password" name="password_old" size="24"<TMPL_IF usr_security_lock> disabled</TMPL_IF>></TD></TR>
+</TMPL_IF>
+<TR><TD><TMPL_VAR lang_new_password></TD><TD><input type="password" name="password_new" size="24"<TMPL_IF usr_security_lock> disabled</TMPL_IF>></TD></TR>
+<TR><TD width="1%" nowrap><TMPL_VAR lang_retype_new_pass></TD><TD><input type="password" name="password_new2" size="24"<TMPL_IF usr_security_lock> disabled</TMPL_IF>></TD></TR>
+</TMPL_IF>
+</Table>
+
+<Table class="tbl1" cellpadding=2 cellspacing=1 width=420>
+<TR class="hdr"><TD colspan=2>Configuration</TD></TR>
+<TR><TD align=right><b><TMPL_VAR lang_payment_info></b></TD><TD nowrap>
+<input type="text" name="usr_pay_email" value="<TMPL_VAR usr_pay_email>" size=26<TMPL_IF usr_security_lock> disabled</TMPL_IF>>
+<select name="usr_pay_type"<TMPL_IF usr_security_lock> disabled</TMPL_IF>>
+<TMPL_LOOP payout_list>
+<option value="<TMPL_VAR name>"<TMPL_IF checked> selected</TMPL_IF>><TMPL_VAR name></option>
+</TMPL_LOOP>
+</select>
+</TD></TR>
+
+<TR><TD align=right><b><TMPL_VAR lang_security_lock></b></TD><TD nowrap>
+<TMPL_IF usr_security_lock>
+<b>ON</b> <a href="?op=my_account&disable_lock=1"><TMPL_VAR lang_disable></a>
+<TMPL_ELSE>
+<b>OFF</b> <a href="?op=my_account&enable_lock=1"><TMPL_VAR lang_enable></a>
+</TMPL_IF></TD></TR>
+</TD></TR>
+
+<TMPL_IF premium><TR><TD colspan=2><input type="checkbox" name="usr_direct_downloads" id="cdl" value="1"<TMPL_IF usr_direct_downloads> checked</TMPL_IF>> <label for="cdl"><b><TMPL_VAR lang_direct_downloads></b></label> <small>(<TMPL_VAR lang_premium_only>)</small></TD></TR></TMPL_IF>
+
+<TMPL_IF twit_enable_posting>
+<TR class="hdr"><TD colspan=2><TMPL_VAR lang_twitter_account></TD></TR>
+<TR><TD colspan=2 align=center>
+<TMPL_IF twitter_login>
+Twitter authentification received.<br>
+<input type="button" value="Disable Twitter posting" onClick="window.location='?op=my_account&twitter_stop=1'">
+<br><input type="checkbox" name="twitter_filename" value="1" id="twi3"<TMPL_IF twitter_filename> checked</TMPL_IF>><label for="twi3">Post filename before URL</label>
+<TMPL_ELSE>
+<input type="button" value="Get Twitter authentification" onClick="window.location='?op=my_account&twitter1=1'">
+</TMPL_IF>
+<br><small><TMPL_VAR lang_twitter_info></small>
+</TD></TR>
+</TMPL_IF>
+
+
+<TMPL_IF m_x_on>
+<TR class="hdr"><TD colspan=2>Webmaster account</TD></TR>
+<TR><TD colspan=2 align=center>
+<small>Confirm site ownership creating <b><TMPL_VAR site_key>.txt</b> file containing only number <b><TMPL_VAR usr_id></b> in site root.
+<br>Alternatively you can add META tag to your template:<br><b>&lt;meta content="<TMPL_VAR usr_id>" name="<TMPL_VAR site_key>"&gt;</b>
+</small>
+<br>
+Site URL:<input type="text" name="site_add" size=24> <input type="submit" name="site_validate" value=" Add ">
+<TMPL_IF websites>
+<br><br>
+<b>Approved websites:</b><br>
+<table style="text-align:left;padding:4px;width:600px;">
+<TMPL_LOOP websites>
+<tr><td><TMPL_VAR domain></td><td width="10"> <a href="?op=my_account&site_del=<TMPL_VAR domain>" onClick="return confirm('Delete domain?')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></td></tr>
+</TMPL_LOOP>
+</table>
+</TMPL_IF>
+</TD></TR>
+</TMPL_IF>
+
+<TMPL_IF enp_p>
+<TR class="hdr"><TD colspan=2>Profit Mode</TD></TR>
+<TR><TD colspan=2><input type="radio" name="usr_profit_mode" value="PPD" id="pm_ppd"<TMPL_UNLESS m_y_change_ok> disabled</TMPL_UNLESS><TMPL_VAR usr_profit_mode_PPD>> <label for="pm_ppd"><b>PPD</b> <TMPL_IF m_y_ppd_dl><TMPL_VAR m_y_ppd_dl>% of Downloads &nbsp; </TMPL_IF><TMPL_IF m_y_ppd_sales><TMPL_VAR m_y_ppd_sales>% of Sales</TMPL_IF></label></TD></TR>
+<TR><TD colspan=2><input type="radio" name="usr_profit_mode" value="PPS" id="pm_pps"<TMPL_UNLESS m_y_change_ok> disabled</TMPL_UNLESS><TMPL_VAR usr_profit_mode_PPS>> <label for="pm_pps"><b>PPS</b> <TMPL_IF m_y_pps_dl><TMPL_VAR m_y_pps_dl>% of Downloads &nbsp; </TMPL_IF><TMPL_IF m_y_pps_sales><TMPL_VAR m_y_pps_sales>% of Sales</TMPL_IF></label></TD></TR>
+<TR><TD colspan=2><input type="radio" name="usr_profit_mode" value="MIX" id="pm_mix"<TMPL_UNLESS m_y_change_ok> disabled</TMPL_UNLESS><TMPL_VAR usr_profit_mode_MIX>> <label for="pm_mix"><b>MIX</b> <TMPL_IF m_y_mix_dl><TMPL_VAR m_y_mix_dl>% of Downloads &nbsp; </TMPL_IF><TMPL_IF m_y_mix_sales><TMPL_VAR m_y_mix_sales>% of Sales</TMPL_IF></label></TD></TR>
+</TMPL_IF>
+
+</Table>
+
+<br><input type="submit" value="<TMPL_VAR lang_save_settings>"><br><br>
+
+<TMPL_IF leech>
+<Table class="tbl1" cellpadding=2 cellspacing=1 width=420>
+<TR class="hdr"><TD colspan=2><TMPL_VAR lang_remote_premiums></TD></TR>
+<TR><TD colspan=2 align=center>Format: login:password</TD></TR>
+<TMPL_LOOP leeches_list>
+<TR>
+    <TD><TMPL_VAR domain></TD>
+    <TD><input type="text" name="<TMPL_VAR name>" value="<TMPL_VAR value>" size=36></TD>
+</TR>
+</TMPL_LOOP>
+</Table>
+<br><input type="submit" value="<TMPL_VAR lang_save_settings>">
+</TMPL_IF>
+</Form>
+
+<br><br>
+<style>table { width: 800px }</style>

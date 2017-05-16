@@ -1,0 +1,13 @@
+<h3><TMPL_VAR site_name> <TMPL_VAR lang_news></h3>
+<br>
+<div style="width:600px;text-align:left;" id="news">
+<TMPL_LOOP news>
+<a href="n<TMPL_VAR news_id>-<TMPL_VAR news_title2>.html" class="title"><TMPL_VAR news_title></a>
+<br><small><TMPL_VAR created_txt></small>
+<p><TMPL_VAR news_text></p>
+<TMPL_IF enable_file_comments><a href="n<TMPL_VAR news_id>-<TMPL_VAR news_title2>.html#comments" class="cmt_link"><TMPL_VAR comments> <TMPL_VAR lang_comments></a></TMPL_IF>
+<br><br>
+</TMPL_LOOP>
+</div>
+
+<TMPL_VAR paging>

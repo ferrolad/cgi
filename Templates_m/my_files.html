@@ -1,0 +1,126 @@
+<TMPL_VAR paging>
+
+<Form style="margin:0;" method="POST" action="<TMPL_VAR site_url>/" name="F1">
+<input type="hidden" name="op" value="my_files">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
+<input type="hidden" name="fld_id" value="<TMPL_VAR folder_id>">
+<input type="text" name="key" value="<TMPL_VAR key>" size=24><input type="submit" value="<TMPL_VAR lang_search>"><br>
+
+<Table class="tbl1" cellpadding=4 cellspacing=1 id="xfiles" width="99%">
+
+<TMPL_IF folder_name><TR class="hdr"><TD style="text-align:left;" colspan=5>
+<TMPL_VAR folder_name> &nbsp; <a href="<TMPL_VAR site_url>/users/<TMPL_VAR my_login>/<TMPL_VAR folder_id>/<TMPL_VAR folder_name>" class="txt12"><TMPL_VAR lang_pub_link></a>
+<TMPL_IF fld_descr><div class="txt12"><TMPL_VAR fld_descr></div></TMPL_IF>
+</TD></TR>
+</TMPL_IF>
+
+<TR class="hdr"><TD style="text-align:left" colspan=5><input type="text" name="create_new_folder" size=18 class="myForm" placeholder="New folder name"><input type="submit" value="<TMPL_VAR lang_create_new_folder>" class=""></TD></TR>
+<TMPL_IF folders>
+<TMPL_LOOP folders>
+<TR>
+<TD><img src="<TMPL_VAR site_url>/images/folder.gif" alt="Folder"></TD>
+<TD width="95%"><a href="?op=my_files&amp;fld_id=<TMPL_VAR fld_id>"><b><TMPL_VAR fld_name></b></a></TD>
+<TMPL_IF usr_id>
+<TD align=center nowrap><TMPL_VAR files_num> <TMPL_VAR lang_files></TD>
+<TD><a href="?op=fld_edit&amp;fld_id=<TMPL_VAR fld_id>"><img src="<TMPL_VAR site_url>/images/edit.gif" border=0 alt="<TMPL_VAR lang_edit>"></a></TD>
+<TD><a href="?op=my_files&amp;fld_id=<TMPL_VAR folder_id>&amp;del_folder=<TMPL_VAR fld_id>&amp;token=<TMPL_VAR token>" onClick="return confirm('<TMPL_VAR lang_delete_folder>')"><img src="<TMPL_VAR site_url>/images/del.gif" border=0></a></TD>
+<TMPL_ELSE>
+<TD colspan=3></TD>
+</TMPL_IF>
+</TR>
+</TMPL_LOOP>
+</TMPL_IF>
+
+</Table>
+
+<br>
+
+<Table class="tbl1" cellpadding=3 cellspacing=1 id="xfiles" width="99%">
+<TMPL_IF files>
+<table width="99%">
+<TR><TD>
+<ul data-role="listview" data-inset="true">
+<TMPL_LOOP files>
+    <li data-icon="gear">
+        <a class="file_row" href="<TMPL_VAR download_link>" onclick="return filePopup('<TMPL_VAR file_id>', '<TMPL_VAR file_code>', '<TMPL_VAR file_name>', '<TMPL_VAR download_link>');">
+            <TMPL_VAR file_name>
+            <br>
+            <small><TMPL_VAR file_size> / <TMPL_VAR file_created></small>
+        </a>
+    </li>
+</TMPL_LOOP>
+<TMPL_ELSE>
+</TMPL_IF>
+</ul>
+</TD></TR>
+</table>
+</Table>
+</Form>
+
+<TMPL_VAR paging>
+
+<script type="text/javascript" language="JavaScript">
+$(document).ready(function(){
+    $("#xfiles input[name=file_id]").change( function(){ $(this).parent().parent().toggleClass('hi2'); } );
+    $("#selall").change(function(){ 
+           var sel=this.checked;
+           $("#xfiles input[name=file_id]:enabled").each(function(){
+               $(this).attr('checked',sel);
+               if(sel){$(this).parent().parent().addClass('hi2');} else {$(this).parent().parent().removeClass('hi2');}
+           });
+    });
+});
+function setFileFlag(file_id, name, value) {
+   var file_ids = $(file_id);
+   $.ajax({
+       type: 'POST',
+       url: '?',
+       data: {
+           op: 'my_files',
+           set_flag: name,
+           value: value,
+           file_id: file_ids,
+       },
+       success: function() {
+           $(document.F1).find('input[name=file_id]').each(function(i, e) {
+              if($.inArray(parseInt(this.value), file_ids) > -1) {
+                 var element = $(this).closest('tr').find("[name=" + name + "]");
+                 element.attr('checked', value);
+                 element.closest('td').toggleClass(name, value);
+              }
+           });
+       },
+   });
+}
+$('.flag').click(function() {
+    var name = this.name.replace(/(un)?set_/,'');
+    var value = this.name.match(/^set_/) ? 1 : 0;
+    var file_ids = $(document.F1.file_id).filter(function() { return this.checked; }).map(function() { return(parseInt(this.value)) });
+    setFileFlag(file_ids, name, value);
+});
+$('.file_name').click(function() {
+    var checkbox = $(this).closest("tr").find("input[name=file_id]");
+    $(checkbox).attr('checked', !$(checkbox).attr('checked'));
+});
+function filePopup(file_id, file_code, file_name, download_link) {
+    $('#file_name').html(file_name);
+    $('#file_download').attr('href', download_link);
+    $('#file_edit').attr('href', '<TMPL_VAR site_url>/?op=file_edit&file_code=' + file_code + '&token=<TMPL_VAR token>');
+    $('#file_delete').attr('href', '<TMPL_VAR site_url>/?op=my_files&del_code=' + file_code + '&token=<TMPL_VAR token>');
+    $( "#file_setting" ).popup("open");
+    return false;
+}
+</script>
+<script language="JavaScript" type="text/javascript" CHARSET="UTF-8" src="<TMPL_VAR site_url>/export_files.js"></script>
+</script>
+<style>
+.tbl1 tr td.file_public, .tbl1 tr td.file_premium_only {background-color: #E0FFE0;}
+</style>
+<div data-role="popup" id="file_setting">
+    <a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+    <br>
+    <span id="file_name">file_name</span>
+    <a href="#" id="file_download" data-role="button" data-icon="arrow-d">Download File</a>
+    <a href="#" id="file_edit" data-role="button" data-icon="edit">Edit File</a>
+    <a href="#" id="file_delete" data-role="button" data-icon="delete" onClick="return confirm('<TMPL_VAR lang_delete_file>')">Delete File</a>
+</div>

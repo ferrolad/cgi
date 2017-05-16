@@ -1,0 +1,45 @@
+<center id="charts"></center>
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script>
+var data = <TMPL_VAR data>;
+
+google.load("visualization", "1", {packages:["corechart"]});
+google.setOnLoadCallback(drawCharts);
+
+function drawCharts() {
+  $(data).each(function(_, row)
+  {
+    var newdiv = $('<div class="chart" style="width: 500px; height: 200px">');
+    $(newdiv).css('display', 'inline-block');
+    $('#charts').append(newdiv);
+
+    var max = 4;
+    $(row.data).each(function(_, e) { if(e[1] > max) max = null; });
+    console.log(max);
+
+    var options = {
+      title: row.title,
+      hAxis: {titleTextStyle: {color: '#333'}},
+      vAxis: {minValue: 0},
+      legend: { position: 'none' },
+      vAxis: { viewWindowMode: "explicit", viewWindow:{ min: 0, max: max } },
+      series: { 0: { color: row.color }},
+    };
+  
+    var table = google.visualization.arrayToDataTable(row.data);
+
+    if(row.units)
+    {
+	    var formatter = new google.visualization.NumberFormat({
+            fractionDigits: 0,
+            suffix: ' ' + row.units
+        });
+	    formatter.format(table, 1);
+    }
+
+    var chart = new google.visualization.AreaChart(newdiv.get(0));
+    chart.draw(table, options);
+  });
+}
+</script>

@@ -1,0 +1,50 @@
+<style>
+#tier_tbl tr td {text-align:center; font-weight:bold; padding:10px;}
+.tier1 {color:green; font-weight:bold;}
+.tier2 {color:blue; font-weight:bold;}
+.tier3 {color:orange; font-weight:bold;}
+.tier4 {color:red; font-weight:bold;}
+</style>
+
+<br>
+<h2>Profit rates for each <TMPL_VAR tier_views_number> downloads of your files</h2>
+
+<Table class="tbl1" cellpadding=2 id="tier_tbl" width=640>
+<TR>
+    <TH align=center>Tier / Length</TH>
+    <TMPL_LOOP sizes>
+    <TH><TMPL_VAR t1>-<TMPL_VAR t2> MB</TH>
+    </TMPL_LOOP>
+</TR>
+<TR>
+    <TD class="tier1">Tier 1</TD>
+    <TMPL_LOOP tier1><TD>$<TMPL_VAR amount></TD></TMPL_LOOP>
+</TR>
+<TR>
+    <TD class="tier2">Tier 2</TD>
+    <TMPL_LOOP tier2><TD>$<TMPL_VAR amount></TD></TMPL_LOOP>
+</TR>
+<TR>
+    <TD class="tier3">Tier 3</TD>
+    <TMPL_LOOP tier3><TD>$<TMPL_VAR amount></TD></TMPL_LOOP>
+</TR>
+<TR>
+    <TD class="tier4">Tier 4</TD>
+    <TMPL_LOOP tier4><TD>$<TMPL_VAR amount></TD></TMPL_LOOP>
+</TR>
+</Table>
+
+<br>
+
+<table cellpadding=5 width=640>
+<tr><td colspan=2><b>Country Groups</b></td></tr>
+<tr>
+    <td><b class="tier1">Tier 1</b><br><TMPL_VAR countries1></td>
+    <td><b class="tier3">Tier 3</b><br><TMPL_VAR countries3></td>
+</tr>
+<tr>
+    <td><b class="tier2">Tier 2</b><br><TMPL_VAR countries2></td>
+    <td><b class="tier4">Tier 4</b><br>Other countries</td>
+</tr>
+</table>
+

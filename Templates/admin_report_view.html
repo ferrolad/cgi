@@ -1,0 +1,25 @@
+<table style="width: 600px">
+    <tr class="hdr">
+        <td colspan="2"><TMPL_VAR filename></td>
+    </tr>
+    <tr>
+        <td width="1%">Date</td>
+        <td><TMPL_VAR created></td>
+    </tr>
+    <tr>
+        <td width="1%">Reported by</td>
+        <td><TMPL_VAR name> (<a href="mailto:<TMPL_VAR email>"><TMPL_VAR email></a>)</td>
+    </tr>
+    <tr>
+        <td width="1%">Reason</td>
+        <td><TMPL_VAR reason></td>
+    </tr>
+    <tr>
+        <td width="1%">IP</td>
+        <td><TMPL_VAR ip2></td>
+    </tr>
+    <tr>
+        <td>Info</td>
+	    <td><TMPL_VAR info></td>
+    </tr>
+</table>

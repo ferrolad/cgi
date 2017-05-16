@@ -1,0 +1,252 @@
+   <div style="width: 980px">
+   <link href="//code.jquery.com/ui/1.11.2/themes/cupertino/jquery-ui.css" type="text/css" rel="stylesheet" />
+   <script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>
+
+   <link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/upload.css"/>
+	<script src="<TMPL_VAR site_url>/js/upload.js"></script>
+	<script src="<TMPL_VAR site_url>/js/multiselector.js"></script>
+			<div class="section">
+				<ul class="tabs">
+					<li class="current"><TMPL_VAR lang_file_upload></li>
+					<li><TMPL_VAR lang_url_upload></li>
+					<li>Copy Files</li>
+					<TMPL_IF mmtt><li><TMPL_VAR lang_form_torrent></li></TMPL_IF>
+					<TMPL_IF ftp_mod><li>FTP upload</li></TMPL_IF>
+				</ul>
+				<div class="uploadtab box visible">
+					<div class="tabcontent">
+						<form id="uploadfile" action="<TMPL_VAR srv_cgi_url>/upload.cgi?upload_type=file">
+						<input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
+						<input type="hidden" name="utype" value="<TMPL_VAR utype>">
+						<div class="uploadfile">
+							<div class="browsebtn">
+								<input type="file" multiple="multiple" id="file_0" class="uploadbtn">
+								<span class="bicon">
+								<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_browse.png">
+								<span class="bfolder van move"></span>
+								</span>
+								<span class="btext">
+								Browse
+								</span>
+							</div>
+							<div class="progress_div"></div>
+							<table id="files_list" style="width: 530px;"></table>
+							<table id="advanced_opts" style="display: none; width: 480px">
+								<tr><td><TMPL_VAR lang_rcpt_email>:</td><td><input type="text" name="link_rcpt" class="myForm" size=24 maxlength=42></td></tr>
+								<tr><td><TMPL_VAR lang_link_pass>:</td><td><input type="text" name="link_pass" class="myForm" size=8></td></tr>
+								<tr>
+									<td>Upload to folder:</td>
+									<td>
+										<Select name="to_folder">
+										<option value="">--</option>
+										<option value="0"> / </option>
+										<TMPL_LOOP folders_tree>
+										<option value="<TMPL_VAR fld_id>"><TMPL_VAR pre><TMPL_VAR fld_name></option>
+										</TMPL_LOOP>
+										</Select>
+									</td>
+								</tr>
+							</table>
+						</div>
+						</form>
+					</div>
+					<div class="clear"></div>
+				</div>
+				<div class="box">
+					<TMPL_IF remote_url>
+					<div class="tabcontent">
+					   <div class="progress_div"></div>
+						<div class="reurlupload">
+								<div class="progress_div"></div>
+								<form method="post" id="uploadurl" action="<TMPL_VAR srv_cgi_url>/upload.cgi?upload_type=url">
+								<input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
+								<input type="hidden" name="utype" value="<TMPL_VAR utype>">
+								<TMPL_LOOP site_logins>
+								<input type="hidden" name="<TMPL_VAR name>" value="<TMPL_VAR value>">
+								</TMPL_LOOP>
+								<div class="leftintab">
+									<TMPL_IF leech_left_mb><p>You can leech <b><TMPL_VAR leech_left_mb> Mb</b> more files today<br></TMPL_IF>
+									<TMPL_IF max_upload_files>You can enter up to <b><TMPL_VAR max_upload_files></b> URLs, one URL per row</p></TMPL_IF>
+									<TMPL_IF max_upload_filesize><p>Max file size is <b><TMPL_VAR max_upload_filesize> Mb</b></p></TMPL_IF>
+									<textarea name="url_mass" style="width:100%; margin-top: 10px;" placeholder="<TMPL_IF supported_sites>Supported sites: <TMPL_VAR supported_sites></TMPL_IF>"></textarea>
+								</div>
+								<div class="advanced">
+									<h2>Advanced options</h2>
+									<p>
+									  <label for="proxyurl">Proxy URL</label>
+									  <input name="proxyurl" value="" type="text" placeholder="e.g. 127.0.0.1">
+									</p>
+									<p>
+									  <label for="recemail">Recipient's Email</label>
+									  <input name="recemail" value="" type="text" placeholder="e.g. yourmail@site.com">
+									</p>
+									<p>
+									  <label for="linkpass">Link Password</label>
+									  <input name="linkpass" value="" type="password" placeholder="Enter password">
+									</p>
+									<p>
+										<label for="to_folder">Upload to folder</label>
+										<select name="to_folder" value="">
+										<option value="default">--</option>
+										<TMPL_LOOP folders_tree>
+										<option value="<TMPL_VAR fld_id>"><TMPL_VAR pre><TMPL_VAR fld_name></option>
+										</TMPL_LOOP>
+										</select>
+									</p>
+								</div>
+								<div class="clear"></div>
+								<!--Start TOS n Load-->
+								<div style="text-align: center; padding: 10px; margin: 20px auto;"> 
+									<button class="uploadbtn">
+									<span class="bicon">
+									<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_upload_b.png">
+									<img class="barrow van move-top" src="<TMPL_VAR site_url>/images/icon_f_btn_upload.png">
+									</span>
+									<span class="btext">Upload<i>!</i></span>
+									</button>	
+										<div class="clear"></div>
+									<input type="checkbox" name="tos" value="">
+										<span class="tosread">I have read and agree to the TOS</span>
+								</div>
+								<!-- End TOS n Load-->
+							</form>
+						</div>
+					</div>
+					<TMPL_ELSE>
+					<b><TMPL_IF my_login><a href="?op=payments"><TMPL_VAR lang_upgrade_account></a><TMPL_ELSE><a href="?op=registration"><TMPL_VAR lang_register_on_site></a></TMPL_IF><br><TMPL_VAR lang_to_use> <TMPL_VAR lang_url_upload></b>
+					</TMPL_IF>
+					<div class="clear"></div>
+				 </div> <!-- End Remote URL Upload Tab -->
+				<div class="box"> <!-- Start Copy Files Tab -->
+					<div class="tabcontent">
+						<div class="copyfiles">
+							<form method="post" action="<TMPL_VAR site>" onsubmit="if(!this.tos.checked){ alert('You must agree with TOS'); return(false); }">
+								<input type="hidden" name="op" value="my_files">
+								<input type="hidden" name="add_my_acc" value="1">
+								<textarea name="url_mass" style="width:545px; height:160px;"></textarea>
+								<div class="clear"></div>
+								<!--Start TOS n Load-->
+								<div style="text-align: center; padding: 10px; margin: 20px auto;"> 
+									<button class="uploadbtn">
+									<span class="bicon">
+									<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_upload_b.png">
+									<img class="barrow van move-top" src="<TMPL_VAR site_url>/images/icon_f_btn_upload.png">
+									</span>
+									<span class="btext">Upload<i>!</i></span>
+									</button>	
+										<div class="clear"></div>
+									<input type="checkbox" name="tos" value="">
+										<span class="tosread">I have read and agree to the TOS</span>
+								</div>
+								<!-- End TOS n Load-->
+							</form>
+						</div>
+					</div>
+					<div class="clear"></div>
+				</div> <!-- End Copy Files Tab -->
+				<TMPL_IF mmtt>
+				<div class="box"> <!-- Start Torrent Leech Tab -->
+					<div class="tabcontent">
+						<TMPL_IF mmtt_on>
+						<div class="torrent">
+							<form action="<TMPL_VAR srv_torrent_cgi_url>/upload.cgi" method="POST" enctype="multipart/form-data">
+								<input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
+								<input type="hidden" name="utype" value="<TMPL_VAR utype>">
+								<input type="hidden" name="torr_on" value="1">
+								<div class="uploadfile">
+									<div class="browsebtn">
+										<input name="file_0" type="file" multiple="multiple" class="uploadbtn" accept=".torrent">
+										<span class="bicon">
+											<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_browse.png">
+											<span class="bfolder van move"></span>
+										</span>
+										<span class="btext">
+											Browse
+										</span>
+									</div>
+									<input id="magnet" name="magnet" placeholder="Or paste magnet..." style="width: 200px">
+									<div class="page-buffer"></div>
+								</div>
+							</form>
+						</div>
+						<TMPL_ELSE>
+						<TMPL_IF tt_msg>
+							<b><TMPL_VAR tt_msg></b>
+						<TMPL_ELSE>
+							<b><TMPL_IF my_login><a href="?op=payments"><TMPL_VAR lang_upgrade_account></a><TMPL_ELSE><a href="?op=registration"><TMPL_VAR lang_register_on_site></a></TMPL_IF><br><TMPL_VAR lang_to_use> <TMPL_VAR lang_form_torrent></b>
+						</TMPL_IF>
+						</TMPL_IF>
+					</div>
+					<div class="clear"></div>
+				 </div> <!-- End Torrent Leech Tab -->
+				 </TMPL_IF>
+				 <TMPL_IF ftp_mod>
+				<div class="box"> <!-- Start FTP Upload Tab -->
+					<div class="tabcontent">
+						<div class="ftpupload">
+								<input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
+								<input type="hidden" name="utype" value="<TMPL_VAR utype>">
+								<input type="hidden" name="torr_on" value="1">
+								<div class="uploadfile">
+								<TMPL_LOOP ftp_servers>
+								<table style="width: 400px">
+								<tr class="hdr"><td colspan="2"><b><TMPL_VAR name></b></td></tr>
+								<tr><td>FTP Host:</td><td><TMPL_VAR host></td></tr>
+								<tr><td>FTP Login:</td><td><TMPL_VAR usr_login></td></tr>
+								<tr><td>FTP Password:</td><td>*****</td></tr>
+								</table>
+								<br>
+								</TMPL_LOOP>
+								</div>
+						</div>
+					</div>
+					<div class="clear"></div>
+				 </div> <!-- End Torrent Leech Tab -->
+				 </TMPL_IF>
+			</div><!-- section -->
+			<TMPL_IF user_total>
+			<span class="servinfo"><TMPL_VAR lang_srv_stats>: <TMPL_VAR lang_files_hdr>: <TMPL_VAR files_total> | <TMPL_VAR lang_disk_used>: <TMPL_VAR used_total> Gb | <TMPL_VAR lang_users>: <TMPL_VAR users_total></span>
+			</TMPL_IF>
+			<script>
+			var urluploader = new URLUploader('.reurlupload form', '.reurlupload .progress_div', {
+				return_url: '<TMPL_VAR site_url>/?op=upload_result&',
+				tmp_url: '<TMPL_VAR srv_tmp_url>',
+				oncomplete: function(ret)
+				{
+				    var redirect_params = $(ret).map(function(i, e) {
+				        return "st=" + e.file_status + "&fn=" + e.file_code;
+				    });
+					 document.location = '<TMPL_VAR site_url>/?op=upload_result&' + redirect_params.toArray().join('&');
+				}
+			});
+			$('.reurlupload .uploadbtn').click(function(evt)
+			{
+				evt.preventDefault();
+				if(!$('.reurlupload form').get(0).tos.checked)
+				{
+					alert("You must agree with TOS");
+					return;
+				}
+				urluploader.start(this.form.url_mass.value);
+			});
+
+			var uploader = new FileUploader('#uploadfile', { return_url: '<TMPL_VAR site_url>/?op=upload_result&' });
+			var multiselector = new MultiSelector('#files_list', '#file_0',
+			{ 
+				file_public_default: '<TMPL_VAR file_public_default>',
+				ext_allowed: '<TMPL_VAR ext_allowed>',
+				ext_not_allowed: '<TMPL_VAR ext_not_allowed>',
+				max_upload_files: '<TMPL_VAR max_upload_files>',
+				max_upload_filesize: '<TMPL_VAR max_upload_filesize>',
+				oncomplete: function(files)
+				{
+					uploader.start(files);
+				}
+			});
+			$('.torrent input[type=file]').change(function()
+			{
+				$(this.form).submit();
+			});
+			$('#magnet').on('paste', function(evt) { setTimeout(function() { evt.target.form.submit() }, 0) });
+			</script>
+   </div>

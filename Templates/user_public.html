@@ -1,0 +1,53 @@
+<h2><TMPL_VAR lang_files_of> <TMPL_VAR login></h2>
+
+<table class="wrapper1">
+<tr>
+   <td><div class="paging folders_paging" id="folders_paging"></div></td>
+   <td><div class="paging files_paging" id="files_paging"></div></td>
+</tr>
+<tr>
+<td valign="top">
+<div style="width:300px;margin: auto">
+<Table id="folders_list" class="tbl1" cellpadding=7 cellspacing=1 width="100%" style="margin-top: 0">
+<TMPL_INCLUDE user_public_folders.html>
+</Table>
+
+<br>
+</td><td valign="top">
+
+<Table id="files_list" class="file_block" style="margin-top: 0">
+<TMPL_INCLUDE user_public_files.html>
+</Table>
+
+<div class="paging files_paging"></div>
+
+</div>
+</td></tr>
+</table>
+
+<script>
+   setPagination('.folders_paging',
+   {
+      op: 'user_public', 
+      usr_login: '<TMPL_VAR login>',
+      total: '<TMPL_VAR folders_total>',
+      load: 'folders',
+      target: '#folders_list',
+      perpage: '<TMPL_VAR per_page>',
+      fld_id: '<TMPL_VAR fld_id>',
+   });
+   setPagination('.files_paging',
+   {
+      op: 'user_public', 
+      usr_login: '<TMPL_VAR login>',
+      total: '<TMPL_VAR files_total>',
+      load: 'files',
+      target: '#files_list',
+      perpage: '<TMPL_VAR per_page>',
+      fld_id: '<TMPL_VAR fld_id>',
+   });
+</script>
+<style>
+table.wrapper1 > tbody > tr > td { border: 0px; }
+table.wrapper1 tr:hover td { background: #fff; };
+</style>

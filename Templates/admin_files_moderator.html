@@ -1,0 +1,65 @@
+<h2><TMPL_VAR lang_adm_file_mgmt></h2>
+
+<br>
+
+<Form style="margin:0;" method="POST">
+<input type="hidden" name="op" value="moderator_files">
+<input type="hidden" name="num" value="<TMPL_VAR num>">
+<input type="hidden" name="usr_id" value="<TMPL_VAR usr_id>">
+<input type="hidden" name="del_info" value="">
+<Table class="tbl1">
+<tr><td><TMPL_VAR lang_search></td><td><input type="text" name="key" value="<TMPL_VAR key>" size=24></td></tr>
+<tr><td><TMPL_VAR lang_files_per_page></td><td>
+<input type="radio" name="per_page" id="rs1" value="<TMPL_VAR items_per_page>"<TMPL_UNLESS per_page> checked</TMPL_UNLESS>><label for="rs1"><TMPL_VAR items_per_page></label>
+<input type="radio" name="per_page" id="rs2" value="50"<TMPL_VAR per_50>><label for="rs2">50</label> 
+<input type="radio" name="per_page" id="rs3" value="100"<TMPL_VAR per_100>><label for="rs3">100</label> 
+<input type="radio" name="per_page" id="rs4" value="all"<TMPL_VAR per_all>><label for="rs4"><TMPL_VAR lang_all></label> 
+</td></tr>
+<tr><td colspan=2 align=center>
+    <textarea name="mass_search" id="mass_search" wrap="off" style="width:99%;display:none;font-size:11px;" rows=10></textarea>
+    <small><a href="#" id="btn1">Mass Search</a></small>
+</td></tr>
+<tr><td colspan=2 align=center><input type="submit" value="<TMPL_VAR lang_show_files>"></td></tr>
+</Table>
+<br>
+
+<script>
+$(document).ready(function(){
+    $("#btn1").click( function(){
+        $("#btn1").hide("normal", function(){
+            $("#mass_search").show("normal");
+            });
+    });
+});
+</script>
+
+<TMPL_VAR paging>
+
+<Table class="tbl1" cellspacing=1 cellpadding=3>
+<TR class="hdr">
+<TD><input type="checkbox" onClick="for(i=0;i<this.form.file_id.length;i++){this.form.file_id[i].checked=this.checked;}if(this.form.file_id.value)this.form.file_id.checked=this.checked;"></TD>
+<TD><TMPL_VAR lang_file_name></TD>
+<TD><TMPL_VAR lang_file_size></TD>
+<TD><TMPL_VAR lang_uploaded_by></TD>
+<TD><TMPL_VAR lang_uploaded_on></TD>
+<TD>IP</TD>
+</TR>
+<TMPL_LOOP files>
+<TR align=center<TMPL_UNLESS __ODD__> class="hi"</TMPL_UNLESS>>
+<TD<TMPL_IF file_public> class='pub'</TMPL_IF>><input type="checkbox" name="file_id" value="<TMPL_VAR file_id>"></TD>
+<TD align=left><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name_txt></a><TMPL_IF file_password><img src="<TMPL_VAR site_url>/images/lock.gif" title="Password"></TMPL_IF></TD>
+<TD align=right><TMPL_VAR file_size2></TD>
+<TD><a href="?op=moderator_files&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></TD>
+<TD nowrap><small><TMPL_VAR file_created></small></TD>
+<TD><a href="?op=moderator_files&ip=<TMPL_VAR file_ip>"><small><TMPL_VAR file_ip></small></a></TD>
+</TR>
+</TMPL_LOOP>
+<TR class="hdr">
+    <TD colspan=13 style="text-align:left;">
+    <input type="submit" name="del_selected" value="<TMPL_VAR lang_delete_selected>" class="" onClick="var x=prompt('<TMPL_VAR lang_delete_confirm> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined')return false;this.form.del_info.value=x;"> &nbsp; 
+    </TD>
+</TR>
+</Table>
+<TMPL_VAR paging>
+<br>
+</Form>

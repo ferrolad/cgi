@@ -1,0 +1,129 @@
+					<!-- Start Header -->
+					<tr>
+						<th><input type="checkbox" name="file_id" class="selall" value="0"></th>
+						<th><TMPL_VAR s_file_name><TMPL_VAR lang_fname_descr><TMPL_VAR s2_file_name></th>
+						<th><TMPL_VAR s_file_size><TMPL_VAR lang_file_size><TMPL_VAR s2_file_size></th>
+						<th><TMPL_VAR s_file_created><TMPL_VAR lang_file_upload><TMPL_VAR s2_file_created></th>
+						<th><TMPL_VAR s_file_downloads><img src="<TMPL_VAR site_url>/images/icon_th_download.png"><TMPL_VAR s_file_downloads></th>
+						<th><img src="<TMPL_VAR site_url>/images/icon_th_comments.png"></th>
+						<th class="diamond"><img src="<TMPL_VAR site_url>/images/icon_th_premium.png"></th>
+						<th><img src="<TMPL_VAR site_url>/images/icon_th_publish.png"></th>
+						<th colspan="2"></th>
+						
+					</tr>
+					<!-- End Header -->
+					<!--Start Files -->
+					<TMPL_IF files>
+					<TMPL_LOOP files>
+					<tr class="filerow">
+						<td class=""><input type="checkbox" name="file_id" value="<TMPL_VAR file_id>"></td>
+						<td class="filename"><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name_txt></a></td>
+						<td class="tdinfo"><TMPL_VAR file_size></td>
+						<td class="tdinfo"><TMPL_VAR file_date></td>
+						<TMPL_IF trashed_at>
+						<td colspan="4"><TMPL_VAR time_left> left</td>
+						<TMPL_ELSE>
+						<td class="tdinfo"><TMPL_VAR file_downloads></td>
+						<td class="tdinfo"><TMPL_VAR file_comments></td>
+						<td class="icontd"><input type="checkbox" name="file_premium_only"<TMPL_IF file_premium_only> checked</TMPL_IF> onClick="setFileFlag([<TMPL_VAR file_id>], 'file_premium_only', this.checked);"></td>
+						<td class="icontd"><input type="checkbox" name="file_public"<TMPL_IF file_public> checked</TMPL_IF> onClick="setFileFlag([<TMPL_VAR file_id>], 'file_public', this.checked);"></td>
+						</TMPL_IF>
+						<TMPL_IF trashed_at>
+						<td colspan="2"><a href="<TMPL_VAR site_url>/?op=my_files&untrash_selected=1&file_id=<TMPL_VAR file_id>&token=<TMPL_VAR token>"><img src="<TMPL_VAR site_url>/images/icon_untrash.png" alt="Untrash"></a></td>
+						<TMPL_ELSE>
+						<td class="icontd"><a href="?op=file_edit&amp;file_code=<TMPL_VAR file_code>"><img src="<TMPL_VAR site_url>/images/icon_edit.png"></a></td>
+						<td class="icontd"><a href="?op=my_files&amp;del_code=<TMPL_VAR file_code>&token=<TMPL_VAR token>" onClick="return confirm('<TMPL_VAR lang_delete_file>')"><img src="<TMPL_VAR site_url>/images/icon_delete.png"></a></td>
+						</TMPL_IF>
+					</tr>
+					</TMPL_LOOP>
+					<TMPL_ELSE>
+					<tr class="filerow"><td colspan="9"><TMPL_IF trash>Trash is empty<TMPL_ELSE><TMPL_VAR lang_no_files_yet></TMPL_IF></td></tr>
+					</TMPL_IF>
+					<!-- End Files -->
+					
+					<tr class="tablesep" colspan="10"></tr><!--spacer -->
+					
+					<TMPL_IF trash>
+					<tr class="actionpanel">
+						<th colspan="10" style="text-align: left">
+							<input type="submit" name="untrash_selected" value="Untrash selected">
+						</th>
+					</tr>
+					<TMPL_ELSE>
+					<!-- Start Copy/Move Panel -->
+					<tr class="actionpanel">
+						<td colspan="10">
+							<label for="to_folder">Select folder</label>
+							<select name="to_folder">
+								<option>--</option>
+								<option value="0"> / </option>
+								<TMPL_LOOP folders_tree>
+								<option value="<TMPL_VAR fld_id>"><TMPL_VAR pre><TMPL_VAR fld_name></option>
+								</TMPL_LOOP>
+							</select>
+							
+							<div class="copymove">
+								<input name="to_folder_copy" value="Copy files" type="submit">
+								<input name="to_folder_move" value="Move files" type="submit">
+							</div>
+							
+						</td>
+					</tr>
+					<!-- End Copy/Move Panel -->
+					
+					<tr class="tablesep" colspan="10"></tr><!--spacer -->
+					
+					<!-- Start Action Buttons -->
+					<tr class="actionpanel">
+						<td colspan="10" style="max-width: 640px; white-space: normal">
+							<input name="del_selected" value="<TMPL_VAR lang_delete_selected>" type="submit" onClick="return confirm('<TMPL_VAR lang_delete_confirm>')">
+							<input name="set_file_public" value="<TMPL_VAR lang_publish>" type="button" class="flag">
+							<input name="unset_file_public" value="<TMPL_VAR lang_unpublish>" type="button" class="flag">
+							<input name="set_file_premium_only" value="Set premium only" type="button" class="flag">
+							<input name="unset_file_premium_only" value="Unset premium only" type="button" class="flag">
+							<input id="export" value="Export..." type="button">
+						</td>
+					</tr>
+					<!-- End Action Buttons -->
+					</TMPL_IF>
+				
+					<script src="<TMPL_VAR site_url>/js/selall.js"></script>
+					<script type="text/javascript" language="JavaScript">
+					function setFileFlag(file_ids, name, value) {
+					   $.ajax({
+					       type: 'POST',
+					       url: '?',
+					       data: {
+					           op: 'my_files',
+					           set_flag: name,
+					           value: value,
+					           file_id: file_ids,
+					       },
+					       success: function() {
+					           $(document.F1).find('input[name=file_id]').each(function(i, e) {
+					              if($.inArray(parseInt(this.value), file_ids) > -1) {
+					                 var element = $(this).closest('tr').find("[name=" + name + "]");
+					                 element[0].checked = value > 0 ? true : false;
+					                 element.closest('td')[0].className = value > 0 ? name : '';
+					              }
+					           });
+					       },
+					   });
+					}
+					$('.flag').click(function() {
+					    var name = this.name.replace(/(un)?set_/,'');
+					    var value = this.name.match(/^set_/) ? 1 : 0;
+					    var file_ids = $('[name=F1] [name=file_id]')
+					        .filter(function() { return this.value != 0 && this.checked; })
+					        .map(function() { return(parseInt(this.value)) })
+					        .toArray();
+					    setFileFlag(file_ids, name, value);
+					});
+					$('#export').click(function()
+					{
+						var file_ids = $(this.form.file_id).filter(function() { return this.checked }).map(function() { return this.value });
+						var postdata = file_ids.length ? { op: 'my_files_export', file_id: $(file_ids).toArray() } : null;
+						console.log(postdata);
+						loadDialog("Export...", '?op=my_files_export&fld_id=<TMPL_VAR current_fld_id>', postdata)
+					});
+					</script>

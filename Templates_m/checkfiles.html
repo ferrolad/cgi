@@ -1,0 +1,17 @@
+<h3><TMPL_VAR lang_check> <TMPL_VAR site_name> <TMPL_VAR lang_urls_for_avail></h3>
+<div style="width:620px;text-align:left;">
+
+<Table class="tbl1" cellpadding=2>
+<TMPL_LOOP list>
+<tr><td><TMPL_VAR url></td><td style="color:<TMPL_VAR color>;"><TMPL_VAR status></td><td><TMPL_VAR fsize></td></tr>
+</TMPL_LOOP>
+</Table>
+
+<TMPL_VAR lang_one_url_per_line>
+<br>
+<Form method="POST">
+<input type="hidden" name="op" value="checkfiles">
+<Textarea name="list" rows=12 style="width:100%;font:12px Arial"></Textarea>
+<br><input type="submit" name="process" value="<TMPL_VAR lang_check_urls>">
+</Form>
+</div>

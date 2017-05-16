@@ -1,0 +1,19 @@
+<h2 style="margin:2px;">Files Import from <TMPL_VAR srv_name> server</h2>
+Manually upload files to <b>ImportFiles</b> folder on FileServer, then use Import.<br><br>
+<Table class="tbl1" cellpadding=2 cellspacing=1>
+<TR class="hdr"><TD>Filename</TD><TD>Size</TD></TR>
+<TMPL_LOOP files>
+<TR><TD><TMPL_VAR name></TD><TD><TMPL_VAR size></TD></TR>
+</TMPL_LOOP>
+</Table>
+<Form>
+<input type="hidden" name="op" value="admin_server_import">
+<input type="hidden" name="srv_id" value="<TMPL_VAR srv_id>">
+<br>
+Add files to user: <input type="text" name="usr_login" value="<TMPL_VAR my_login>" size=16>
+<br>
+<input type="checkbox" name="pub" value="1" checked> Publish imported files
+<br><br>
+<input type="submit" name="import" value="Import files above to system">
+<br><br>
+</Form>

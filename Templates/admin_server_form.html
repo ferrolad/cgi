@@ -1,0 +1,70 @@
+<Form method="POST" onSubmit="return checkForm(this)">
+<input type="hidden" name="op" value="admin_server_save">
+<input type="hidden" name="srv_id" value="<TMPL_VAR srv_id>">
+<Table class="tbl1" cellpadding=3 cellspacing=1>
+<TR class="hdr"><TD colspan=2><TMPL_IF srv_id><TMPL_VAR lang_edit><TMPL_ELSE><TMPL_VAR lang_add></TMPL_IF> <TMPL_VAR lang_file_server></TD></TR>
+<TR><TD align=right><b><TMPL_VAR lang_server_name></b></TD><TD><input type="text" name="srv_name" value="<TMPL_VAR srv_name>" size=16></TD></TR>
+<TR><TD align=right><b>cgi-bin URL</b></TD><TD><input type="text" name="srv_cgi_url" value="<TMPL_VAR srv_cgi_url>" size=42></TD></TR>
+<TR><TD align=right><b>files URL</b></TD><TD><input type="text" name="srv_htdocs_url" value="<TMPL_VAR srv_htdocs_url>" size=42></TD></TR>
+<TMPL_IF srv_id><TR><TD align=right><b>IP</b></TD><TD><input type="text" name="srv_ip" value="<TMPL_VAR srv_ip>" size=16></TD></TR></TMPL_IF>
+<TR><TD align=right><b><TMPL_VAR lang_max_disk_usage></b></TD><TD><input type="text" name="srv_disk_max" value="<TMPL_VAR srv_disk_max>" size=6> Gb</TD></TR>
+<TR><TD align=right><b><TMPL_VAR lang_server_for></b></TD><TD>
+<input type="checkbox" name="srv_allow_regular" value="1" id="alr"<TMPL_IF srv_allow_regular> checked</TMPL_IF>><label for="alr">Regular users</label><br>
+<input type="checkbox" name="srv_allow_premium" value="1" id="alp"<TMPL_IF srv_allow_premium> checked</TMPL_IF>><label for="alp">Premium users</label>
+</TD></TR>
+<TMPL_IF mmtt><TR><TD align=right><b>Torrent engine</b></TD><TD><input type="checkbox" name="srv_torrent" value="1" id="tte"<TMPL_IF srv_torrent> checked</TMPL_IF>><label for="tte">Enabled</label></TD></TR></TMPL_IF>
+<TR><TD align=right><b><TMPL_VAR lang_status></b></TD><TD>
+<Select name="srv_status">
+<option value="ON"<TMPL_VAR s_ON>>ON</option>
+<option value="READONLY"<TMPL_VAR s_READONLY>>READONLY</option>
+<option value="OFF"<TMPL_VAR s_OFF>>OFF</option>
+</Select>
+</TD></TR>
+<TR><TD align=right><b>Created</b></TD><TD><TMPL_VAR srv_created></TD></TR>
+<TMPL_IF srv_key><TR><TD align=right><b>fs_key</b></TD><TD><input type="text" name="srv_key" value="<TMPL_VAR srv_key>" size=8></TD></TR></TMPL_IF>
+<TMPL_IF m_g><TR><TD align=right><b>GeoIP countries</b></TD><TD><input type="text" name="srv_countries" value="<TMPL_VAR srv_countries>" size=32><br><small>e.g. US,CA,DE,FR</small></TD></TR></TMPL_IF>
+<TMPL_IF m_v>
+<TR>
+    <TD align=right><b>Make video tests</b></TD>
+    <TD><input type="checkbox" name="video_test" value="1" id="vts"<TMPL_IF video_test> checked</TMPL_IF>> <label for="vts">Test ffmpeg+mplayer+MP4Box</label></TD>
+</TR>
+</TMPL_IF>
+<TMPL_IF mmtt>
+<TR>
+    <TD align=right><b>Make torrent tests</b></TD>
+    <TD><input type="checkbox" name="torrent_test" value="1" id="torrent_test"<TMPL_IF torrent_test> checked</TMPL_IF>> <label for="torrent_test">Test bitflu+Digest::SHA1</label></TD>
+</TR>
+</TMPL_IF>
+
+<TMPL_IF ftp_mod>
+<TR>
+    <TD align=right><b>FTP upload</b></TD>
+    <TD><input type="checkbox" name="srv_ftp" value="1" id="srv_ftp"<TMPL_IF srv_ftp> checked</TMPL_IF>></TD>
+</TR>
+</TMPL_IF>
+
+<TMPL_IF tests>
+<TR><TD colspan=2>
+<b><TMPL_VAR lang_file_server_tests>:</b><br>
+<TMPL_LOOP tests>
+<div class="<TMPL_VAR class>"><TMPL_VAR text></div>
+</TMPL_LOOP>
+</TD></TR>
+</TMPL_IF>
+
+<TR class="hdr"><TD align=center colspan=2><br>
+<input type="submit" name="save" value=" <TMPL_VAR lang_submit> ">
+<br><br></TD></TR>
+</Table>
+</Form>
+
+<Script>
+function checkForm(f1)
+{
+    if(f1.srv_name.value.length<2){alert("Enter server name at least 2 chars");return false;}
+    if(f1.srv_cgi_url.value.length<5){alert("Enter valid cgi-bin URL");return false;}
+    if(f1.srv_htdocs_url.value.length<5){alert("Enter valid files URL");return false;}
+    if(!f1.srv_allow_regular.checked && !f1.srv_allow_premium.checked){alert("Choose at least one type of users server will be used for");return false;}
+    return true;
+}
+</Script>
