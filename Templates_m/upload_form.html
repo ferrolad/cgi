@@ -42,7 +42,7 @@ if(document.body.addEventListener) {
 
 <div id="upload_div">
 
-<div id="uploadtab" class="upload_block">
+<div id="div_file" class="upload_block">
 	<form id="uploadfile" action="<TMPL_VAR srv_cgi_url>/upload.cgi?upload_type=file" method="POST">
 		<input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
 		<input type="hidden" name="utype" value="<TMPL_VAR utype>">
@@ -167,3 +167,20 @@ function MobileSelector(element, file_input, opts)
 var selector = new MobileSelector('#upload_controls', '#file_0', { oncomplete: uploader.start });
 </script>
 <link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/upload.css"/>
+
+<script>
+
+function changeUploadType(utype)
+{
+    $('#div_file').css('position', 'absolute');
+    if($('#div_url'))$('#div_url').css('position', 'absolute');
+    if($('#div_rs'))$('#div_rs').css('position', 'absolute');
+    if($('#div_tt'))$('#div_tt').css('position', 'absolute');
+    if($('#div_ff'))$('#div_ff').css('position', 'absolute');
+    if($('#div_ftp'))$('#div_ftp').css('position', 'absolute');
+    if($('#div_copy'))$('#div_copy').css('position', 'absolute');
+    $('#div_'+utype).css('position', 'static');
+    $('#utmodes > input.active').removeClass('active');
+    $('#r_'+utype).addClass('active');
+}
+</script>

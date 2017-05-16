@@ -221,7 +221,7 @@ http://www.site.com/<select name="link_format">
 <TR>
    <TD align=right><b>FTP mod</b></TD>
    <TD>
-      <input type="checkbox" name="ftp_mod" value="1" id="ftp_mod"<TMPL_IF ftp_mod> checked</TMPL_IF><TMPL_UNLESS enp_n> disabled</TMPL_UNLESS>><label for="ftp_mod"><TMPL_VAR lang_enabled></label> <small>(Proftpd tweak required)</small> [<a href="http://sibsoft.net/xfilesharing.html#custom_mods" onClick="return OpenWin(this.href,1024,240)" class="url2">?</a>]
+      <input type="checkbox" name="ftp_mod" value="1" id="ftp_mod"<TMPL_IF ftp_mod> checked</TMPL_IF>><label for="ftp_mod"><TMPL_VAR lang_enabled></label> <small>(Proftpd tweak required)</small> [<a href="http://sibsoft.net/xfilesharing.html#custom_mods" onClick="return OpenWin(this.href,1024,240)" class="url2">?</a>]
    </TD>
 </TR>
 <TR><TD align=right><b>Happy Hours</b></TD><TD><input type="text" name="happy_hours" value="<TMPL_VAR happy_hours>" size=24> 2X speed for specified hours <small>(e.g. 3,4,5)</small></TD></TR>
@@ -229,6 +229,7 @@ http://www.site.com/<select name="link_format">
 <TR><TD align=right><b>Mask download link</b></TD><TD><input type="checkbox" name="mask_dl_link" value="1" id="mask_dl_link"<TMPL_IF mask_dl_link> checked</TMPL_IF>><label for="mask_dl_link"><TMPL_VAR lang_enabled></label> <small>(hide an actual download link in URL bar)</small></TD></TR>
 <TR><TD align=right><b>Memcached location</b></TD><TD><input type="text" name="memcached_location" value="<TMPL_VAR memcached_location>" size=24> <small>ip:port or UNIX socket path (recommended)</small></TD></TR>
 <TR><TD align=right><b>Adf.ly UID</b></TD><TD><input type="text" name="adfly_uid" value="<TMPL_VAR adfly_uid>" size=8></TD></TR>
+<TR><TD align=right><b>No Adblock earnings</b></TD><TD><input type="checkbox" name="no_adblock_earnings" value="1" id="no_adblock_earnings"<TMPL_IF no_adblock_earnings> checked</TMPL_IF>><label for="no_adblock_earnings"><TMPL_VAR lang_enabled></label> <small>(PPD fee will not be paid out if Adblock was detected)</small></TD></TR>
 </Table>
 
 <br>

@@ -109,6 +109,7 @@ sub Stats
          $money = $money / 1000;
          $money=0 if $file_rec->{file_ip}==$ip;
          $money=0 if $file->{usr_id}==$file->{owner_id};
+         $money=0 if $file->{status} eq 'ADBLOCK';
 
          my $owner = $db->SelectRow("SELECT * FROM Users WHERE usr_id=?", $file_rec->{usr_id}) if $file_rec->{usr_id};
          if($owner && $ses->iPlg('p'))
@@ -234,6 +235,8 @@ else
 sub CheckCodes
 {
    my @codes = split(/\,/,$f->{codes});
+   s/\W// for @codes;
+
    print("Content-type:text/html\n\nOK:"),exit unless @codes;
    my $ok = $db->SelectARef("SELECT file_real FROM Files WHERE file_real IN (".join(',', map{"'$_'"}@codes ).")");
    my %h;
@@ -444,10 +447,11 @@ sub SaveFile
    
    my $ex = $db->SelectRow("SELECT * FROM Files WHERE file_size=? AND file_md5=? AND file_real_id=0 LIMIT 1",$size,$md5)
             if $c->{anti_dupe_system};
-   undef($ex) if $c->{m_e} && $filename =~ /\.(avi|divx|xvid|mpg|mpeg|vob|mov|3gp|flv|mp4|wmv|mkv)$/i;
+
    my $real = $ex->{file_real} if $ex;
    my $real_id = $ex->{file_id} if $ex;
    my $srv_id = $ex ? $ex->{srv_id} : $server->{srv_id};
+   my $file_size_encoded = $ex ? $ex->{file_size_encoded} : 0;
    $f->{file_spec}=$ex->{file_spec} if $ex;
    #$server->{srv_id} = $ex->{srv_id} if $ex;
    $real ||= $code;
@@ -456,7 +460,7 @@ sub SaveFile
    $file_awaiting_approve = 0 if $c->{files_approve_regular_only} && $user && $user->{usr_aff_enabled};
    
    $db->Exec("INSERT INTO Files 
-              SET file_name=?, usr_id=?, srv_id=?, file_descr=?, file_fld_id=?, file_public=?, file_adult=?, file_code=?, file_real=?, file_real_id=?, file_del_id=?, file_size=?, 
+              SET file_name=?, usr_id=?, srv_id=?, file_descr=?, file_fld_id=?, file_public=?, file_adult=?, file_code=?, file_real=?, file_real_id=?, file_del_id=?, file_size=?, file_size_encoded=?,
                   file_password=?, file_ip=INET_ATON(?), file_md5=?, file_spec=?, file_awaiting_approve=?, file_upload_method=?, file_created=NOW(), file_last_download=NOW()",
                $filename,
                $usr_id,
@@ -470,6 +474,7 @@ sub SaveFile
                $real_id||0,
                $del_id,
                $size,
+               $file_size_encoded,
                $f->{file_password}||'',
                $f->{file_ip}||'1.1.1.1',
                $md5,

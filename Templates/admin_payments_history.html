@@ -1,0 +1,26 @@
+<TMPL_VAR paging>
+
+<table class="tbl1" cellpadding="2" cellspacing="1" style="width: 800px">
+<tr class="hdr">
+    <td>Username</td>
+    <td>Amount</td>
+    <td>Email</td>
+    <td>Payout system</td>
+    <td>Payment Info</td>
+    <td>Payment Status</td>
+    <td>Date</td>
+</tr>
+<TMPL_LOOP list>
+<tr align="center" class="">
+    <td><TMPL_VAR usr_login></td>
+    <td><TMPL_VAR amount></td>
+    <td><TMPL_VAR usr_email></td>
+    <td><TMPL_VAR pay_type></td>
+    <td><TMPL_VAR pay_email></td>
+    <td><TMPL_VAR status></td>
+    <td><TMPL_VAR created></td>
+</tr>
+</TMPL_LOOP>
+</table>
+
+<TMPL_VAR paging>

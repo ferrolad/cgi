@@ -141,7 +141,7 @@ sub ProcessFile
                        file_name    => $file->{file_name_orig},
                        file_descr   => $file->{file_descr},
                        file_size    => $file->{file_size},
-                       file_public  => $file->{file_public},
+                       file_public  => $file->{file_public}||$f->{file_public},
                        file_adult   => $f->{file_adult},
                        rslee        => $file->{rslee},
                        file_md5     => $file->{md5},

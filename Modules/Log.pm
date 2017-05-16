@@ -29,7 +29,7 @@ sub write {
 	my $self = shift;
 	my $level = shift;
 	my $message = shift;
-	my $time = gmtime(time);
+	my $time = localtime(time);
 	my $fd = $self->{FD};
 	$message =~ s/\s*$//;
 	print $fd "[$time][$$] $message\n"; 

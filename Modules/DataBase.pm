@@ -30,6 +30,7 @@ sub InitDB{
   $self->{dbh}=DBI->connect("DBI:mysql:database=$c->{'db_name'};host=$c->{'db_host'};",$c->{'db_login'},$c->{'db_passwd'}) || die ("Can't connect to Mysql server.".$! );
   $dbh->{'mysql_enable_utf8'} = 1;
   $self->Exec("SET NAMES 'utf8'");
+  $self->Exec("SET sql_mode = ''");
   $self->{'exec'}=0;
   $self->{'select'}=0;
 }

@@ -22,6 +22,7 @@
 								by 
 								<a href="<TMPL_VAR site_url>/users/<TMPL_VAR file_usr_login>" style="text-decoration: none;"><TMPL_VAR file_usr_login></a>
 								</TMPL_IF>
+                        <TMPL_IF admin> <a href="<TMPL_VAR site_url>/?op=admin_files&del_code=<TMPL_VAR file_code>&token=<TMPL_VAR token>" onClick="var x=prompt('<TMPL_VAR lang_delete_file> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined'||x==null)return false;this.href+='&del_info='+x;"><img src="<TMPL_VAR site_url>/images/del.gif" border=0></a></TMPL_IF>
 							</div>
 						</div>
 					</td>
@@ -172,6 +173,14 @@
 			
 			<input type="hidden" name="method_free" value="<TMPL_VAR method_free>">
 			<input type="hidden" name="method_premium" value="<TMPL_VAR method_premium>">
+
+			<TMPL_IF no_adblock_earnings>
+			<input type="hidden" id="adblock_detected" name="adblock_detected">
+			<div class="adsbox"></div>
+			<script>
+			$('#adblock_detected').val($('.adsbox').is(':visible') ? 0 : 1);
+			</script>
+			</TMPL_IF>
 
 			<div class="rightcol">
 				<TMPL_IF video_code>

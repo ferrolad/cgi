@@ -218,6 +218,10 @@ sub CheckAuth
            );
      $ses->{lang}->{mangle} = 1;
   }
+  else
+  {
+     $ses->{lang}->{mangle} = 0;
+  }
   if($ses->{user}->{usr_status} eq 'BANNED')
   {
      delete $ses->{user};
@@ -301,7 +305,7 @@ sub SelectServer
    my $user = shift;
 
    my @custom_filters = map { " AND $_"} @_;
-   my $type_filter = $user && $user->{utype} eq 'prem' ? "AND srv_allow_premium=1" : "AND srv_allow_regular=1";
+   my $type_filter = $user && $user->{premium} ? "AND srv_allow_premium=1" : "AND srv_allow_regular=1";
    my $country_filter;
 
    if($c->{m_g} && -f "$c->{cgi_path}/GeoIP.dat")

@@ -9,7 +9,9 @@ $CGI::Simple::POST_MAX = -1;
 my $q = new CGI::Simple;
 my $fname = $q->param('file');
 my $sid = $q->param('sid');
+
 $sid =~ s/\W//g;
+$fname =~ s/\W//g;
 
 unless(-d "$c->{temp_dir}/$sid")
 {

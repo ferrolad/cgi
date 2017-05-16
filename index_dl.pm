@@ -232,6 +232,12 @@ sub Download0
          $_->{payment_types} = \@payment_types;
       }
 
+      my @traffic_packages =  @{ $ses->ParsePlans($c->{traffic_plans}, 'array') };
+      for(@plans, @traffic_packages)
+      {
+         $_->{payment_types} = \@payment_types;
+      }
+
       return $ses->PrintTemplate("download0_alt.html", 
                                  %{$file},
                                  %{$c},
@@ -241,6 +247,7 @@ sub Download0
                                  'referer' => $f->{referer},
                                  'currency_symbol' => $c->{currency_symbol}||'$',
                                  'ask_email' => $ses->{utype} eq 'anon' && !$c->{no_anon_payments},
+                                 'traffic_packages' => \@traffic_packages,
                                  );
    }
 
@@ -419,7 +426,6 @@ sub Download1
       $file->{more_files} = $more_files;
    }
 
-   
    if($file->{file_name}=~/\.(jpg|jpeg|gif|png|bmp)$/i && $c->{m_i} && !$file->{file_password})
    {
       $ses->getThumbLink($file);
@@ -776,7 +782,8 @@ sub DownloadTrack
          # Don't charge any money, leave it for fs.cgi instead
          $db->Exec("INSERT INTO IP2Files SET 
                file_id=?, usr_id=?, owner_id=?, ip=INET_ATON(?), size=0, referer=?, status=?",      
-               $file->{file_id},$usr_id||0,$file->{usr_id}||0,$ses->getIP,$f->{referer}||'','Not completed');
+               $file->{file_id},$usr_id||0,$file->{usr_id}||0,$ses->getIP,$f->{referer}||'',
+               ($f->{adblock_detected} ? 'ADBLOCK' : 'Not completed'));
          return;
       }
 
@@ -788,6 +795,7 @@ sub DownloadTrack
          $money = 0;
       }
 
+      refuse('ADBLOCK') if $f->{adblock_detected};
       refuse('GEOIP_MISSING') if $ses->iPlg('p') && ! -e "$c->{cgi_path}/GeoIP.dat";
 
       if($ses->iPlg('p') && -e "$c->{cgi_path}/GeoIP.dat")

@@ -62,6 +62,7 @@
 								<form method="post" id="uploadurl" action="<TMPL_VAR srv_cgi_url>/upload.cgi?upload_type=url">
 								<input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
 								<input type="hidden" name="utype" value="<TMPL_VAR utype>">
+								<input type="hidden" name="file_public" value="<TMPL_VAR file_public_default>">
 								<TMPL_LOOP site_logins>
 								<input type="hidden" name="<TMPL_VAR name>" value="<TMPL_VAR value>">
 								</TMPL_LOOP>

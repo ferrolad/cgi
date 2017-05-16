@@ -76,6 +76,8 @@ sub GenerateLink
    my $ip        = $f->{ip};
    my $dx = sprintf("%05d",$f->{file_id}/$c->{files_per_folder});
    my $orig_dir = "$1/orig" if $c->{upload_dir} =~ /^(.*)\/uploads/;
+   $file_code =~ s/\W//g;
+
    my $file_path = $f->{orig} ? "$orig_dir/$dx/$file_code" : "$c->{upload_dir}/$dx/$file_code";
 
    &Send("ERROR:no_file") unless -f $file_path;

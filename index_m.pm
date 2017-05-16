@@ -273,18 +273,22 @@ sub RegisterExt
    if(!$usr_id)
    {
       # Creating the new one
+      my $profit_mode = $ses->iPlg('p') && $c->{m_y_default} ? $c->{m_y_default} : 'PPD';
+
       $db->Exec("INSERT INTO Users SET usr_login=?,
             usr_password=?,
             usr_status='OK',
             usr_email=?,
             usr_social=?,
             usr_social_id=?,
+            usr_profit_mode=?,
             usr_created=NOW()",
             $ret->{usr_login},
             $passwd_hash,
             $ret->{usr_email}||'',
             $f->{method},
             $ret->{usr_social_id},
+            $profit_mode,
           );
       $usr_id = $db->getLastInsertId;
       if($f->{method} eq 'twitter')
@@ -2232,6 +2236,7 @@ sub AdminSettings
                       traffic_plans
                       ftp_upload_reg
                       ftp_upload_prem
+                      no_adblock_earnings
 
                       enabled_anon
                       max_upload_files_anon
@@ -2952,6 +2957,19 @@ sub AdminPayments
                   $f->{reject_info}||'');
       return $ses->redirect_msg("$c->{site_url}/?op=admin_payments","Selected payments marked as Rejected");
    }
+   if($f->{history})
+   {
+	   my $list = $db->SelectARef("SELECT p.*, u.usr_login, u.usr_email
+         FROM Payments p
+         LEFT JOIN Users u ON u.usr_id=p.usr_id
+         ORDER BY created");
+
+      my $total = $db->SelectOne("SELECT COUNT(*) FROM Payments");
+
+      $ses->PrintTemplate('admin_payments_history.html',
+         'list' => $list,
+         'paging' => $ses->makePagingLinks($f,$total));
+   }
 
    my $list = $db->SelectARef("SELECT p.*, u.usr_login, u.usr_email, u.usr_pay_email, u.usr_pay_type
                                FROM Payments p, Users u
@@ -3265,7 +3283,7 @@ sub MyAccount
                        'm_y_change_ok'       => $m_y_change_ok,
                        'token'      => $ses->genToken,
                        'show_password_input' => $show_password_input,
-                       'leeches_list' => &getPluginsOptions('Leech', $ses->getUserData()),
+                       'leeches_list' => &getPluginsOptions('Leech', $ses->getUserData() || {}),
                        'leech' => $c->{leech},
                        'currency_symbol' => ($c->{currency_symbol}||'$'),
                        'enp_p' => $ses->iPlg('p'),
