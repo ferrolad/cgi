@@ -1,0 +1,53 @@
+<script src="<TMPL_VAR site_url>/js/jquery.bxslider.min.js"></script>
+<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/jquery.bxslider.css"/>
+
+<form action="">
+	<input type="hidden" name="op" value="admin_approve">
+   <input type="hidden" name="token" value="<TMPL_VAR token>">
+	<table class="tbl1" style="width: 1024px">
+	<tr class="hdr">
+	   <td><input type="checkbox" name="file_id"></td>
+	   <td>Filename</td>
+	   <td>Thumbnails</td>
+	   <td>Uploaded by</td>
+	   <td>IP</td>
+	   <td>Uploaded on</td>
+	</tr>
+	<TMPL_LOOP list>
+	<tr>
+	   <td align="center"><input type="checkbox" name="file_id" value="<TMPL_VAR file_id>"></td>
+	   <td><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a></td>
+	   <td>
+	    <TMPL_IF series>
+	    <div class="slider">
+	    <TMPL_LOOP series>
+		<img src="<TMPL_VAR url>" alt="thumb_<TMPL_VAR file_real>"/>
+	    </TMPL_LOOP>
+	    </div>
+	    </TMPL_IF>
+	   </td>
+	   <td><a href="<TMPL_VAR site_url>/?op=admin_user_edit&file_id=<TMPL_VAR file_id>"><TMPL_VAR usr_login></a></td>
+	   <td><a href="<TMPL_VAR site_url>/?op=admin_files&ip=<TMPL_VAR ip2>"><TMPL_VAR ip2></a></td>
+	   <td><TMPL_VAR file_created></td>
+	</tr>
+	</TMPL_LOOP>
+	<tr>
+	   <td colspan="6">
+	      <input type="submit" name="approve_selected" value="Approve selected">
+	      <input type="submit" name="del_selected" value="Delete selected">
+	   </td>
+	</tr>
+	</table>
+</form>
+
+<script>
+$(document).ready(function(){
+  $('.slider').bxSlider({
+    slideWidth: 150,
+    slideHeight: 120,
+    minSlides: 2,
+    maxSlides: 3,
+    slideMargin: 10
+  });
+});
+</script>

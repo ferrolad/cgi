@@ -1,0 +1,47 @@
+         <div id="ask-email" class="hide" title="Enter your e-mail...">
+            <p>Your e-mail: <input type="email" name="email"></p>
+            <br><br>
+            <p><small>Note: Your new account data will be sent to specified address. Please note that it may take up to several minutes to proceed.</small></p>
+            <br><br>
+            <p><input type="button" class="ask-email-proceed" name="proceed" value="Proceed to purchase >>" disabled=""></p>
+         </div>
+         <div style="clear:both;"></div>
+         <script>
+         function EmailDialog(element)
+         {
+            var url;
+            this.set_url = function(new_url)
+            {
+               url = new_url;
+               return this;
+            };
+            this.show = function()
+            {
+               $(element).dialog({ modal: true });
+            };
+            this.proceed = function()
+            {
+               var email = $(element).find('[name=email]').val();
+               document.location = url + '&email=' + escape(email);
+            };
+
+            var proceed = $(element).find('.ask-email-proceed').get(0);
+            var email = $(element).find('[name=email]').get(0);
+            $(proceed).click(this.proceed);
+
+            email.addEventListener("input", function()
+            {
+               $(proceed).attr('disabled', $(email).val().match(/^.+@.+$/) ? false : true);
+            });
+         }
+
+         <TMPL_IF ask_email>
+         var email_dialog = new EmailDialog('#ask-email')
+         $('.ask_email').click(function(event)
+         {
+	         event.preventDefault();
+	         email_dialog.set_url(this.href).show();
+	         return(false);
+         });
+         </TMPL_IF>
+         </script>

@@ -462,6 +462,8 @@ lang_lock_link_sent     => "Link to disable Security Lock sent to your email",
 lang_lock_activated     => "Security Lock activated",
 lang_lock_disabled      => "Security Lock disabled",
 lang_added_prem_time    => "Added premium time",
+
+lang_copy_files         => "Copy files",
 };
 
 sub getLang{return $lang;}

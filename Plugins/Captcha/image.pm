@@ -2,7 +2,7 @@ package Plugins::Captcha::image;
 
 sub generate {
    my ($self, $number, $fname) = @_;
-   return if $c->{captcha_mode} !~ /^(1|image)$/i;
+   return if $ses->{captcha_mode} !~ /^(1|image)$/i;
 
    eval {require GD;};
    die"Can't init GD perl module" if $@;
@@ -40,6 +40,7 @@ BLOCK
 
 sub check {
    my ($self, $f, $answer) = @_;
+   return if $ses->{captcha_mode} !~ /^(1|image)$/i;
 
    my $hash = $f->{rand};
    $hash =~ s/[^0-9a-z]//g;

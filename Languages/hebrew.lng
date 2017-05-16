@@ -468,6 +468,8 @@ lang_lock_link_sent     => "הקישור לביטול נעילת האבטחה נ
 lang_lock_activated     => "נעילת אבטחה הופעלה",
 lang_lock_disabled      => "נעילת אבטחה בוטלה",
 lang_added_prem_time    => "זמן פרימיום שנוסף",
+
+lang_copy_files         => "Copy files",
 };
 
 sub getLang{return $lang;}

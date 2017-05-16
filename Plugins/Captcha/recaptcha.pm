@@ -1,22 +1,31 @@
 package Plugins::Captcha::recaptcha;
-use Captcha::reCAPTCHA;
+use LWP::UserAgent;
+use JSON;
 
 sub generate
 {
    my ($self) = @_;
-   return if $c->{captcha_mode} !~ /^(3|recaptcha)$/i;
+   return if $ses->{captcha_mode} !~ /^(3|recaptcha)$/i;
    die("No reCAPTCHA API keys") if !$c->{recaptcha_pub_key} || !$c->{recaptcha_pri_key};
-   my $style = "<style>\n#recaptcha_image { margin: auto; }\n#recaptcha_widget { text-align: center; }\n</style>";
-   return $style . '<table><tr><td>' . Captcha::reCAPTCHA->new->get_html( $c->{recaptcha_pub_key}, 0, 0, {theme=>'white'} ) . '</td></tr></table>';
+   return <<BLOCK
+<script src='https://www.google.com/recaptcha/api.js'></script>
+<div class="g-recaptcha" data-sitekey="$c->{recaptcha_pub_key}"></div>
+BLOCK
+;
 }
 
 sub check
 {
    my ($self, $f) = @_;
-   return if $c->{captcha_mode} !~ /^(3|recaptcha)$/i;
-   Captcha::reCAPTCHA->new->check_answer($c->{recaptcha_pri_key}, $ses->getIP, 
-         $f->{recaptcha_challenge_field}, $f->{recaptcha_response_field},
-   )->{is_valid};
+   return if $ses->{captcha_mode} !~ /^(3|recaptcha)$/i;
+   my $res = LWP::UserAgent->new->post('https://www.google.com/recaptcha/api/siteverify',
+      {
+         response => $f->{'g-recaptcha-response'},
+         secret => $c->{recaptcha_pri_key},
+         remoteip => $ses->getIP,
+      });
+   my $ret = JSON::decode_json($res->decoded_content);
+   return 1 if $ret->{success} eq 'true';
 }
 
 1;

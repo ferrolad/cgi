@@ -1,32 +1,54 @@
+<link href="<TMPL_VAR site_url>/css/jquery-ui.css" rel="stylesheet"/>
+<script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>
+
 <br>
 <form action="" method="POST">
 <input type="hidden" name="op" value="admin_external">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 External domain: <input type="text" name="domain"> <input type="submit" name="generate_key" value="Generate key">
+<a href="#" onclick="return showHelp()">[?]</a>
 <table class="tbl1" width="640">
 <tr class="hdr">
    <td>Domain</td>
    <td>API Key</td>
+   <td>Stats</td>
    <td>Permissions</td>
    <td></td>
 </tr>
+<TMPL_IF list>
 <TMPL_LOOP list>
 <tr>
    <td><TMPL_VAR domain></td>
    <td><TMPL_VAR key_id><TMPL_VAR key_code></td>
+   <td align="center">
+      <a name="stats" href="?op=admin_external&stats=<TMPL_VAR key_id>"><TMPL_VAR requests_last_month> reqs / last month</a>
+   </td>
    <td>
       <input type="checkbox" class="perms" id="perm_download_<TMPL_VAR key_id>" name="perm_download" <TMPL_IF perm_download>checked</TMPL_IF>><label for="perm_download_<TMPL_VAR key_id>"> Download</label><br>
       <input type="checkbox" class="perms" id="perm_upload_<TMPL_VAR key_id>" name="perm_upload" <TMPL_IF perm_upload>checked</TMPL_IF>><label for="perm_upload_<TMPL_VAR key_id>"> Upload</label><br>
    </td>
-   <td align="center"><a href="?op=admin_external&del_key=<TMPL_VAR key_id>" onClick="return confirm('Do you really want to delete this key?');"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></td>
+   <td align="center"><a href="?op=admin_external&del_key=<TMPL_VAR key_id>&token=<TMPL_VAR token>" onClick="return confirm('Do you really want to delete this key?');"><img name="delete" src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></td>
 </tr>
 </TMPL_LOOP>
+<TMPL_ELSE>
+<td colspan="5" align="center">No generated keys</td>
+</TMPL_IF>
 <tr class="hdr">
-   <td colspan="4"></td>
+   <td colspan="5"></td>
 </tr>
 </table>
 </form>
 <script>
 $('.perms').change(function() {
-        $.ajax({ url: "<TMPL_VAR site_url>/?op=admin_external&set_perm=" + this.id + "&value=" + (this.checked ? 1 : 0) });
+        $.ajax({ url: "<TMPL_VAR site_url>/?op=admin_external&set_perm=" + this.id + "&value=" + (this.checked ? 1 : 0) + "&token=<TMPL_VAR token>"});
 });
+function showHelp()
+{
+   $('#show-help').dialog({ width: 950 });
+}
 </script>
+<div id="show-help" class="hide" title="Help">
+<small>This section lets you to provide an access for leeching and uploading (XFileMirror-only) capabilities to the external sites that are working on Sibsoft-powered scripts. If you have got a key from another site and would like to setup leeching from it, you need to put it in the 'URL Leech' settings as specified on picture.</small>
+<br><br>
+<img src="<TMPL_VAR site_url>/images/external_api_reference.png" alt="reference">
+</div>

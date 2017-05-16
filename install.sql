@@ -25,7 +25,19 @@ CREATE TABLE `APIKeys` (
   UNIQUE KEY `domain` (`domain`),
   UNIQUE KEY `key_code` (`key_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+--
+-- Table structure for table `APIStats`
+--
 
+CREATE TABLE `APIStats` (
+  `key_id` mediumint(8) unsigned NOT NULL,
+  `day` date NOT NULL,
+  `uploads` int(10) unsigned NOT NULL DEFAULT '0',
+  `downloads` int(10) unsigned NOT NULL DEFAULT '0',
+  `bandwidth_in` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `bandwidth_out` bigint(20) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`key_id`,`day`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 --
 -- Table structure for table `Bans`
 --
@@ -37,7 +49,6 @@ CREATE TABLE `Bans` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY `usr_id` (`usr_id`,`ip`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `BtTracker`
 --
@@ -45,13 +56,14 @@ CREATE TABLE `Bans` (
 CREATE TABLE `BtTracker` (
   `sid` varchar(100) NOT NULL,
   `peer_id` varchar(20) NOT NULL,
+  `file_id` int(10) unsigned NOT NULL,
+  `usr_id` mediumint(8) unsigned NOT NULL,
   `ip` bigint(20) unsigned NOT NULL,
   `port` smallint(5) unsigned NOT NULL,
   `last_announce` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `bytes_left` bigint(20) unsigned NOT NULL DEFAULT '0',
   UNIQUE KEY `sid` (`sid`,`peer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `Comments`
 --
@@ -72,7 +84,6 @@ CREATE TABLE `Comments` (
   KEY `date` (`created`),
   KEY `user` (`usr_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 --
 -- Table structure for table `DelReasons`
 --
@@ -84,7 +95,6 @@ CREATE TABLE `DelReasons` (
   `last_access` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`file_code`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 --
 -- Table structure for table `Files`
 --
@@ -104,6 +114,7 @@ CREATE TABLE `Files` (
   `file_downloads` int(10) unsigned NOT NULL DEFAULT '0',
   `file_views` int(10) unsigned NOT NULL DEFAULT '0',
   `file_size` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `file_size_encoded` bigint(20) unsigned NOT NULL DEFAULT '0',
   `file_password` varchar(32) NOT NULL DEFAULT '',
   `file_ip` int(20) unsigned NOT NULL DEFAULT '0',
   `file_md5` varchar(64) NOT NULL DEFAULT '',
@@ -114,6 +125,8 @@ CREATE TABLE `Files` (
   `file_premium_only` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `file_adult` tinyint(3) NOT NULL DEFAULT '0',
   `file_trashed` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `file_awaiting_approve` tinyint(1) NOT NULL DEFAULT '0',
+  `file_upload_method` varchar(16) NOT NULL DEFAULT '',
   PRIMARY KEY (`file_id`),
   KEY `real` (`file_real`),
   KEY `server` (`srv_id`),
@@ -124,7 +137,6 @@ CREATE TABLE `Files` (
   KEY `folder` (`file_fld_id`),
   KEY `size` (`file_size`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 --
 -- Table structure for table `FilesDeleted`
 --
@@ -138,7 +150,6 @@ CREATE TABLE `FilesDeleted` (
   `hide` tinyint(3) unsigned NOT NULL DEFAULT '0',
   KEY `user` (`usr_id`,`deleted`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `Folders`
 --
@@ -149,10 +160,10 @@ CREATE TABLE `Folders` (
   `fld_parent_id` int(10) unsigned NOT NULL DEFAULT '0',
   `fld_descr` text NOT NULL,
   `fld_name` varchar(128) NOT NULL DEFAULT '',
+  `fld_trashed` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`fld_id`),
   KEY `user` (`usr_id`,`fld_parent_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 --
 -- Table structure for table `IP2Files`
 --
@@ -174,7 +185,6 @@ CREATE TABLE `IP2Files` (
   KEY `ip` (`ip`,`created`),
   KEY `date` (`created`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `IP2RS`
 --
@@ -186,7 +196,6 @@ CREATE TABLE `IP2RS` (
   `ip` int(10) unsigned NOT NULL DEFAULT '0',
   KEY `created` (`created`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `IPNLogs`
 --
@@ -198,7 +207,6 @@ CREATE TABLE `IPNLogs` (
   `info` text NOT NULL,
   PRIMARY KEY (`ipn_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `LoginProtect`
 --
@@ -211,7 +219,6 @@ CREATE TABLE `LoginProtect` (
   KEY `usr_id` (`usr_id`),
   KEY `ip` (`ip`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `Misc`
 --
@@ -222,7 +229,6 @@ CREATE TABLE `Misc` (
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 --
 -- Table structure for table `News`
 --
@@ -235,7 +241,6 @@ CREATE TABLE `News` (
   `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`news_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 --
 -- Table structure for table `Payments`
 --
@@ -253,7 +258,6 @@ CREATE TABLE `Payments` (
   KEY `user` (`usr_id`),
   KEY `stat` (`status`,`created`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `PaymentsLog`
 --
@@ -265,7 +269,6 @@ CREATE TABLE `PaymentsLog` (
   `type` varchar(16) DEFAULT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `PremiumKeys`
 --
@@ -283,7 +286,18 @@ CREATE TABLE `PremiumKeys` (
   KEY `user` (`usr_id`,`key_created`),
   KEY `created` (`key_created`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+--
+-- Table structure for table `PremiumPackages`
+--
 
+CREATE TABLE `PremiumPackages` (
+  `usr_id` mediumint(8) unsigned DEFAULT NULL,
+  `type` varchar(16) DEFAULT NULL,
+  `quantity` mediumint(10) unsigned NOT NULL DEFAULT '0',
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `expires_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  KEY `usr_id` (`usr_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 --
 -- Table structure for table `QueueTransfer`
 --
@@ -304,7 +318,6 @@ CREATE TABLE `QueueTransfer` (
   PRIMARY KEY (`file_real`),
   KEY `srv2` (`srv_id2`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `Reports`
 --
@@ -327,7 +340,6 @@ CREATE TABLE `Reports` (
   KEY `status` (`status`),
   KEY `ban` (`ban_size`,`ban_md5`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 --
 -- Table structure for table `Servers`
 --
@@ -354,7 +366,6 @@ CREATE TABLE `Servers` (
   PRIMARY KEY (`srv_id`),
   UNIQUE KEY `fs_key` (`srv_key`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `Sessions`
 --
@@ -363,9 +374,9 @@ CREATE TABLE `Sessions` (
   `session_id` char(16) NOT NULL DEFAULT '',
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `last_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `api_key_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`session_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `SrvData`
 --
@@ -376,7 +387,6 @@ CREATE TABLE `SrvData` (
   `value` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`srv_id`,`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `Stats`
 --
@@ -387,10 +397,10 @@ CREATE TABLE `Stats` (
   `downloads` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `registered` smallint(5) unsigned NOT NULL DEFAULT '0',
   `bandwidth` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `paid` decimal(7,2) NOT NULL DEFAULT '0.00',
+  `received` decimal(9,4) NOT NULL DEFAULT '0.0000',
+  `paid_to_users` decimal(9,4) NOT NULL DEFAULT '0.0000',
   PRIMARY KEY (`day`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `Stats2`
 --
@@ -408,7 +418,6 @@ CREATE TABLE `Stats2` (
   `profit_site` decimal(9,5) unsigned NOT NULL DEFAULT '0.00000',
   PRIMARY KEY (`usr_id`,`day`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `Torrents`
 --
@@ -429,7 +438,6 @@ CREATE TABLE `Torrents` (
   KEY `user` (`usr_id`),
   KEY `status` (`status`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 --
 -- Table structure for table `Transactions`
 --
@@ -449,10 +457,10 @@ CREATE TABLE `Transactions` (
   `ref_url` varchar(255) NOT NULL DEFAULT '',
   `email` varchar(64) NOT NULL DEFAULT '',
   `rebill` tinyint(1) NOT NULL DEFAULT '0',
+  `target` varchar(16) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `user` (`usr_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `UserData`
 --
@@ -463,7 +471,6 @@ CREATE TABLE `UserData` (
   `value` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`usr_id`,`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `Users`
 --
@@ -503,11 +510,14 @@ CREATE TABLE `Users` (
   `usr_aff_enabled` tinyint(1) NOT NULL DEFAULT '0',
   `usr_aff_max_dl_size` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `usr_dmca_agent` tinyint(1) NOT NULL DEFAULT '0',
+  `usr_sales_percent` smallint(3) NOT NULL DEFAULT '0',
+  `usr_rebills_percent` smallint(3) NOT NULL DEFAULT '0',
+  `usr_m_x_percent` smallint(3) NOT NULL DEFAULT '0',
+  `usr_premium_traffic` bigint(20) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`usr_id`),
   KEY `login` (`usr_login`),
   KEY `aff_id` (`usr_aff_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `Websites`
 --
@@ -519,7 +529,6 @@ CREATE TABLE `Websites` (
   PRIMARY KEY (`domain`),
   KEY `user` (`usr_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

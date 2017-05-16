@@ -1,6 +1,6 @@
 package Math::Base62;
 
-use parent "Exporter";
+use base "Exporter";
 our @EXPORT = qw(encode_base62 decode_base62);
 
 $i = 0;

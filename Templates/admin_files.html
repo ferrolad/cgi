@@ -66,7 +66,7 @@
 <TR class="hdr">
     <TD colspan=13 style="text-align:left;">
     <input type="submit" name="del_selected" value="<TMPL_VAR lang_delete_selected>" class="" onClick="var x=prompt('<TMPL_VAR lang_delete_confirm> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined'||x==null)return false;this.form.del_info.value=x;"> &nbsp;
-    <input type="button" value="Transfer to..." class="btn2 lmargin10" onclick="$(this).hide();$('#trans_id').show();">
+    <input type="button" name="transfer_to" value="Transfer to..." class="btn2 lmargin10" onclick="$(this).hide();$('#trans_id').show();">
     <span id="trans_id" style="display:none" class="lmargin10">
         <select name="srv_id2">
         <option value="">Transfer files to</option>
@@ -77,7 +77,7 @@
         <input type="submit" name="transfer_files" value="Transfer" class="btn2">
     </span>
     &nbsp;
-    <input type="button" value="Special..." class="btn2 lmargin10" onclick="$(this).hide();$('#btn_special').show();">
+    <input type="button" name="special" value="Special..." class="btn2 lmargin10" onclick="$(this).hide();$('#btn_special').show();">
     <span id="btn_special" class="inv" style="display: none;">
 	    <TMPL_IF m_v>
         <input type="submit" name="reencode_selected" value="Re-encode" class="btn2 lmargin10"> &nbsp;

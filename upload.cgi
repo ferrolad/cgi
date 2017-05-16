@@ -12,6 +12,7 @@ use HTTP::Cookies;
 use HTML::Form;
 use HTTP::Request::Common;
 use File::Temp;
+use File::Basename;
 use URI;
 use JSON;
 use Log;
@@ -19,7 +20,10 @@ use Log;
 Log->new(filename => 'upload.log');
 $|++;
 
-print("Access-Control-Allow-Origin: *\n"); # Allow Cross-domain XHRs
+my ($upload_type) = $ENV{QUERY_STRING}=~/upload_type=([a-z]+)/;
+my $nginx = 1 if $ENV{HTTP_X_DL_KEY} eq $c->{dl_key};
+
+print("Access-Control-Allow-Origin: *\n") if !$nginx;
 print("Content-type: text/plain\n\nOK"), exit if $ENV{REQUEST_METHOD} eq 'OPTIONS';
 
 my $temp_dir = File::Temp::tempdir(DIR => $c->{temp_dir}, CLEANUP => 1);
@@ -37,15 +41,13 @@ my $utype = $cg->param('utype');
 $utype||='anon';
 $c->{$_}=$c->{"$_\_$utype"} for qw(enabled max_upload_files max_upload_filesize max_rs_leech remote_url leech);
 
-my ($upload_type) = $ENV{QUERY_STRING}=~/upload_type=([a-z]+)/;
-
 print STDERR "Starting upload. Size: $ENV{'CONTENT_LENGTH'} Upload type: $upload_type\n";
 my ($sid) = ($ENV{QUERY_STRING}=~/upload_id=(\d+)/); # get the random id for temp files
 
 my @urls;
 
 $c->{ip_not_allowed}=~s/\./\\./g;
-if( $c->{ip_not_allowed} && &GetIP() =~ /$c->{ip_not_allowed}/ ) {
+if( $c->{ip_not_allowed} && &GetIP() =~ /^($c->{ip_not_allowed})$/ ) {
     &xmessage("ERROR: $c->{msg}->{ip_not_allowed}");
 }
 if(!$c->{enabled}) {
@@ -58,10 +60,14 @@ if($c->{max_upload_filesize} && $ENV{CONTENT_LENGTH} > 1048576*$c->{max_upload_f
     &xmessage("ERROR: $c->{msg}->{file_size_big}$c->{max_upload_filesize} Mb");
 }
 
-print "Content-type: application/json\n\n";
-
 &TorrentUpload() if $f->{torr_on};
-my @file_inputs = $upload_type eq 'url' ? &URLUpload() : &FileUpload();
+
+print "Content-type: application/json\n\n";
+my @file_inputs;
+@file_inputs = &URLUpload() if $upload_type eq 'url';
+@file_inputs = &NginxUpload() if $upload_type eq 'file' && $nginx && $f->{'file_0.name'};
+@file_inputs = &FileUpload() if !@file_inputs;
+
 my @results = ProcessFiles(@file_inputs);
 print JSON::encode_json(\@results);
 exit();
@@ -88,7 +94,7 @@ sub ProcessFiles
         if $file->{file_error};
 
 # --------------------
-        $file = &XUpload::ProcessFile($file,$f) unless $file->{file_status};
+        $file = &XUpload::ProcessFile($file, { %$f, file_upload_method => $upload_type }) unless $file->{file_status};
 # --------------------
 
         $file->{file_status}||='OK';
@@ -130,10 +136,11 @@ sub kill_session
 
     my $session_data = "$c->{htdocs_tmp_dir}/$sid.json";
     open (FILE, $session_data) || &Send("No session data");
-    my $json = JSON::decode_json(<FILE>);
+    my $jsonp = <FILE>;
+    my $object = JSON::decode_json($1) if $jsonp =~ /update_stat\(({.*})\)/;
     close FILE;
 
-    kill 9, $json->{pid};
+    kill 9, $object->{pid};
     unlink($session_data);
     &Send("OK");
 }
@@ -285,6 +292,7 @@ sub make_lwp_hook
 	        print "# Keep-Alive\n" if $f->{keepalive};
 
 	        open(F,">$c->{htdocs_tmp_dir}/$sid.json");
+		print F "update_stat(";
 	        print F JSON::encode_json(
 	            {
 	                pid => $$,
@@ -293,6 +301,7 @@ sub make_lwp_hook
 	                loaded => "$current_bytes",
 	                files_done => "$files_uploaded"
 	            });
+		print F ")";
 	        close F;
 	    }
 	};
@@ -304,20 +313,24 @@ sub FileUpload
 {
     my @file_inputs;
 
-    for my $input( $cg->param() ) {
+    my %params;
+    $params{$_} = [ $cg->param($_) ] for qw(file_descr file_public);
+
+    for my $input( $cg->param() )
+    {
         my @params = $cg->param($input);
         next unless my @file_names=$cg->upload($input);
         # HTML5 multi-upload support
         my $i = 0;
-        foreach(@file_names) {
+        foreach(@file_names)
+        {
             my $u;
             ($u->{file_name_orig})=$cg->uploadInfo($_)->{'Content-Disposition'}=~/filename="(.+?)"/i;
             $u->{file_name_orig}=~s/^.*\\([^\\]*)$/$1/;
             $u->{file_size}   = -s $_;
-            $u->{file_descr}  = ($cg->param("file_descr"))[$i];
-            $u->{file_public} = ($cg->param("file_public"))[$i];
-            print STDERR "input=$input public=$u->{file_public}\n";
-            $u->{file_adult}  = ($cg->param("file_adult"))[$i];
+            $u->{file_descr}  = shift @{ $params{'file_descr'} };
+            $u->{file_public}  = shift @{ $params{'file_public'} };
+            $u->{file_adult}  = shift @{ $params{'file_adult'} };
             $u->{file_tmp}    = $cg->tmpFileName($_);
             push @file_inputs, $u;
             $i++;
@@ -325,6 +338,24 @@ sub FileUpload
     }
 
     return @file_inputs;
+}
+
+sub NginxUpload
+{
+   my @file_inputs;
+
+   for(my $i = 0; $f->{"file\_$i.path"}; $i++)
+   {
+      my $xfile = {};
+      $xfile->{file_tmp} = "$c->{temp_dir}/$1" if basename($f->{"file_$i.path"}) =~ /^([0-9]+)$/;
+      next if !$xfile->{file_tmp};
+
+      $xfile->{file_name_orig} = $f->{"file_$i.name"};
+      $xfile->{file_size} = $f->{"file_$i.size"};
+      push @file_inputs, $xfile;
+   }
+
+   return @file_inputs;
 }
 
 sub parseTorrent
@@ -400,5 +431,6 @@ sub xmessage {
 }
 
 sub GetIP {
+    return $ENV{HTTP_X_REAL_IP} if $ENV{HTTP_X_REAL_IP} && $nginx;
     return $ENV{REMOTE_ADDR};
 }

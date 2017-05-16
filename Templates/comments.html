@@ -5,18 +5,18 @@
 <div class="cmt_hdr">
 <b><TMPL_VAR cmt_name></b>
 <TMPL_IF email> &nbsp; <a href="mailto:<TMPL_VAR email>">@</a></TMPL_IF>
-<TMPL_IF adm> &nbsp; <a href="#" onClick="return jah('<TMPL_VAR site_url>/?op=cmt_del&amp;i=<TMPL_VAR cmt_id>')">[X]</a> <TMPL_VAR ip></TMPL_IF>
+<TMPL_IF adm> &nbsp; <a name="delete" href="<TMPL_VAR site_url>/?op=cmt_del&amp;cmt_id=<TMPL_VAR cmt_id>">[X]</a> <TMPL_VAR ip></TMPL_IF>
  &nbsp; <TMPL_VAR date>
 </div>
-<p><TMPL_VAR cmt_text></p>
+<p name="cmt_body"><TMPL_VAR cmt_text></p>
 </div>
 </TMPL_LOOP>
 <div id="cnew"></div>
 
-<center><a href="#" id="showcmt"><TMPL_VAR lang_comment_on_this></a></center>
-
-<div id="cmt_form" style="display:none">
-<Form method="POST" action="<TMPL_VAR site_url>/" onSubmit="return submitCommentsForm(this)">
+<div id="cmt_form">
+<Form method="POST" action="<TMPL_VAR site_url>/">
+<input type="hidden" name="op" value="comment_add">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <h2><TMPL_VAR lang_leave_reply></h2>
 <input type="hidden" name="cmt_type" value="<TMPL_VAR cmt_type>">
 <input type="hidden" name="cmt_ext_id" value="<TMPL_VAR cmt_ext_id>">
@@ -28,14 +28,6 @@
 </TMPL_UNLESS>
 <Textarea name="text" style="width:100%;display:none;" cols=24 rows=3></Textarea>
 <Textarea name="cmt_text" style="width:100%;display:block;" cols=24 rows=3 id='cmt_txt'></Textarea>
-<input type="submit" value="<TMPL_VAR lang_leave_reply>">
+<input type="submit" name="submit" value="<TMPL_VAR lang_leave_reply>">
 </Form>
 </div>
-
-<script>
-$("#showcmt").click( function(){
-    $("#showcmt").hide("normal");
-    $("#cmt_form").show("normal");
-    return false;
-});
-</script>

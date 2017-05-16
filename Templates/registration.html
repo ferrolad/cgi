@@ -25,7 +25,7 @@
 </TD></TR>
 <TMPL_IF coupons><TR><TD align=right><b><TMPL_VAR lang_coupon_code></b><br><small>(<TMPL_VAR lang_optional>)</small></td><td><input type="text" name="coupon_code" value="<TMPL_VAR coupon_code>" size=12></td></tr></TMPL_IF>
 <TMPL_IF ihtml><TR><TD colspan=2 align=center><TMPL_VAR ihtml></td></tr></TMPL_IF>
-<TR><TD colspan=2 align=center><TMPL_IF msg><font class="err"><TMPL_VAR msg></font><br><br></TMPL_IF><input type="submit" value=" <TMPL_VAR lang_submit> "></TD></TR>
+<TR><TD colspan=2 align=center><TMPL_IF msg><font class="err"><TMPL_VAR msg></font><br><br></TMPL_IF><input type="submit" name="submit" value=" <TMPL_VAR lang_submit> "></TD></TR>
 </Table>
 </Form>
 </div>

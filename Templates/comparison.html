@@ -25,8 +25,8 @@
 								<li> - </li>
 								<li><TMPL_VAR bw_limit_anon></li>
 								<li><TMPL_IF remote_url_anon><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_g.png"></TMPL_IF></li>
-								<li><TMPL_IF direct_links_anon><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_g.png"></TMPL_IF></li>
-								<li><TMPL_IF direct_links_anon><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_g.png"></TMPL_IF></li>
+								<li><TMPL_IF download_resume_anon><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_g.png"></TMPL_IF></li>
+								<li><TMPL_IF download_resume_anon><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_g.png"></TMPL_IF></li>
 								<li><TMPL_IF download_countdown_anon><img src="<TMPL_VAR site_url>/images/icon_no_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"></TMPL_IF></li>
 								<li><TMPL_IF captcha_anon><img src="<TMPL_VAR site_url>/images/icon_no_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"></TMPL_IF></li>
 								<li><TMPL_IF ads_anon><img src="<TMPL_VAR site_url>/images/icon_no_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"></TMPL_IF></li>
@@ -39,11 +39,11 @@
 							</div>
 							<ul>
 								<li><TMPL_VAR max_upload_filesize_prem></li>
-								<li> - </li>
+								<li><TMPL_VAR disk_space_prem></li>
 								<li><TMPL_VAR bw_limit_prem></li>
 								<li><TMPL_IF remote_url_prem><img src="<TMPL_VAR site_url>/images/icon_yes_w.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_w.png"></TMPL_IF></li>
-								<li><TMPL_IF direct_links_prem><img src="<TMPL_VAR site_url>/images/icon_yes_w.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_w.png"></TMPL_IF></li>
-								<li><TMPL_IF direct_links_prem><img src="<TMPL_VAR site_url>/images/icon_yes_w.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_w.png"></TMPL_IF></li>
+								<li><TMPL_IF download_resume_prem><img src="<TMPL_VAR site_url>/images/icon_yes_w.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_w.png"></TMPL_IF></li>
+								<li><TMPL_IF download_resume_prem><img src="<TMPL_VAR site_url>/images/icon_yes_w.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_w.png"></TMPL_IF></li>
 								<li><TMPL_IF download_countdown_prem><img src="<TMPL_VAR site_url>/images/icon_no_w.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_yes_w.png"></TMPL_IF></li>
 								<li><TMPL_IF captcha_prem><img src="<TMPL_VAR site_url>/images/icon_no_w.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_yes_w.png"></TMPL_IF></li>
 								<li><TMPL_IF ads_prem><img src="<TMPL_VAR site_url>/images/icon_no_w.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_yes_w.png"></TMPL_IF></li>
@@ -60,11 +60,11 @@
 						</div>
 							<ul>
 								<li><TMPL_VAR max_upload_filesize_reg></li>
-								<li> - </li>
+								<li><TMPL_VAR disk_space_reg></li>
 								<li><TMPL_VAR bw_limit_reg></li>
 								<li><TMPL_IF remote_url_reg><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_g.png"></TMPL_IF></li>
-								<li><TMPL_IF direct_links_reg><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_g.png"></TMPL_IF></li>
-								<li><TMPL_IF direct_links_reg><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_g.png"></TMPL_IF></li>
+								<li><TMPL_IF download_resume_reg><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_g.png"></TMPL_IF></li>
+								<li><TMPL_IF download_resume_reg><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_no_g.png"></TMPL_IF></li>
 								<li><TMPL_IF download_countdown_reg><img src="<TMPL_VAR site_url>/images/icon_no_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"></TMPL_IF></li>
 								<li><TMPL_IF captcha_reg><img src="<TMPL_VAR site_url>/images/icon_no_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"></TMPL_IF></li>
 								<li><TMPL_IF ads_reg><img src="<TMPL_VAR site_url>/images/icon_no_g.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_yes_g.png"></TMPL_IF></li>

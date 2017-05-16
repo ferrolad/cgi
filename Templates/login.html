@@ -6,6 +6,8 @@
 
 <form method="POST" action="<TMPL_VAR site_url>/" name="FL">
 <input type="hidden" name="op" value="login">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
+<input type="hidden" name="rand" value="<TMPL_VAR rand>">
 <input type="hidden" name="redirect" value="<TMPL_VAR redirect>">
 <table style="width: 500px">
 <tr>
@@ -14,6 +16,7 @@
 <tr>
 <td><TMPL_VAR lang_password>:</td><td><input type="password" name="password" class="myForm"></td>
 </tr>
+<TMPL_IF ihtml><TR><TD colspan=2 align=center><TMPL_VAR ihtml></td></tr></TMPL_IF>
 </table>
 <TMPL_IF msg><b class='err'><TMPL_VAR msg></b><br></TMPL_IF>
 <br>
@@ -26,10 +29,10 @@
 
 <TMPL_IF m_c>
 <div class="rrd">
-	<TMPL_IF facebook_app_id><a href="<TMPL_VAR site_url>/?op=login&method=facebook"><img src="<TMPL_VAR site_url>/images/facebook.png" alt="Login with Facebook"></a></TMPL_IF>
-	<TMPL_IF twit_consumer1><a href="<TMPL_VAR site_url>/?op=login&method=twitter"><img src="<TMPL_VAR site_url>/images/twitter.png" alt="Login with Twitter"></a></TMPL_IF>
-	<TMPL_IF google_app_id><a href="<TMPL_VAR site_url>/?op=login&method=google"><img src="<TMPL_VAR site_url>/images/google+.png" alt="Login with Google"></a></TMPL_IF>
-	<TMPL_IF vk_app_id><a href="<TMPL_VAR site_url>/?op=login&method=vk"><img src="<TMPL_VAR site_url>/images/vk.png" alt="Login with Vk.com"></a></TMPL_IF>
+	<TMPL_IF facebook_app_id><a name="auth_facebook" href="<TMPL_VAR site_url>/?op=login&method=facebook"><img src="<TMPL_VAR site_url>/images/facebook.png" alt="Login with Facebook"></a></TMPL_IF>
+	<TMPL_IF twit_consumer1><a name="auth_twitter" href="<TMPL_VAR site_url>/?op=login&method=twitter"><img src="<TMPL_VAR site_url>/images/twitter.png" alt="Login with Twitter"></a></TMPL_IF>
+	<TMPL_IF google_app_id><a name="auth_google" href="<TMPL_VAR site_url>/?op=login&method=google"><img src="<TMPL_VAR site_url>/images/google+.png" alt="Login with Google"></a></TMPL_IF>
+	<TMPL_IF vk_app_id><a name="auth_vk" href="<TMPL_VAR site_url>/?op=login&method=vk"><img src="<TMPL_VAR site_url>/images/vk.png" alt="Login with Vk.com"></a></TMPL_IF>
 </div>
 </TMPL_IF>
 

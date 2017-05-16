@@ -4,7 +4,7 @@ use List::Util qw(shuffle);
 sub generate
 {
    my ($self, $number) = @_;
-   return if $c->{captcha_mode} !~ /^(2|text)$/i;
+   return if $ses->{captcha_mode} !~ /^(2|text)$/i;
 
    my @arr = split '', $number;
    my $i=0;
@@ -29,7 +29,7 @@ BLOCK
 sub check
 {
    my ($self, $f, $answer) = @_;
-   return if $c->{captcha_mode} !~ /^(2|text)$/i;
+   return if $ses->{captcha_mode} !~ /^(2|text)$/i;
    return $f->{code} eq $answer;
 }
 

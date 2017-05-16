@@ -31,7 +31,7 @@ my $server = $db->SelectRow("SELECT * FROM Servers WHERE srv_key=?", $f->{fs_key
 &Send("333") unless $server;
 #&Send("444") unless $server->{srv_ip} eq $ENV{REMOTE_ADDR};
 
-&Stats if $f->{op} eq 'stats' && $c->{m_n_100_complete};
+&Stats if $f->{op} eq 'stats' && $c->{m_n_100_complete_percent};
 
 sub Stats
 {
@@ -70,9 +70,9 @@ sub Stats
                                file_id=?",
                                $ip,
                                $usr_id,
-                               $file_rec->{usr_id},
+                               $file_rec->{usr_id}||0,
                                $file_id);
-         $file = {ip=>$ip, usr_id=>$usr_id, file_id=>$file_id, owner_id=>$file_rec->{usr_id}};
+         $file = {ip=>$ip, usr_id=>$usr_id, file_id=>$file_id, owner_id=>$file_rec->{usr_id}||0};
       }
 
       $file->{size} += $bandwidth;
@@ -189,7 +189,7 @@ my $session = $db->SelectRow("SELECT * FROM Sessions WHERE session_id=?", $f->{s
 my $torrent = $db->SelectRow("SELECT * FROM Torrents WHERE sid=?", $f->{sid});
 
 $user ||= &GetUser($torrent->{usr_id}) if $torrent;
-$user ||= &GetUser($session->{usr_id}) if $session;
+$user ||= &GetUser($session->{usr_id}) if $session && $session->{usr_id};
 $user ||= &GetUser($f->{usr_id}) if $f->{usr_id};
 $user ||= &GetUser($db->SelectOne("SELECT usr_id FROM Users WHERE usr_login=?", $f->{usr_login})) if $f->{usr_login};
 
@@ -451,10 +451,13 @@ sub SaveFile
    $f->{file_spec}=$ex->{file_spec} if $ex;
    #$server->{srv_id} = $ex->{srv_id} if $ex;
    $real ||= $code;
+
+   my $file_awaiting_approve = 1 if $c->{files_approve};
+   $file_awaiting_approve = 0 if $c->{files_approve_regular_only} && $user && $user->{usr_aff_enabled};
    
    $db->Exec("INSERT INTO Files 
               SET file_name=?, usr_id=?, srv_id=?, file_descr=?, file_fld_id=?, file_public=?, file_adult=?, file_code=?, file_real=?, file_real_id=?, file_del_id=?, file_size=?, 
-                  file_password=?, file_ip=INET_ATON(?), file_md5=?, file_spec=?, file_created=NOW(), file_last_download=NOW()",
+                  file_password=?, file_ip=INET_ATON(?), file_md5=?, file_spec=?, file_awaiting_approve=?, file_upload_method=?, file_created=NOW(), file_last_download=NOW()",
                $filename,
                $usr_id,
                $srv_id,
@@ -471,6 +474,8 @@ sub SaveFile
                $f->{file_ip}||'1.1.1.1',
                $md5,
                $f->{file_spec}||'',
+               $file_awaiting_approve||0,
+               $f->{file_upload_method}||'',
              );
    
    my $file_id = $db->getLastInsertId;
@@ -482,6 +487,14 @@ sub SaveFile
               WHERE srv_id=?", $size, $srv_id );
    
    $db->Exec("INSERT INTO Stats SET day=CURDATE(), uploads=1 ON DUPLICATE KEY UPDATE uploads=uploads+1");
+
+   if($session && $session->{api_key_id})
+   {
+	   $db->Exec("INSERT INTO APIStats SET key_id=?, day=CURDATE(),
+	      uploads=1, bandwidth_in=?
+	      ON DUPLICATE KEY UPDATE uploads=uploads+1, bandwidth_in=bandwidth_in+?",
+         $session->{api_key_id}, $size, $size);
+   }
    
    if($f->{compile})
    {
@@ -507,7 +520,13 @@ sub FileNewSize
 
 sub FileNewSpec
 {
-   if($f->{file_code} && $f->{file_size} && $f->{encoded})
+   if($f->{file_code} && $f->{file_size} && $f->{preserve_orig})
+   {
+      $db->Exec("UPDATE Files 
+                 SET file_spec=?, file_size_encoded=? 
+                 WHERE file_real=?",$f->{file_spec},$f->{file_size},$f->{file_code});
+   }
+   elsif($f->{file_code} && $f->{file_size} && $f->{encoded})
    {
       my $ext = $c->{m_e_flv} ? 'flv' : 'mp4';
       $db->Exec("UPDATE Files 
@@ -571,7 +590,9 @@ sub QueueTransferNext
    
    $task->{dx} = sprintf("%05d",($file->{file_real_id}||$file->{file_id})/$c->{files_per_folder});
    $task->{file_real} = $file->{file_real};
-   $task->{direct_link} = $ses->getPlugins('CDN')->genDirectLink($file, dl_method => 'cgi', link_ip_logic => 'all');
+   $task->{direct_link} = $ses->getPlugins('CDN')->genDirectLink($file, dl_method => 'cgi', link_ip_logic => 'all',
+      encoded => $file->{file_size_encoded} ? 1 : 0);
+   $task->{orig_link} = $ses->getPlugins('CDN')->genDirectLink($file, dl_method => 'cgi', link_ip_logic => 'all') if $file->{file_size_encoded};
    $task->{cdn_data} = $ses->getSrvData($task->{srv_id2});
    $task->{direction} = ($task->{srv_id1} == $server->{srv_id}) ? 'from' : 'to';
    $task->{$_} = $file->{$_} for qw(srv_htdocs_url);

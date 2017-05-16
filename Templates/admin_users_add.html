@@ -6,6 +6,7 @@
 <Form method="POST">
 Generate <input type="text" name="num" size=2> users with <input type="text" name="prem_days" size=2> premium days<br><input type="submit" name="generate" value="Generate"><br><br>
 <input type="hidden" name="op" value="admin_users_add">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 Format: login:password:premium_days:email<br>
 (premium_days and email fields are optional)
 <br><br>

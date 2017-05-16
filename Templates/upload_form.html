@@ -1,3 +1,4 @@
+   <TMPL_IF msg><br><font class="ok"><TMPL_VAR msg></font><br><br></TMPL_IF>
    <div style="width: 980px">
    <link href="//code.jquery.com/ui/1.11.2/themes/cupertino/jquery-ui.css" type="text/css" rel="stylesheet" />
    <script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>
@@ -7,15 +8,15 @@
 	<script src="<TMPL_VAR site_url>/js/multiselector.js"></script>
 			<div class="section">
 				<ul class="tabs">
-					<li class="current"><TMPL_VAR lang_file_upload></li>
-					<li><TMPL_VAR lang_url_upload></li>
-					<li>Copy Files</li>
-					<TMPL_IF mmtt><li><TMPL_VAR lang_form_torrent></li></TMPL_IF>
-					<TMPL_IF ftp_mod><li>FTP upload</li></TMPL_IF>
+					<li id="select_file" class="current"><TMPL_VAR lang_file_upload></li>
+					<li id="select_url"><TMPL_VAR lang_url_upload></li>
+					<li id="select_copy"><TMPL_VAR lang_copy_files></li>
+					<TMPL_IF mmtt><li id="select_torrent"><TMPL_VAR lang_form_torrent></li></TMPL_IF>
+					<TMPL_IF ftp_mod><li id="select_ftp">FTP upload</li></TMPL_IF>
 				</ul>
-				<div class="uploadtab box visible">
+				<div class="uploadtab box visible" id="file_upload">
 					<div class="tabcontent">
-						<form id="uploadfile" action="<TMPL_VAR srv_cgi_url>/upload.cgi?upload_type=file">
+						<form id="uploadfile" action="<TMPL_VAR file_upload_url>">
 						<input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
 						<input type="hidden" name="utype" value="<TMPL_VAR utype>">
 						<div class="uploadfile">
@@ -52,7 +53,7 @@
 					</div>
 					<div class="clear"></div>
 				</div>
-				<div class="box">
+				<div class="box" id="url_upload">
 					<TMPL_IF remote_url>
 					<div class="tabcontent">
 					   <div class="progress_div"></div>
@@ -97,7 +98,7 @@
 								<div class="clear"></div>
 								<!--Start TOS n Load-->
 								<div style="text-align: center; padding: 10px; margin: 20px auto;"> 
-									<button class="uploadbtn">
+									<button name="upload" class="uploadbtn">
 									<span class="bicon">
 									<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_upload_b.png">
 									<img class="barrow van move-top" src="<TMPL_VAR site_url>/images/icon_f_btn_upload.png">
@@ -105,7 +106,7 @@
 									<span class="btext">Upload<i>!</i></span>
 									</button>	
 										<div class="clear"></div>
-									<input type="checkbox" name="tos" value="">
+									<input type="checkbox" name="tos" value=""<TMPL_IF agree_tos_default> checked</TMPL_IF>>
 										<span class="tosread">I have read and agree to the TOS</span>
 								</div>
 								<!-- End TOS n Load-->
@@ -117,7 +118,7 @@
 					</TMPL_IF>
 					<div class="clear"></div>
 				 </div> <!-- End Remote URL Upload Tab -->
-				<div class="box"> <!-- Start Copy Files Tab -->
+				<div class="box" id="copy_upload"> <!-- Start Copy Files Tab -->
 					<div class="tabcontent">
 						<div class="copyfiles">
 							<form method="post" action="<TMPL_VAR site>" onsubmit="if(!this.tos.checked){ alert('You must agree with TOS'); return(false); }">
@@ -127,7 +128,7 @@
 								<div class="clear"></div>
 								<!--Start TOS n Load-->
 								<div style="text-align: center; padding: 10px; margin: 20px auto;"> 
-									<button class="uploadbtn">
+									<button name="upload" class="uploadbtn">
 									<span class="bicon">
 									<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_upload_b.png">
 									<img class="barrow van move-top" src="<TMPL_VAR site_url>/images/icon_f_btn_upload.png">
@@ -135,7 +136,7 @@
 									<span class="btext">Upload<i>!</i></span>
 									</button>	
 										<div class="clear"></div>
-									<input type="checkbox" name="tos" value="">
+									<input type="checkbox" name="tos" value=""<TMPL_IF agree_tos_default> checked</TMPL_IF>>
 										<span class="tosread">I have read and agree to the TOS</span>
 								</div>
 								<!-- End TOS n Load-->
@@ -145,7 +146,7 @@
 					<div class="clear"></div>
 				</div> <!-- End Copy Files Tab -->
 				<TMPL_IF mmtt>
-				<div class="box"> <!-- Start Torrent Leech Tab -->
+				<div class="box" id="torrent_upload"> <!-- Start Torrent Leech Tab -->
 					<div class="tabcontent">
 						<TMPL_IF mmtt_on>
 						<div class="torrent">
@@ -180,25 +181,27 @@
 					<div class="clear"></div>
 				 </div> <!-- End Torrent Leech Tab -->
 				 </TMPL_IF>
-				 <TMPL_IF ftp_mod>
+				<TMPL_IF ftp_mod>
 				<div class="box"> <!-- Start FTP Upload Tab -->
 					<div class="tabcontent">
+					   <TMPL_IF ftp_upload_user>
 						<div class="ftpupload">
 								<input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
 								<input type="hidden" name="utype" value="<TMPL_VAR utype>">
 								<input type="hidden" name="torr_on" value="1">
 								<div class="uploadfile">
-								<TMPL_LOOP ftp_servers>
 								<table style="width: 400px">
-								<tr class="hdr"><td colspan="2"><b><TMPL_VAR name></b></td></tr>
-								<tr><td>FTP Host:</td><td><TMPL_VAR host></td></tr>
-								<tr><td>FTP Login:</td><td><TMPL_VAR usr_login></td></tr>
+								<tr class="hdr"><td colspan="2"><b>Connection info</b></td></tr>
+								<tr><td>FTP Host:</td><td>ftp.<TMPL_VAR domain></td></tr>
+								<tr><td>FTP Login:</td><td><TMPL_VAR my_login></td></tr>
 								<tr><td>FTP Password:</td><td>*****</td></tr>
 								</table>
 								<br>
-								</TMPL_LOOP>
 								</div>
 						</div>
+	             <TMPL_ELSE>
+	               <b><TMPL_IF my_login><a href="?op=payments"><TMPL_VAR lang_upgrade_account></a><TMPL_ELSE><a href="?op=registration"><TMPL_VAR lang_register_on_site></a></TMPL_IF><br><TMPL_VAR lang_to_use> FTP upload</b>
+	             </TMPL_IF>
 					</div>
 					<div class="clear"></div>
 				 </div> <!-- End Torrent Leech Tab -->

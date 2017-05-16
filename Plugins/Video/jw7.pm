@@ -1,5 +1,5 @@
 package Plugins::Video::jw7;
-use base Plugins::Video::jw5;
+use base Plugins::Video::jw6;
 use strict;
 use vars qw($ses);
 use XFileConfig;

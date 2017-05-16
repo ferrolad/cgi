@@ -21,6 +21,7 @@ sub genDirectLink
    return if $server->{srv_cdn};
 
    return &DlCGILink($file, %opts) if $opts{dl_method} eq 'cgi';
+   return &UnixSymlink($file, %opts) if $opts{dl_method} eq 'symlink';
 
    return &NginxLink($file, %opts) if $c->{m_n};
    return &UnixSymlink($file, %opts) if $c->{"direct_links_$ses->{utype}"};
@@ -97,15 +98,18 @@ sub UnixSymlink
    $ip=~s/\.\d+$// if $c->{link_ip_logic} eq 'first3';
    $ip=~s/\.\d+\.\d+$// if $c->{link_ip_logic} eq 'first2';
 
+   my $orig = 1 if $file->{file_size_encoded} && !$opts{encoded};
+
    my $res = $ses->api($file->{srv_cgi_url},
                         {
-                        op           => 'gen_link',
-                        file_id      => $file->{file_real_id}||$file->{file_id},
-                        file_code    => $file->{file_real},
-                        file_code1   => $file->{file_code},
-                        file_name    => $fname,
-                        fs_key       => $file->{srv_key},
-                        ip           => $ip,
+	                        op           => 'gen_link',
+	                        file_id      => $file->{file_real_id}||$file->{file_id},
+	                        file_code    => $file->{file_real},
+	                        file_code1   => $file->{file_code},
+	                        file_name    => $fname,
+	                        fs_key       => $file->{srv_key},
+	                        ip           => $ip,
+                           orig         => $orig,
                         });
    my ($ddcode) = $res=~/^OK:(.+)$/;
    unless($ddcode)
@@ -129,26 +133,32 @@ sub NginxLink
    my ($file, %opts) = @_;
 
    my $ip = $ses->getIP;
-   $ip = '0.0.0.0' if $opts{link_ip_logic}||$c->{link_ip_logic} eq 'all';
+   my $link_ip_logic = $opts{link_ip_logic} || $c->{link_ip_logic} || 'exact';
+   my $mask = _get_mask($link_ip_logic);
 
    my $hce = HCE_MD5->new($c->{dl_key},"XFileSharingPRO");
    my $usr_id = $ses->getUser ? $ses->getUserId : 0;
    my $dx = sprintf("%d",($file->{file_real_id}||$file->{file_id})/$c->{files_per_folder});
+   my $orig = 1 if $file->{file_size_encoded} && !$opts{encoded};
 
    my $mode = {'anon'=>'f','reg'=>'r','prem'=>'p'}->{$ses->{utype}}||'f';
-   my $hash = $ses->encode32( $hce->hce_block_encrypt(pack("SLLSA12ASC4L",
+   my $hash = $ses->encode32( $hce->hce_block_encrypt(pack("SLLSA12ASC4LC4SSS",
                                    $file->{srv_id},
                                    $file->{file_id},
                                    $usr_id,
                                    $dx,
                                    $file->{file_real},
                                    $mode,
-                                   $c->{down_speed},
+                                   $opts{speed}||$c->{down_speed},
                                    split(/\./,$ip),
-                                   time+3600*$c->{symlink_expire})) );
+                                   time+3600*$c->{symlink_expire},
+                                   split(/\./,$mask),
+                                   $orig,
+                                   $opts{accept_ranges}||$c->{m_n_dl_resume},
+                                   $opts{limit_conn}||$c->{m_n_limit_conn})) );
    my ($url) = $file->{srv_htdocs_url}=~/https?:\/\/([^\/:]+)/i;
-   $opts{fname}||=$file->{file_name};
-   return "http://$url:182/d/$hash/$opts{fname}";
+   $opts{file_name}||=$file->{file_name};
+   return "http://$url:182/d/$hash/$opts{file_name}";
 }
 
 =item DlCGILink()
@@ -165,15 +175,40 @@ sub DlCGILink
    my $fname = $opts{file_name}||$file->{file_name};
    my $hce = HCE_MD5->new($c->{dl_key},"XFileSharingPRO");
    my $file_id = $file->{file_real_id}||$file->{file_id};
-   my ($ip1,$ip2,$ip3,$ip4) = split(/\./,$ses->getIP);
-   ($ip1,$ip2,$ip3,$ip4) = (0,0,0,0) if $opts{link_ip_logic}||$c->{link_ip_logic} eq 'all';
-   my $hash = $hce->hce_block_encrypt( pack("LA12SC4L", $file_id, $file->{file_real}, $c->{down_speed}, $ip1,$ip2,$ip3,$ip4, (time+$c->{symlink_expire}*3600) ) );
-   my ($l,$e);
-   $hash=unpack('B*',$hash);$hash=~s/(.....)/000$1/g;$l=length($hash);
-   if ($l & 7){$e = substr($hash, $l & ~7);$hash = substr($hash, 0, $l & ~7);$hash .= "000$e" . '0' x (5 - length $e);}
-   $hash=pack('B*', $hash);$hash=~tr|\0-\37|a-z2-7|;
+
+   my $orig = 1 if $file->{file_size_encoded} && !$opts{encoded};
+
+   my $link_ip_logic = $opts{link_ip_logic} || $c->{link_ip_logic} || 'exact';
+   my $mask = _get_mask($link_ip_logic);
+
+   my $hash = $ses->encode32( $hce->hce_block_encrypt( pack("LA12SC4LC4SS",
+      $file_id,
+      $file->{file_real},
+      $opts{speed}||$c->{down_speed},
+      split(/\./,$ses->getIP),
+      (time+$c->{symlink_expire}*3600),
+      split(/\./,$mask),
+      $orig,
+      $opts{accept_ranges}||0)));
+
    $fname =~ s/([^A-Za-z0-9\-_\.!~*'\(\)\s])/ uc sprintf "%%%02x",ord $1 /eg;
    return "$file->{srv_cgi_url}/dl.cgi/$hash/$fname";
+}
+
+sub _get_mask
+{
+   my ($link_ip_logic) = @_;
+   my $mask =
+   {
+      exact  => '255.255.255.255',
+      first3 => '255.255.255.0',
+      first2 => '255.255.0.0',
+      all    => '0.0.0.0',
+   }->{$link_ip_logic};
+
+   die("Unknown IP logic: $link_ip_logic") if !$mask;
+
+   return $mask;
 }
 
 1;

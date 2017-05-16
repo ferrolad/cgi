@@ -13,7 +13,8 @@
 
 <Form method="POST">
 <input type="hidden" name="op" value="admin_servers">
-<Table class="tbl1" cellspacing=1 cellpadding=3>
+<input type="hidden" name="token" value="<TMPL_VAR token>">
+<Table name="servers" class="tbl1" cellspacing=1 cellpadding=3>
 <TR class="hdr">
 <TD></TD>
 <TD>ID</TD>
@@ -45,15 +46,16 @@
 </TD></TR>
 </Table>
 <br>
-<input type="button" value="+ <TMPL_VAR lang_add_new_server> " onClick="document.location='?op=admin_server_add'" style="width: 140px;">
+<input type="button" name="add_server" value="+ <TMPL_VAR lang_add_new_server> " onClick="document.location='?op=admin_server_add'" style="width: 140px;">
 &nbsp;
-<input type="button" value="+ Add new CDN " onClick="document.location='?op=admin_server_add&cdn=1'" style="width: 140px;">
+<input type="button" name="add_cdn" value="+ Add new CDN " onClick="document.location='?op=admin_server_add&cdn=1'" style="width: 140px;">
 
 <br><br>
 </Form>
 <Form method="POST">
 <input type="hidden" name="op" value="admin_servers_transfer">
-<Table class="tbl1 transfer_files" cellpadding=4 cellspacing=1 style="width: 300px">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
+<Table name="transfer_files" class="tbl1 transfer_files" cellpadding=4 cellspacing=1 style="width: 300px">
 <TR class="hdr"><TD>Transfer Files</TD></TR>
 <TR><TD>
 From 

@@ -5,16 +5,27 @@
    <td>Downloads</td>
    <td>Registered</td>
    <td>Bandwidth</td>
-   <td>Paid</td>
+   <td>Received</td>
+   <td>Paid to users</td>
 </tr>
 <TMPL_LOOP list>
 <tr align="center">
    <td><TMPL_VAR day></td>
-   <td><TMPL_VAR uploads></td>
-   <td><TMPL_VAR downloads></td>
-   <td><TMPL_VAR registered></td>
-   <td><TMPL_VAR bandwidth> Mb</td>
-   <td>$<TMPL_VAR paid></td>
+   <td align="center"><TMPL_VAR uploads></td>
+   <td align="center"><TMPL_VAR downloads></td>
+   <td align="center"><TMPL_VAR registered></td>
+   <td align="center"><TMPL_VAR bandwidth> Mb</td>
+   <td align="center">$<TMPL_VAR received></td>
+   <td align="center">$<TMPL_VAR paid_to_users></td>
 </tr>
 </TMPL_LOOP>
+<tr class="hdr">
+   <td></td>
+   <td align="center"><TMPL_VAR sum_uploads></td>
+   <td align="center"><TMPL_VAR sum_downloads></td>
+   <td align="center"><TMPL_VAR sum_registered></td>
+   <td align="center"><TMPL_VAR sum_bandwidth> Mb</td>
+   <td align="center">$<TMPL_VAR sum_received></td>
+   <td align="center">$<TMPL_VAR sum_paid_to_users></td>
+</tr>
 </table>

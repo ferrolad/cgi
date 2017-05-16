@@ -1,5 +1,6 @@
 <Form method="POST" onSubmit="return checkForm(this)">
 <input type="hidden" name="op" value="admin_server_save">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="srv_id" value="<TMPL_VAR srv_id>">
 <Table class="tbl1" cellpadding=3 cellspacing=1>
 <TR class="hdr"><TD colspan=2><TMPL_IF srv_id><TMPL_VAR lang_edit><TMPL_ELSE><TMPL_VAR lang_add></TMPL_IF> <TMPL_VAR lang_file_server></TD></TR>
@@ -23,18 +24,6 @@
 <TR><TD align=right><b>Created</b></TD><TD><TMPL_VAR srv_created></TD></TR>
 <TMPL_IF srv_key><TR><TD align=right><b>fs_key</b></TD><TD><input type="text" name="srv_key" value="<TMPL_VAR srv_key>" size=8></TD></TR></TMPL_IF>
 <TMPL_IF m_g><TR><TD align=right><b>GeoIP countries</b></TD><TD><input type="text" name="srv_countries" value="<TMPL_VAR srv_countries>" size=32><br><small>e.g. US,CA,DE,FR</small></TD></TR></TMPL_IF>
-<TMPL_IF m_v>
-<TR>
-    <TD align=right><b>Make video tests</b></TD>
-    <TD><input type="checkbox" name="video_test" value="1" id="vts"<TMPL_IF video_test> checked</TMPL_IF>> <label for="vts">Test ffmpeg+mplayer+MP4Box</label></TD>
-</TR>
-</TMPL_IF>
-<TMPL_IF mmtt>
-<TR>
-    <TD align=right><b>Make torrent tests</b></TD>
-    <TD><input type="checkbox" name="torrent_test" value="1" id="torrent_test"<TMPL_IF torrent_test> checked</TMPL_IF>> <label for="torrent_test">Test bitflu+Digest::SHA1</label></TD>
-</TR>
-</TMPL_IF>
 
 <TMPL_IF ftp_mod>
 <TR>

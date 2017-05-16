@@ -679,11 +679,9 @@ $c=
  m_y_pps_rebills => '',
  m_y_mix_rebills => '',
 
- m_v_player => 'jw5',
+ m_v_player => 'jw6',
 
  m_n_100_complete => '',
- jw5_license => '',
- jw5_skin => '',
  jw6_license => '',
 
  ### NEW 2.3 ####
@@ -707,6 +705,36 @@ $c=
  jw6_skin => '',
  enable_reports => '1',
 
+ ### NEW 2.4 ####
+ adfly_uid => '',
+ currency_symbol => '',
+ file_public_default => '1',
+ agree_tos_default => '1',
+ mask_dl_link => '',
+ files_approve => '',
+ files_approve_regular_only => '',
+ m_z => '',
+ m_o => '',
+ ftp_mod => '',
+ ftp_mod_prem_only => '',
+ m_e_preserve_orig => '',
+ m_e_copy_when_possible => '',
+ captcha_attempts_h => '',
+ traffic_plans => '1.75=1.74,2.15=2.07,3.37=3.49',
+ m_n_upload_speed_anon => '',
+ m_n_limit_conn_anon => '',
+ m_n_dl_resume_anon => '',
+ m_n_upload_speed_reg => '',
+ m_n_limit_conn_reg => '',
+ m_n_dl_resume_reg => '',
+ m_n_upload_speed_prem => '',
+ m_n_limit_conn_prem => '',
+ m_n_dl_resume_prem => '',
+ flowplayer_license => '',
+ jw7_license => '',
+ jw7_skin => '',
+ ftp_upload_reg => '',
+ ftp_upload_prem => '',
 
 };
 

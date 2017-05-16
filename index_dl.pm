@@ -5,6 +5,7 @@ use XFileConfig;
 use Session;
 use CGI::Carp qw(fatalsToBrowser);
 use URI::Escape;
+use List::Util qw(max);
 use XUtils;
 
 $SIG{__WARN__} = sub {};
@@ -18,7 +19,7 @@ sub run
 {
    my ($query) = @_;
    $c->{ip_not_allowed}=~s/\./\\./g;
-   if($c->{ip_not_allowed} && $ENV{REMOTE_ADDR}=~/$c->{ip_not_allowed}/)
+   if($c->{ip_not_allowed} && $ENV{REMOTE_ADDR}=~/^($c->{ip_not_allowed})$/)
    {
       print"Content-type:text/html\n\n";
       print"Your IP was banned by administrator";
@@ -42,7 +43,31 @@ sub run
    }
 
    $ses->{utype} = $ses->getUser ? ($ses->getUser->{premium} ? 'prem' : 'reg') : 'anon';
+   $ses->{lang}->{dmca_agent} = $ses->getUser && $ses->getUser->{usr_dmca_agent} ? 1 : 0;
+   $ses->{lang}->{approve_count} = $db->SelectOne("SELECT COUNT(*) FROM Files WHERE file_awaiting_approve") if $ses->getUser && ($ses->getUser->{usr_mod} || $ses->getUser->{usr_adm});
+   $ses->{lang}->{del_confirm_request_count} = $db->SelectOne("SELECT COUNT(*) FROM Misc WHERE name='mass_del_confirm_request'") if $ses->getUser && $ses->getUser->{usr_adm};
    
+   &ImportUserLimits();
+   
+   my $sub={
+       download1     => \&Download1,
+       download2     => \&Download2,
+       video_embed   => \&VideoEmbed,
+       video_embed2  => \&VideoEmbed2,
+       mp3_embed     => \&Mp3Embed,
+       mp3_embed2    => \&Mp3Embed2,
+       deurl         => \&DeURL,
+   
+            }->{ $f->{op} };
+   return &$sub() if $sub;
+   
+   return $ses->redirect($c->{site_url});
+}
+
+###################################
+
+sub ImportUserLimits
+{
    $c->{$_}=$c->{"$_\_$ses->{utype}"} for qw(max_upload_files
                                       disk_space
                                       max_upload_filesize
@@ -65,24 +90,11 @@ sub run
                                       flash_upload
                                       file_dl_delay
                                       rar_info
-                                      download_on);
-   
-   my $sub={
-       download1     => \&Download1,
-       download2     => \&Download2,
-       video_embed   => \&VideoEmbed,
-       video_embed2  => \&VideoEmbed2,
-       mp3_embed     => \&Mp3Embed,
-       mp3_embed2    => \&Mp3Embed2,
-       deurl         => \&DeURL,
-   
-            }->{ $f->{op} };
-   return &$sub() if $sub;
-   
-   return $ses->redirect($c->{site_url});
+                                      download_on 
+                                      m_n_limit_conn
+                                      m_n_dl_resume
+                                      );
 }
-
-###################################
 
 sub Login
 {
@@ -117,6 +129,25 @@ sub getMaxDLSize
    my ($owner) = @_;
    my $usr_aff_max_dl_size = $owner->{usr_aff_max_dl_size} if $owner && $owner->{usr_aff_enabled} && $ses->{utype} ne 'prem';
    return $usr_aff_max_dl_size || $c->{max_download_filesize};
+}
+
+sub AsPremium
+{
+   my ($file) = @_;
+   $db->Exec("UPDATE Users SET usr_premium_traffic=GREATEST(usr_premium_traffic - ?, 0) WHERE usr_id=?",
+      $file->{file_size},
+      $ses->getUserId);
+
+   $ses->{utype} = 'prem';
+   $ses->getUser()->{premium} = 1;
+   $ses->getUser()->{usr_direct_downloads} = 1;
+   &ImportUserLimits();
+}
+
+sub CheckHasPremiumTraffic
+{
+   my $user = $ses->getUser() if $ses->getUser();
+   return 1 if $user && !$user->{premium} && $user->{usr_premium_traffic} > 0;
 }
 
 sub DownloadChecks
@@ -207,7 +238,10 @@ sub Download0
                                  'plans'         => \@plans,
                                  'rand' => $ses->randchar(6),
                                  #%cc,
-                                 'referer' => $f->{referer} );
+                                 'referer' => $f->{referer},
+                                 'currency_symbol' => $c->{currency_symbol}||'$',
+                                 'ask_email' => $ses->{utype} eq 'anon' && !$c->{no_anon_payments},
+                                 );
    }
 
    my %cc = %$c;
@@ -232,6 +266,8 @@ sub Download0
    $cc{bw_limit_reg}  = $cc{bw_limit_reg}  ? sprintf("%.0f GB",$cc{bw_limit_reg}/1024)." in $cc{bw_limit_days} $ses->{lang}->{lang_days}" : 'Unlimited';
    $cc{bw_limit_prem} = $cc{bw_limit_prem} ? sprintf("%.0f GB",$cc{bw_limit_prem}/1024)." in $cc{bw_limit_days} $ses->{lang}->{lang_days}" : 'Unlimited';
 
+   print "Strict-Transport-Security: max-age=0;includeSubDomains;\n";
+
    return $ses->PrintTemplate("download0.html", 
                               %{$file},
                               %cc,
@@ -240,9 +276,11 @@ sub Download0
 
 sub Download1
 {
+
    return $ses->message($c->{maintenance_download_msg}||"Downloads are temporarily disabled due to site maintenance","Site maintenance") if $c->{maintenance_download};
    return $ses->redirect("$c->{site_url}/?op=login&redirect=$f->{id}") if !$c->{download_on} && !$ses->getUserId;
    return $ses->message("Downloads are disabled for your user type","Download error") if !$c->{download_on};
+
    if($c->{download_disabled_countries} && -f "$c->{cgi_path}/GeoIP.dat")
    {
       require Geo::IP;
@@ -252,6 +290,16 @@ sub Download1
       {
           return $ses->message("Downloads are disabled for your country: $country") if $_ eq $country;
       }
+   }
+
+   if($c->{mask_dl_link} && $ENV{REQUEST_URI} !~ /download$/)
+   {
+      $ses->setCookie('file_code', $f->{id}, '+1h');
+      return $ses->redirect("$c->{site_url}/download");
+   }
+   else
+   {
+      $f->{id} ||= $ses->getCookie('file_code');
    }
 
    my ($fname) = $ENV{QUERY_STRING}=~/&fname=(.+)$/;
@@ -265,18 +313,19 @@ sub Download1
    $ses->setCookie('ref_url', $f->{referer}, '+1d')
       if $ses->getDomain($f->{referer}) ne $ses->getDomain($c->{site_url});
 
-   my $premium = $ses->getUser && $ses->getUser->{premium};
+   my $sql = "SELECT f.*, s.*,
+      u.usr_login as file_usr_login,
+      u.usr_profit_mode,
+      DATE(file_created) as created_date,
+      DATE_FORMAT( file_created, '%H:%i:%S') as created_time
+              FROM (Files f, Servers s)
+              LEFT JOIN Users u ON f.usr_id = u.usr_id
+              WHERE f.file_code=?
+              AND f.srv_id=s.srv_id
+              AND file_trashed=0
+              AND file_awaiting_approve=0";
 
-   my $file = $db->SelectRowCached("SELECT f.*, s.*,
-	                              u.usr_login as file_usr_login,
-	                              u.usr_profit_mode,
-	                              DATE(file_created) as created_date,
-	                              DATE_FORMAT( file_created, '%H:%i:%S') as created_time
-                              FROM (Files f, Servers s)
-                              LEFT JOIN Users u ON f.usr_id = u.usr_id
-                              WHERE f.file_code=?
-                              AND f.srv_id=s.srv_id
-                              AND file_trashed=0",$f->{id});
+   my $file = $db->SelectRowCached('file', $sql, $f->{id});
 
    my $fname2 = lc $file->{file_name} if $file;
    $fname=~s/\s/_/g;
@@ -306,6 +355,9 @@ sub Download1
    return $ses->PrintTemplate("download1_no_file.html") unless $file;
 
    return $ses->message("This server is in maintenance mode. Refresh this page in some minutes.") if $file->{srv_status} eq 'OFF';
+
+   &AsPremium($file) if &CheckHasPremiumTraffic();
+   my $premium = $ses->getUser && $ses->getUser->{premium};
 
    $file->{fsize} = $ses->makeFileSize($file->{file_size});
    $file->{download_link} = $ses->makeFileLink($file);
@@ -447,7 +499,7 @@ sub Download1
    my @payment_types = $ses->getPlugins('Payments')->get_payment_buy_with;
 
    my $file_traffic = $file->{file_downloads} * $file->{file_size};
-   $file->{bittorrent} = 1 if $c->{torrent_fallback_after} &&  $file_traffic > $c->{torrent_fallback_after} * 2**30 && $file->{srv_torrent};
+   $file->{bittorrent} = 1 if $c->{torrent_fallback_after} &&  $file_traffic > $c->{torrent_fallback_after} * 2**30;
 
    $file->{file_name} = &shorten($file->{file_name}, 50);
 
@@ -457,6 +509,8 @@ sub Download1
       $max_length ||= $c->{display_max_filename};
       return length($str)>$max_length ? substr($str,0,$max_length).'&#133;' : $str
    }
+
+   print "Strict-Transport-Security: max-age=0;includeSubDomains;\n";
 
    return $ses->PrintTemplate("download1.html",
                        %{$file},
@@ -528,11 +582,19 @@ sub Download2
 
    $file->{fsize} = $ses->makeFileSize($file->{file_size});
    
-   #$file->{file_name}.='.'.{'flv'=>'flv','h264'=>'mp4'}->{lc($1)} if $file->{file_name}!~/\.(flv|mp4)$/i && $file->{file_spec}=~/(flv|h264)/i;
-   $file->{direct_link} = $ses->getPlugins('CDN')->genDirectLink($file);
+   my $speed = $c->{down_speed};
+   $speed *= 2 if &happyHours();
+
+   $file->{direct_link} = $ses->getPlugins('CDN')->genDirectLink($file, speed => $speed);
    return $ses->message("Couldn't generate direct link") if !$file->{direct_link};
 
    DownloadTrack($file);
+
+   if($no_checks && $ses->getUser && $ses->getUser->{usr_direct_downloads})
+   {
+      print("Content-type:text/plain\n\n$file->{direct_link}"), exit() if $c->{selenium_directlinks};
+      return $ses->redirect($file->{direct_link}) 
+   }
 
    return $ses->redirect($file->{direct_link}) if $no_checks && $ses->getUser && $ses->getUser->{usr_direct_downloads};
    return $ses->redirect($file->{direct_link}) if !$c->{show_direct_link} && !$c->{adfly_uid};
@@ -542,11 +604,20 @@ sub Download2
    $file = &VideoMakeCode($file,$c->{m_v_page}==1)||return if $c->{m_v};
    $file->{video_ads}=1 if $c->{m_a} && $c->{ads};
 
+   print "Strict-Transport-Security: max-age=0;includeSubDomains;\n";
+
    return $ses->PrintTemplate("download2.html",
                        %{$file},
                        %$c,
                        'symlink_expire'   => $c->{symlink_expire},
                       );
+}
+
+sub happyHours
+{
+   my @hours = split(/,/, $c->{happy_hours});
+   my $hour = sprintf("%02d", (getTime(time))[3]);
+   return 1 if grep { $_ eq $hour } @hours;
 }
 
 sub VideoMakeCode
@@ -579,7 +650,13 @@ sub VideoMakeCode
    return $file unless $gen;
 
    # Direct link
-   my $direct_link = $ses->getPlugins('CDN')->genDirectLink($file, file_name => "video.$ext")||return;
+   $ext = 'mp4' if $file->{file_size_encoded};
+   my $direct_link = $ses->getPlugins('CDN')->genDirectLink($file,
+      encoded => 1,
+      file_name => "video.$ext",
+      accept_ranges => 1,
+      limit_conn => max( $c->{m_n_limit_conn}, 10 ));
+   return if !$direct_link;
    $file->{video_code} = $ses->getPlugins('Video')->makeCode($file, $direct_link);
 
    # Ads overlay mod
@@ -600,11 +677,12 @@ sub VideoEmbed
 {
    #print"Content-type:text/html\n\n";
    return print("Content-type:text/html\n\nVideo mod is disabled") unless $c->{m_v};
-   my $file = $db->SelectRow("SELECT f.*, s.*, u.usr_id, UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec
+   my $sql = "SELECT f.*, s.*, u.usr_id, UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec
                               FROM (Files f, Servers s)
                               LEFT JOIN Users u ON f.usr_id = u.usr_id
                               WHERE f.file_code=?
-                              AND f.srv_id=s.srv_id",$f->{file_code});
+                              AND f.srv_id=s.srv_id";
+   my $file = $db->SelectRowCached('file', $sql,$f->{file_code});
    return print("Content-type:text/html\n\nFile was deleted") unless $file;
    my $utype2 = $file->{usr_id} ? ($file->{exp_sec}>0 ? 'prem' : 'reg') : 'anon';
    return print("Content-type:text/html\n\nVideo embed restricted for this user") unless $c->{"video_embed_$utype2"};
@@ -638,7 +716,7 @@ sub VideoEmbed2
 
 sub Mp3Embed
 {
-   return print("Content-type:text/html\n\nmp3 embed disabled") unless $c->{mp3_mod_embed};
+   return print("Content-type:text/html\n\nmp3 embed disabled") unless $c->{mp3_embed};
    my $file = $db->SelectRow("SELECT f.*, s.*, u.usr_id, UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec
                               FROM (Files f, Servers s)
                               LEFT JOIN Users u ON f.usr_id = u.usr_id
@@ -684,6 +762,8 @@ sub DownloadTrack
 {
    my ($file) = @_;
    my $usr_id = $ses->getUser ? $ses->getUserId : 0;
+
+   my $total_money_charged = 0;
    
    if(!$db->SelectOne("SELECT file_id FROM IP2Files WHERE file_id=? AND ip=INET_ATON(?) AND usr_id=?",$file->{file_id},$ses->getIP,$usr_id))
    {
@@ -691,7 +771,7 @@ sub DownloadTrack
       $f->{referer}=~s/$c->{site_url}//i;
       $f->{referer}=~s/^http:\/\///i;
 
-      if($c->{m_n_100_complete})
+      if($c->{m_n_100_complete_percent})
       {
          # Don't charge any money, leave it for fs.cgi instead
          $db->Exec("INSERT INTO IP2Files SET 
@@ -747,9 +827,16 @@ sub DownloadTrack
       {
          $file->{usr_profit_mode} = lc $file->{usr_profit_mode};
          my $perc = $c->{"m_y_$file->{usr_profit_mode}_dl"};
-         $perc = 0 if $c->{m_y_manual_approve} && !$owner->{usr_aff_enabled};
+         refuse("NO_PERCENT_SPECIFIED") if !$perc;
+
+         if($c->{m_y_manual_approve} && !$owner->{usr_aff_enabled})
+         {
+            refuse("NOT_APPROVED_AFFILIATE");
+            $perc = 0;
+         }
+
          $money = $money*$perc/100;
-         refuse("NOT_PPD") if !$money;
+         refuse("NOT_PPD") if !$money && $file->{usr_profit_mode} ne 'ppd';
       }
 
       $money = sprintf("%.05f",$money);
@@ -776,6 +863,7 @@ sub DownloadTrack
                        ON DUPLICATE KEY UPDATE
                            profit_site=profit_site+?
                       ",$usr_id2,$money2,$money2);
+            $total_money_charged += $money2;
          }
       }
 
@@ -797,6 +885,8 @@ sub DownloadTrack
 
       $db->Exec("UPDATE LOW_PRIORITY Users SET usr_money=usr_money+? WHERE usr_id=?",$money,$file->{usr_id}) if $file->{usr_id} && $money;
 
+      $total_money_charged += $money if $file->{usr_id};
+
       $db->Exec("INSERT INTO Stats2
                  SET usr_id=?, day=CURDATE(),
                      downloads=1, profit_dl=$money
@@ -810,6 +900,7 @@ sub DownloadTrack
          my $money_ref = sprintf("%.05f",$money*$c->{referral_aff_percent}/100);
          if($aff_id && $money_ref>0)
          {
+            $total_money_charged += $money_ref;
             $db->Exec("UPDATE Users SET usr_money=usr_money+? WHERE usr_id=?", $money_ref, $aff_id);
             $db->Exec("INSERT INTO Stats2
                   SET usr_id=?, day=CURDATE(),
@@ -819,7 +910,7 @@ sub DownloadTrack
                   ",$aff_id);
          }
       }
-      $db->Exec("INSERT INTO Stats SET day=CURDATE(), downloads=1,bandwidth=$file->{file_size} ON DUPLICATE KEY UPDATE downloads=downloads+1,bandwidth=bandwidth+$file->{file_size}");
+      $db->Exec("INSERT INTO Stats SET day=CURDATE(), downloads=1,bandwidth=$file->{file_size},paid_to_users='$total_money_charged' ON DUPLICATE KEY UPDATE downloads=downloads+1,bandwidth=bandwidth+$file->{file_size},paid_to_users=paid_to_users+'$total_money_charged'");
    }
 }
 

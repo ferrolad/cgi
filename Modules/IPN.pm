@@ -27,6 +27,18 @@ sub acceptResellersMoney
    $self->finalize($transaction);
 }
 
+sub increasePremiumTraffic
+{
+   my ($self, $transaction, %opts) = @_;
+   my $traffic = $self->{ses}->ParsePlans($c->{traffic_plans}, 'hash')->{$transaction->{amount}};;
+   print STDERR "Adding $traffic GBs of traffic to usr_id=$transaction->{usr_id}\n";
+   $self->{db}->Exec("UPDATE Users SET usr_premium_traffic=usr_premium_traffic + ? WHERE usr_id=?",
+      $traffic * 2**30,
+      $transaction->{usr_id});
+   $self->chargeAffs($transaction);
+   $self->finalize($transaction);
+}
+
 sub finalize
 {
    my ($self, $transaction) = @_;
@@ -34,9 +46,11 @@ sub finalize
    $self->setTransactionOpts($transaction, verified => 1, txn_id => $self->{f}->{txn_id});
 
    $self->{db}->Exec("INSERT INTO Stats
-         SET paid=?, day=CURDATE()
-                   ON DUPLICATE KEY UPDATE
-                     paid=paid+?",$transaction->{amount},$transaction->{amount});
+      SET received=?, day=CURDATE()
+      ON DUPLICATE KEY UPDATE
+      received=received+?",
+      $transaction->{amount},
+      $transaction->{amount});
 }
 
 sub chargeAff
@@ -51,18 +65,24 @@ sub chargeAff
    $self->registerStats(usr_id => $user->{usr_id},
          amount => $amount,
          type => $opts{stats});
-        $self->{db}->Exec("INSERT INTO PaymentsLog
-                           SET usr_id_from=?,
-                           usr_id_to=?,
-                           type=?,
-                           amount=?,
-                           created=NOW()",
-                           $opts{usr_id_from},
-                           $user->{usr_id},
-                                $opts{stats},
-                           $amount,
-                        ) if $opts{usr_id_from};
-        return($amount);
+   $self->{db}->Exec("INSERT INTO PaymentsLog
+                   SET usr_id_from=?,
+                   usr_id_to=?,
+                   type=?,
+                   amount=?,
+                   created=NOW()",
+                   $opts{usr_id_from},
+                   $user->{usr_id},
+                   $opts{stats},
+                   $amount,
+                   ) if $opts{usr_id_from};
+   $self->{db}->Exec("INSERT INTO Stats
+      SET paid_to_users=?, day=CURDATE()
+      ON DUPLICATE KEY UPDATE
+      paid_to_users=paid_to_users+?",
+      $amount,
+      $amount);
+   return($amount);
 }
 
 sub getWebmaster
@@ -97,7 +117,7 @@ sub chargeAffs
    if($self->{ses}->iPlg('p') && $aff)
 	{
       $sale_aff_percent = $c->{"m_y_".lc($aff->{usr_profit_mode})."_$stats"};
-      $sale_aff_percent = $aff->{"$stats\_aff_percent"} if $aff->{"$stats\_aff_percent"};
+      $sale_aff_percent = $aff->{"usr_$stats\_percent"} if $aff->{"usr_$stats\_percent"};
       $sale_aff_percent = 0 if $c->{m_y_manual_approve} && !$aff->{usr_aff_enabled};
       print STDERR "Profit mode=$aff->{usr_profit_mode}, stats = $stats, aff percent = $sale_aff_percent";
    }
@@ -109,6 +129,7 @@ sub chargeAffs
    my $webmaster = $self->getWebmaster($domain);
    $self->setTransactionOpts($transaction, domain => $domain) if $webmaster;
    my $m_x_rate = $c->{m_x_rate};
+   $m_x_rate = $webmaster->{usr_m_x_percent} if $webmaster && $webmaster->{usr_m_x_percent};
    my $profit_webmaster = $self->chargeAff($webmaster, $transaction->{amount} * $m_x_rate / 100, stats => 'site')
       if $webmaster && $m_x_rate;
 
@@ -168,7 +189,8 @@ sub createTransaction
                       aff_id=?,
                       ref_url=?,
                       email=?,
-                      verified=?",
+                      verified=?,
+                      target=?",
                    $id,
                    $opts{usr_id},
                    $opts{amount},
@@ -178,6 +200,7 @@ sub createTransaction
                    $opts{referer}||'',
                    $opts{email}||'',
                    $opts{verified}||0,
+                   $opts{target}||'',
                    );
    return ( $self->{db}->SelectRow("SELECT * FROM Transactions WHERE id=?", $id) );
 }
@@ -195,7 +218,7 @@ sub getLatestTransaction
 
 sub upgradePremium
 {
-   my ($self, $transaction) = @_;
+   my ($self, $transaction, %opts) = @_;
 
    # The user that had purchased th\u865a\u7121e premium
    my $user = $self->{db}->SelectRow("SELECT * FROM Users WHERE usr_id=?", $transaction->{usr_id} );
@@ -203,16 +226,16 @@ sub upgradePremium
    my $aff = $self->{db}->SelectRow("SELECT * FROM Users WHERE usr_id=?", $transaction->{aff_id} );
    my $webmaster = $self->getWebmaster($transaction->{ref_url});
    
-   my $days = $transaction->{days}||$self->{plans}->{$transaction->{amount}};
+   my $days = $opts{days}||$transaction->{days}||$self->{plans}->{$transaction->{amount}};
    die("No such plan: $transaction->{amount} $c->{currency_code}") if !$days;
-   $user->{exp_sec} += $days*24*3600;
+   my $add_seconds = $days*24*3600;
    $self->finalize($transaction);
 
    # Add premium days
    $self->{db}->Exec("UPDATE Users
-         SET usr_premium_expire=GREATEST(usr_premium_expire,NOW())+INTERVAL ? DAY
+         SET usr_premium_expire=GREATEST(usr_premium_expire,NOW())+INTERVAL ? SECOND
          WHERE usr_id=?",
-         $days,
+         $add_seconds,
          $transaction->{usr_id} );
    $user = $self->{db}->SelectRow("SELECT *
                           FROM Users 

@@ -1,9 +1,10 @@
 <br><br>
 <TMPL_IF msg><font class="ok"><TMPL_VAR msg></font><br><br></TMPL_IF>
-<TMPL_VAR lang_you_collected> <b><TMPL_VAR currency_symbol><TMPL_VAR usr_money></b>
+<TMPL_VAR lang_you_collected> <b><TMPL_VAR currency_symbol><span name="balance"><TMPL_VAR usr_money></span></b>
 
 <Form method="POST">
 <input type="hidden" name="op" value="request_money">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 
 <TMPL_IF enabled_prem>
 <TMPL_IF convert_days>
@@ -18,7 +19,7 @@
 
 
 <br><br><input type="submit" name="convert_profit" value="<TMPL_VAR lang_request_payout>: <TMPL_VAR currency_symbol><TMPL_VAR usr_money>"<TMPL_UNLESS payout_enough> disabled</TMPL_UNLESS>>
-<TMPL_UNLESS payout_enough><br><TMPL_VAR lang_min_payout> <TMPL_VAR currency_symbol><TMPL_VAR min_payout></TMPL_UNLESS>
+<TMPL_UNLESS payout_enough><br><TMPL_VAR lang_min_payout> <TMPL_VAR currency_symbol><span name="min_payout"><TMPL_VAR min_payout></span></TMPL_UNLESS>
 
 <br><br>
 <TMPL_IF payment_request><TMPL_VAR lang_pending_payment>: <b><TMPL_VAR currency_symbol><TMPL_VAR payment_request></b><br><br></TMPL_IF>

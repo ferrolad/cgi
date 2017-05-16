@@ -12,7 +12,9 @@ use XUtils;
 use JSON;
 use URI::Escape;
 use List::Util qw(min);
+use Log;
 
+Log->new(filename => 'index.log');
 $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME}=0;
 
 my ($ses, $db, $f, $op, $utype);
@@ -20,7 +22,7 @@ my ($ses, $db, $f, $op, $utype);
 sub run {
    my ($query) = @_;
    $c->{ip_not_allowed}=~s/\./\\./g;
-   if($c->{ip_not_allowed} && $ENV{REMOTE_ADDR}=~/$c->{ip_not_allowed}/)
+   if($c->{ip_not_allowed} && $ENV{REMOTE_ADDR}=~/^($c->{ip_not_allowed})$/)
    {
       print"Content-type:text/html\n\n";
       print"Your IP was banned by administrator";
@@ -62,9 +64,11 @@ sub run {
    return $ses->message($c->{maintenance_full_msg}||"The website is under maintenance.","Site maintenance") if $c->{maintenance_full} && $f->{op}!~/^(admin_|login)/i;
 
    $ses->{lang}->{dmca_agent} = $ses->getUser && $ses->getUser->{usr_dmca_agent} ? 1 : 0;
+   $ses->{lang}->{approve_count} = $db->SelectOne("SELECT COUNT(*) FROM Files WHERE file_awaiting_approve") if $ses->getUser && ($ses->getUser->{usr_mod} || $ses->getUser->{usr_adm});
+   $ses->{lang}->{del_confirm_request_count} = $db->SelectOne("SELECT COUNT(*) FROM Misc WHERE name='mass_del_confirm_request'") if $ses->getUser && $ses->getUser->{usr_adm};
    
    $utype = $ses->getUser ? ($ses->getUser->{premium} ? 'prem' : 'reg') : 'anon';
-   
+  
    $c->{$_}=$c->{"$_\_$utype"} for qw(max_upload_files
                                       disk_space
                                       max_upload_filesize
@@ -88,6 +92,10 @@ sub run {
                                       rar_info
                                       upload_on
                                       download_on
+                                      m_n_limit_conn
+                                      m_n_dl_resume
+                                      m_n_upload_speed
+                                      ftp_upload
                                       );
    
    my $sub={
@@ -160,6 +168,7 @@ sub run {
        admin_mass_email => \&AdminMassEmail,
        admin_downloads  => \&AdminDownloads,
        admin_comments   => \&AdminComments,
+       admin_comment_edit => \&AdminCommentEdit,
        admin_payments   => \&AdminPayments,
        admin_stats      => \&AdminStats,
        admin_torrents      => \&AdminTorrents,
@@ -171,6 +180,8 @@ sub run {
        admin_bans_list     => \&AdminBansList,
        admin_sites         => \&AdminSites,
        admin_external   => \&AdminExternal,
+       moderator_approve   => \&AdminApprove,
+       admin_approve   => \&AdminApprove,
        moderator_files     => \&ModeratorFiles,
        logout           => sub{$ses->Logout},
    
@@ -178,7 +189,7 @@ sub run {
    
    if($sub && $ses->getUser)
    {
-      return $ses->message("Access denied") if $op=~/^admin_/i && !$ses->getUser->{usr_adm} && $op!~/^(admin_reports|admin_comments)$/i;
+      return $ses->message("Access denied") if $op=~/^admin_/i && !$ses->getUser->{usr_adm} && $op!~/^(admin_reports|admin_comments|admin_approve)$/i;
       return &$sub();
    }
    elsif($sub)
@@ -214,8 +225,9 @@ sub CheckReferer
 
 sub LoginPage
 {
+
    return $ses->redirect($c->{site_url}) if $ses->getUser;
-   &Login() if $f->{method};
+   return &Login() if $f->{method};
    if($f->{login})
    {
       &Login();
@@ -223,9 +235,22 @@ sub LoginPage
    }
    $f->{login}||=$ses->getCookie('login');
    $f->{redirect} ||= $ENV{HTTP_REFERER},
+
+  my $login_attempts_h = $db->SelectOne("SELECT COUNT(ip)
+           FROM LoginProtect
+         WHERE usr_id=0
+         AND ip=INET_ATON(?)
+         AND created >= NOW() - INTERVAL 1 HOUR",
+         $ses->getIP);
+
+   $ses->setCaptchaMode($c->{captcha_mode}||2) if $c->{captcha_attempts_h} && $login_attempts_h >= $c->{captcha_attempts_h};
+   my %secure = $ses->SecSave( 0, 0 ) if $ses->{captcha_mode};
+
    return $ses->PrintTemplate("login.html",
-               %{$f},
-            %{$c});
+      %{$f},
+      %{$c},
+      %secure,
+      );
 }
 
 sub RegisterExt
@@ -236,6 +261,9 @@ sub RegisterExt
    print STDERR "mod_social: $@\n" if $@;
    return $ses->message("Auth failed") if !$ret;
    # Does the user already exists?
+
+   my $passwd_hash = XUtils::GenPasswdHash($f->{usr_password});
+
    my $usr_id = $db->SelectOne("SELECT usr_id
             FROM Users
             WHERE usr_social=?
@@ -246,15 +274,14 @@ sub RegisterExt
    {
       # Creating the new one
       $db->Exec("INSERT INTO Users SET usr_login=?,
-            usr_password=ENCODE(?,?),
+            usr_password=?,
             usr_status='OK',
             usr_email=?,
             usr_social=?,
             usr_social_id=?,
             usr_created=NOW()",
             $ret->{usr_login},
-            $ses->randchar(12),
-            $c->{pasword_salt},
+            $passwd_hash,
             $ret->{usr_email}||'',
             $f->{method},
             $ret->{usr_social_id},
@@ -269,36 +296,6 @@ sub RegisterExt
    }
    $f->{method} = '';
    &Login(usr_id => $usr_id);
-}
-
-sub CheckLoginPass
-{
-  my ($login, $password) = @_;
-  my $usr_id;
-  $usr_id = $db->SelectOne("SELECT usr_id FROM Users
-        WHERE usr_login=? 
-        AND usr_password=ENCODE(?,?)", $login, $password, $c->{pasword_salt} );
-  $usr_id ||= $db->SelectOne("SELECT usr_id FROM Users
-        WHERE usr_login=? 
-        AND usr_password=MD5(?)", $login, $password );
-  return GetUser($usr_id);
-}
-
-sub GetUser
-{
-   my ($usr_id) = @_;
-   my $user = $db->SelectRow("SELECT *, UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec 
-         FROM Users 
-         WHERE usr_id=?", $usr_id );
-   if($user && $user->{usr_status} eq 'BANNED')
-   {
-      delete $ses->{user};
-      return $ses->message("Your account was banned by administrator.");
-   }
-
-   $user->{utype} = $user ? ($user->{exp_sec} > 0 ? 'prem' : 'reg') : 'anon' if $user;
-
-   return $user;
 }
 
 sub StartSession
@@ -328,6 +325,18 @@ sub Login
          AND ip=INET_ATON(?)
          AND created >= NOW() - INTERVAL 1 HOUR",
          $ses->getIP);
+
+  if($c->{captcha_attempts_h} && $login_attempts_h >= $c->{captcha_attempts_h})
+  {
+     $ses->setCaptchaMode($c->{captcha_mode}||2);
+     if(!$ses->SecCheck( $f->{'rand'}, 0, $f->{code} ))
+     {
+	     delete $ses->{user};
+	     $f->{msg} = "Wrong captcha";
+	     return;
+     }
+  }
+
   if($c->{max_login_attempts_h} && $login_attempts_h >= $c->{max_login_attempts_h})
   {
      XUtils::Ban($ses, ip => $ses->getIP,
@@ -337,7 +346,7 @@ sub Login
   {
      delete $ses->{user};
      $f->{msg} = "Your IP is banned";
-     return 
+     return;
   }
   ($f->{login}, $f->{password}) = split(':',$ses->decode_base64($ENV{HTTP_CGI_AUTHORIZATION})) if $opts{instant};
   $f->{login}=$ses->SecureStr($f->{login});
@@ -352,7 +361,7 @@ sub Login
      return $ses->redirect($url);
   }
 
-  $ses->{user} = &GetUser($opts{usr_id}) || &CheckLoginPass($f->{login}, $f->{password});
+  $ses->{user} = XUtils::GetUser($ses, $opts{usr_id}) || XUtils::CheckLoginPass($ses, $f->{login}, $f->{password});
 
   $db->Exec("INSERT INTO LoginProtect SET usr_id=?, login=?, ip=INET_ATON(?)",
         $ses->{user} ? $ses->getUserId : 0,
@@ -385,6 +394,8 @@ sub Login
   }
   return if $opts{instant};
 
+  $db->Exec("DELETE FROM LoginProtect WHERE usr_id=0 AND ip=INET_ATON(?)", $ses->getIP);
+
   my $sess_id = &StartSession($ses->{user}->{usr_id});
   $db->Exec("UPDATE Users SET usr_lastlogin=NOW(), usr_lastip=INET_ATON(?) WHERE usr_id=?", $ses->getIP, $ses->{user}->{usr_id} );
   $ses->setCookie( $ses->{auth_cook} , $sess_id, '+30d' );
@@ -408,10 +419,8 @@ sub Register
    return $ses->redirect($c->{site_url}) if $ses->getUser;
    return $ses->message("Registration disabled") if !$c->{reg_enabled};
    my $msg = shift;
-   #my $rand = $ses->randchar(8);
-   #my %captcha = &GenerateCaptcha("rr$rand");
-   #&SecSave( 0, $ses->getIP(), $captcha{number}, $rand );
-   my %secure = $ses->SecSave( 0, 2 );
+   $ses->setCaptchaMode($c->{captcha_mode}||2);
+   my %secure = $ses->SecSave( 0, 0 );
    $f->{usr_login}=$ses->SecureStr($f->{usr_login});
    $f->{usr_email}=$ses->SecureStr($f->{usr_email});
    if($f->{aff_id}=~/^(\d+)$/i)
@@ -441,6 +450,7 @@ sub Register
 
 sub RegisterSave
 {
+   $ses->setCaptchaMode($c->{captcha_mode}||2);
    return $ses->redirect("Registration disabled") if !$c->{reg_enabled};
    return &Register unless $ses->SecCheck( $f->{'rand'}, 0, $f->{code} );
    return &Register("Error: $ses->{lang}->{lang_login_too_short}") if length($f->{usr_login})<4;
@@ -471,13 +481,14 @@ sub RegisterSave
       $premium_days = $hh->{$f->{coupon_code}};
       &Register("Invalid coupon code") unless $premium_days;
    }
-
    my $profit_mode = $ses->iPlg('p') && $c->{m_y_default} ? $c->{m_y_default} : 'PPD';
    my $usr_notes=$f->{'next'}||'';
+   my $passwd_hash = XUtils::GenPasswdHash($f->{usr_password});
+
    $db->Exec("INSERT INTO Users 
               SET usr_login=?, 
                   usr_email=?, 
-                  usr_password=ENCODE(?,?),
+                  usr_password=?,
                   usr_created=NOW(),
                   usr_premium_expire=NOW()+INTERVAL ? DAY,
                   usr_security_lock=?,
@@ -489,8 +500,7 @@ sub RegisterSave
                   usr_notes=?",
                                    $f->{usr_login},
                                    $f->{usr_email},
-                                   $f->{usr_password},
-                                   $c->{pasword_salt},
+                                   $passwd_hash,
                                    $premium_days,
                                    $confirm_key||'',
                                    $usr_status,
@@ -507,7 +517,7 @@ sub RegisterSave
       $t->param( 'usr_login'=>$f->{usr_login}, 'usr_password'=>$f->{usr_password}, 'confirm_id'=>"$usr_id-$confirm_key" );
       $c->{email_text}=1;
       $ses->SendMail($f->{usr_email},$c->{email_from},"$c->{site_name} registration confirmation",$t->output);
-      $ses->PrintTemplate('message.html',
+      return $ses->PrintTemplate('message.html',
                   err_title => 'Account created',
             msg => $ses->{lang}->{lang_account_created});
    }
@@ -525,16 +535,15 @@ sub RegisterSave
 sub RegisterConfirm
 {
    my ($usr_id,$confirm_key)=split('-',$f->{confirm_account});
-   my $user = $db->SelectRow("SELECT *,DECODE(usr_password,?) as usr_password FROM Users WHERE usr_id=? AND usr_security_lock=?",$c->{pasword_salt},$usr_id,$confirm_key);
+   my $user = $db->SelectRow("SELECT * FROM Users WHERE usr_id=? AND usr_security_lock=?",$usr_id,$confirm_key);
    unless($user)
    {
       return $ses->message("Invalid confirm code");
    }
    return $ses->message("Account already confirmed") if $user->{usr_status} ne 'PENDING';
    $db->Exec("UPDATE Users SET usr_status='OK', usr_security_lock='' WHERE usr_id=?",$user->{usr_id});
-   $f->{login}    = $user->{usr_login};
-   $f->{password} = $user->{usr_password};
-   &Login(no_redirect => 1);
+   my $sess_id = &StartSession($user->{usr_id});
+	$ses->setCookie( $ses->{auth_cook} , $sess_id, '+30d' );
 
    return $ses->redirect( $c->{site_url}.'?msg=Account confirmed' );
 }
@@ -543,10 +552,10 @@ sub ResendActivationCode
 {
    my ($adm_mode) = @_;
    ($f->{usr_id},$f->{usr_login}) = split(/-/,$f->{d});
-   my $user = $db->SelectRow("SELECT usr_id,usr_login,usr_email,usr_security_lock,DECODE(usr_password,?) as usr_password
+   my $user = $db->SelectRow("SELECT usr_id,usr_login,usr_email,usr_security_lock
                               FROM Users
                               WHERE usr_id=?
-                              AND usr_login=?",$c->{pasword_salt},$f->{usr_id},$f->{usr_login});
+                              AND usr_login=?",$f->{usr_id},$f->{usr_login});
    return $ses->message("Invalid ID") unless $user;
 
    my $t = $ses->CreateTemplate("registration_email.html");
@@ -559,6 +568,7 @@ sub ResendActivationCode
 
 sub ForgotPass
 {
+   $ses->setCaptchaMode($c->{captcha_mode}||2);
    return $ses->redirect($c->{site_url}) if $ses->getUser;
    my ($no_redirect) = @_;
    if($f->{sess})
@@ -588,8 +598,7 @@ sub ForgotPass
    }
    if($f->{usr_login} && !$no_redirect)
    {
-      &ForgotPass('no_redirect')
-         if(!$ses->SecCheck( $f->{'rand'}, 0, $f->{code} ));
+      return &ForgotPass('no_redirect') if(!$ses->SecCheck( $f->{'rand'}, 0, $f->{code} ));
       my $user = $db->SelectRow("SELECT * FROM Users 
                                  WHERE (usr_login=? 
                                  OR usr_email=?)",
@@ -603,48 +612,30 @@ sub ForgotPass
       my $link = "$c->{site_url}/?op=forgot_pass&sess=$sess_id";
       $link .= "&code=$user->{usr_security_lock}" if $user->{usr_security_lock};
       $ses->SendMail( $user->{usr_email}, $c->{email_from}, "$c->{site_name}: password recovery", "Please follow this link to continue recovery:\n<a href=\"$link\">$link</a>" );
-      return $ses->message("Password recovery link sent to your e-mail");
+      return $ses->PrintTemplate("message.html",
+         err_title => "Notice",
+         msg => "Password recovery link sent to your e-mail");
    }
    $f->{usr_login} = $ses->SecureStr($f->{usr_login});
-   my %secure = $ses->SecSave( 0, 2 );
+   my %secure = $ses->SecSave( 0, 0 );
    $ses->PrintTemplate("forgot_pass.html",
          %{$f},
             %secure,
          );
 };
 
-sub SelectServer
+sub genUploadURL
 {
-   my @custom_filters = map { " AND $_"} @_;
-   my $type_filter = $utype eq 'prem' ? "AND srv_allow_premium=1" : "AND srv_allow_regular=1";
-   my $country_filter;
-   if($c->{m_g} && -f "$c->{cgi_path}/GeoIP.dat")
-   {
-      require Geo::IP;
-      my $gi = Geo::IP->new("$c->{cgi_path}/GeoIP.dat");
-      my $country = $gi->country_code_by_addr($ses->getIP);
-      $country_filter="AND (srv_countries LIKE '%$country%' OR srv_countries='')" if $country;
-      $country_filter||="AND srv_countries=''";
-   }
-   my $server = $db->SelectRow("SELECT * FROM Servers 
-                                WHERE srv_status='ON' 
-                                AND srv_disk+? <= srv_disk_max*0.99
-                                $type_filter
-                                $country_filter
-                                @custom_filters
-                                ORDER BY RAND()
-                                LIMIT 1",$c->{max_upload_filesize}||100);
-   if($c->{m_g} && !$server)
-   {
-      $server = $db->SelectRow("SELECT * FROM Servers 
-                                WHERE srv_status='ON' 
-                                AND srv_disk+? <= srv_disk_max*0.98
-                                $type_filter
-                                @custom_filters
-                                ORDER BY RAND()
-                                LIMIT 1",$c->{max_upload_filesize}||100);
-   }
-   return $server;
+   my ($server, $usr_id, $speed) = @_;
+   use Digest::MD5 qw(md5);
+   require HCE_MD5;
+   my $hce = HCE_MD5->new($c->{dl_key}, "XFileSharingPRO");
+   my $usr_id = $ses->getUserId if $ses->getUser;
+
+   my @data = ($server->{srv_id}, time + 8 * 3600, $speed * 1024);
+   my $md5 = md5(join('', @data));
+   my $hash = $ses->encode32( $hce->hce_block_encrypt(pack("SLLA32", @data, $md5)) );
+   return "$1:182/u/?upload_type=file&token=$hash" if $server->{srv_htdocs_url} =~ /^(https?:\/\/[^\/]+)/;
 }
 
 sub UploadForm
@@ -664,8 +655,8 @@ sub UploadForm
       }
    }
 
-   my $server = &SelectServer();
-   my $server_torrent = &SelectServer("srv_torrent=1");
+   my $server = XUtils::SelectServer($ses, $ses->{user});
+   my $server_torrent = XUtils::SelectServer($ses, $ses->{user}, "srv_torrent=1");
    $server = $db->SelectRow("SELECT * FROM Servers WHERE srv_id=?",$f->{srv_id}) if $ses->getUser && $ses->getUser->{usr_adm} && $f->{srv_id};
    
    return $ses->redirect('?op=admin_server_add') if !$server && $ses->getUser && $ses->getUser->{usr_adm};
@@ -736,6 +727,17 @@ sub UploadForm
       $_->{host} = $1 if $_->{srv_htdocs_url} =~ /^https?:\/\/([^:\/]+)/;
    }
 
+   my $usr_id = $ses->getUserId if $ses->getUser;
+
+   my $file_upload_url = $c->{m_n} && $c->{m_n_upload_speed}
+      ? &genUploadURL($server, $usr_id, $c->{m_n_upload_speed})
+      : "$server->{srv_cgi_url}/upload.cgi?upload_type=file";
+
+   my $proto = $ENV{HTTPS} eq 'on' ? 'https' : 'http';
+   $file_upload_url =~ s/^https?/$proto/;
+
+   my $domain = $1 if $c->{site_url} =~ /^https?:\/\/([^\/]+)/;
+
    $ses->PrintTemplate("upload_form.html",
                        'ext_allowed'      => $c->{ext_allowed},
                        'ext_not_allowed'  => $c->{ext_not_allowed},
@@ -748,7 +750,9 @@ sub UploadForm
                        'sanitize_filename'    => $c->{sanitize_filename},
                        'add_filename_postfix' => $c->{add_filename_postfix},
                        'm_i_adult'            => $c->{m_i_adult},
-                       'ftp_mod'              => $utype ne 'anon' ? $c->{ftp_mod} : 0,
+                       'ftp_mod'          => $utype ne 'anon' ? $c->{ftp_mod} : 0,
+                       'ftp_upload_user'  => $c->{ftp_upload},
+                       'domain'		      => $domain,
 
                        'srv_cgi_url'      => $server->{srv_cgi_url},
                        'srv_tmp_url'      => $server->{srv_tmp_url},
@@ -781,6 +785,8 @@ sub UploadForm
                        "link_format_$c->{link_format}" => 1,
                        "users_total"      => $db->SelectOne("SELECT COUNT(*) FROM Users"),
                        'file_public_default' => $c->{file_public_default}||0,
+                       'agree_tos_default' => $c->{agree_tos_default}||0,
+                       'file_upload_url'  => $file_upload_url,
                       );
 }
 
@@ -917,11 +923,18 @@ sub UploadResult
       return;
    }
 
-   $ses->PrintTemplate("upload_results.html",
-                       'links' => \@arr,
-                       'successfull_count' => int(grep {! $_->{error}} @arr),
-                       %{features},
-                      );
+   if($f->{box})
+   {
+      $ses->{form}->{no_hdr} = 1;
+      return $ses->PrintTemplate('upload_results_box.html', 'links' => \@arr);
+   }
+   else
+   {
+	   return $ses->PrintTemplate("upload_results.html",
+         'links' => \@arr,
+         'successfull_count' => int(grep {! $_->{error}} @arr),
+         %{features});
+   }
 }
 
 sub AdminDownloads
@@ -1018,6 +1031,7 @@ sub NewsDetails
                         'cmt_ext_id'   => $news->{news_id},
                         'comments' => $comments,
                         'enable_file_comments' => $c->{enable_file_comments},
+                        'token'      => $ses->genToken, # comments.html
                       );
 }
 
@@ -1058,6 +1072,7 @@ sub Page
 
 sub Contact
 {
+   $ses->setCaptchaMode($c->{captcha_mode}||2);
    my %secure = $ses->SecSave( 1, 2 );
    $f->{$_}=$ses->SecureStr($f->{$_}) for keys %$f;
    $f->{email}||=$ses->getUser->{usr_email} if $ses->getUser;
@@ -1069,13 +1084,14 @@ sub Contact
 
 sub ContactSend
 {
-   &Contact unless $ENV{REQUEST_METHOD} eq 'POST';
-   &Contact unless $ses->SecCheck( $f->{'rand'}, 1, $f->{code} );
+   $ses->setCaptchaMode($c->{captcha_mode}||2);
+   return &Contact unless $ENV{REQUEST_METHOD} eq 'POST';
+   return &Contact unless $ses->SecCheck( $f->{'rand'}, 1, $f->{code} );
 
    $f->{msg}.="Email is not valid. " unless $f->{email} =~ /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
    $f->{msg}.="Message required. " unless $f->{message};
    
-   &Contact if $f->{msg};
+   return &Contact if $f->{msg};
 
    $f->{$_}=$ses->SecureStr($f->{$_}) for keys %$f;
 
@@ -1103,7 +1119,9 @@ sub DelFile
    if($f->{confirm} eq 'yes')
    {
       $ses->DeleteFile($file);
-      $ses->PrintTemplate("delete_file.html", 'status'=>$ses->{lang}->{lang_file_deleted});
+      $ses->PrintTemplate("delete_file.html",
+         'token'      => $ses->genToken,
+         'status'=>$ses->{lang}->{lang_file_deleted});
    }
    else
    {
@@ -1119,20 +1137,43 @@ sub DelFile
 sub TrashFiles
 {
    return if !@_;
-   $ses->DeleteFilesMass(\@_) if !$c->{trash_expire};
+   return $ses->DeleteFilesMass(\@_) if !$c->{trash_expire};
    my $file_ids = join(",", map { $_->{file_id} } @_);
    $db->Exec("UPDATE Files SET file_trashed=NOW() WHERE file_id IN ($file_ids)");
+
+   if($c->{memcached_location})
+   {
+      $db->Uncache( 'file', $db->SelectOne("SELECT file_code FROM Files WHERE file_id=?", $_->{file_id} ) ) for @_;
+   }
+}
+
+sub TrashFolder
+{
+   my ($fld_id) = @_;
+   return $db->Exec("DELETE FROM Folders WHERE fld_id=?", $fld_id) if !$c->{trash_expire};
+   $db->Exec("UPDATE Folders SET fld_trashed=1 WHERE fld_id=?", $fld_id);
 }
 
 sub UntrashFiles
 {
-   my $file_ids = join(",", map { $_->{file_id} } @_);
-   $db->Exec("UPDATE Files SET file_trashed=0 WHERE file_id IN ($file_ids)");
+   my (@files) = @_;
+   for my $file (@files)
+   {
+	   $db->Exec("UPDATE Files SET file_trashed=0 WHERE file_id=?", $file->{file_id});
+
+      # Traversing folders tree until root
+      my $folder = $db->SelectRow("SELECT * FROM Folders WHERE fld_id=?", $file->{file_fld_id});
+	   while($folder)
+      {
+         $db->Exec("UPDATE Folders SET fld_trashed=0 WHERE fld_id=?", $folder->{fld_id});
+         $folder = $db->SelectRow("SELECT * FROM Folders WHERE fld_id=?", $folder->{fld_parent_id});
+      }
+   }
 }
 
 sub AdminFiles
 {
-   if($f->{token} && $ses->checkToken)
+   if($ses->checkToken)
    {
       if($f->{del_code})
       {
@@ -1379,12 +1420,13 @@ sub ModeratorFiles
                        'paging'     => $ses->makePagingLinks($f,$total),
                        'items_per_page' => $c->{items_per_page},
                        'usr_login'  => $f->{usr_login},
+                       'token'      => $ses->genToken,
                       );
 }
 
 sub AdminUsers
 {
-   if($f->{token} && $ses->checkToken)
+   if($ses->checkToken)
    {
       if($f->{del_id})
       {
@@ -1537,7 +1579,10 @@ sub AdminUserEdit
                       usr_profit_mode=?,
                       usr_max_rs_leech=?,
                       usr_aff_enabled=?,
-                      usr_dmca_agent=?
+                      usr_dmca_agent=?,
+                      usr_sales_percent=?,
+                      usr_rebills_percent=?,
+                      usr_m_x_percent=?
                   WHERE usr_id=?",
                   $f->{usr_login},
                   $f->{usr_email},
@@ -1555,9 +1600,12 @@ sub AdminUserEdit
                   $f->{usr_max_rs_leech}||'',
                   $f->{usr_aff_enabled}||0,
                   $f->{usr_dmca_agent}||0,
+                  $f->{usr_sales_percent}||0,
+                  $f->{usr_rebills_percent}||0,
+                  $f->{usr_m_x_percent}||0,
                   $f->{usr_id}
                  );
-       $db->Exec("UPDATE Users SET usr_password=ENCODE(?,'$c->{pasword_salt}') WHERE usr_id=?",$f->{usr_password},$f->{usr_id}) if $f->{usr_password};
+       $db->Exec("UPDATE Users SET usr_password=? WHERE usr_id=?",XUtils::GenPasswdHash($f->{usr_password}),$f->{usr_id}) if $f->{usr_password};
        return $ses->redirect("?op=admin_user_edit&usr_id=$f->{usr_id}");
     }
     if($f->{ref_del})
@@ -1565,8 +1613,7 @@ sub AdminUserEdit
        $db->Exec("UPDATE Users SET usr_aff_id=0 WHERE usr_id=?",$f->{ref_del});
        return $ses->redirect("?op=admin_user_edit&usr_id=$f->{usr_id}");
     }
-    my $user = $db->SelectRow("SELECT *, UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec, DECODE(usr_password,'$c->{pasword_salt}') as usr_password
-                               FROM Users WHERE usr_id=?
+    my $user = $db->SelectRow("SELECT *, UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec FROM Users WHERE usr_id=?
                               ",$f->{usr_id});
     my $transactions = $db->SelectARef("SELECT * FROM Transactions WHERE usr_id=? AND verified=1 ORDER BY created DESC",$f->{usr_id});
     $_->{site_url}=$c->{site_url} for @$transactions;
@@ -1601,6 +1648,7 @@ sub AdminUserEdit
                         files_num      => $files_num,
                        token      => $ses->genToken,
                        'currency_symbol' => ($c->{currency_symbol}||'$'),
+                       enp_p             => $ses->iPlg('p'),
                        );
 }
 
@@ -1653,9 +1701,26 @@ sub AdminTorrents
 
    my $torrents = &getTorrents();
 
+   my $webseed = $db->SelectARef("SELECT *, u.usr_login, f.srv_id, INET_NTOA(ip) AS ip2
+      FROM BtTracker t
+      LEFT JOIN Users u ON u.usr_id = t.usr_id
+      LEFT JOIN Files f ON f.file_id = t.file_id
+      WHERE last_announce > NOW() - INTERVAL 1 HOUR");
+   for(@$webseed)
+   {
+      my $file = $db->SelectRow("SELECT * FROM Files WHERE file_id=?", $_->{file_id});
+      next if !$file;
+
+      $_->{file_name} = $file->{file_name};
+      $_->{download_link} = $ses->makeFileLink($file);
+      $_->{finished} = 1 if $_->{bytes_left} == 0;
+      $_->{progress} = int(100 * ($file->{file_size} - $_->{bytes_left}) / $file->{file_size}) . '%';
+   }
+
    $ses->PrintTemplate("admin_torrents.html",
                        torrents  => $torrents,
                        servers   => $servers,
+                       webseed   => $webseed,
                       );
 }
 
@@ -1705,7 +1770,8 @@ sub AdminServerAdd
    $server->{srv_allow_regular}=$server->{srv_allow_premium}=1 unless $f->{srv_id};
    $server->{srv_cdn} ||= $f->{srv_cdn}||$f->{cdn};
 
-   if($server->{srv_cdn}) {
+   if($server->{srv_cdn})
+   {
       my @cdn_list = grep { $_->{listed} } (map { $_->options() } $ses->getPlugins('CDN'));
       my ($cdn) = grep { $_->{name} eq $server->{srv_cdn} } @cdn_list;
       $cdn ||= $cdn_list[0];
@@ -1713,17 +1779,18 @@ sub AdminServerAdd
       return $ses->message("Couldn't find appropriate plugin") if !$cdn;
       my $srv_data = $ses->getSrvData($server->{srv_id});
       $_->{value} = $f->{$_->{name}} || $srv_data->{$_->{name}} for(@{$cdn->{s_fields}});
-      $ses->PrintTemplate("admin_cdn_form.html",
+      return $ses->PrintTemplate("admin_cdn_form.html",
                        %{$server},
                        %{$f},
                        tests => $opts{tests}||[],
                        cdn_list => \@cdn_list,
                        s_fields => $cdn->{s_fields},
                        srv_name => $cdn->{title},
+                       'token'      => $ses->genToken(op => 'admin_server_save'),
                        );
    }
 
-   $ses->PrintTemplate("admin_server_form.html",
+   return $ses->PrintTemplate("admin_server_form.html",
                        %{$server},
                        %{$f},
                        'tests' => $opts{tests}||[],
@@ -1731,13 +1798,15 @@ sub AdminServerAdd
                        'mmtt' => $ses->iPlg('t'),
                        'm_g'  => $ses->iPlg('g'),
                        'm_v'  => $c->{m_v},
+                       'token'      => $ses->genToken(op => 'admin_server_save'),
                       );
 }
 
 sub AdminServerSave
 {
-   
    return $ses->message("Not allowed in Demo mode") if $c->{demo_mode};
+   return $ses->message("Invalid token") if !$ses->checkToken();
+
    $f->{srv_cgi_url}=~s/\/$//;
    $f->{srv_htdocs_url}=~s/\/$//;
    return $ses->message("Server with same cgi-bin URL / htdocs URL already exist in DB") if !$f->{srv_id} && $db->SelectOne("SELECT srv_id FROM Servers WHERE srv_cgi_url=? OR srv_htdocs_url=?",$f->{srv_cgi_url},$f->{srv_htdocs_url});
@@ -1832,28 +1901,26 @@ sub AdminServersTransfer
 
 sub AdminTransferList
 {
-   if($f->{del_id})
+   if($f->{del_id} && $ses->checkToken)
    {
       $db->Exec("DELETE FROM QueueTransfer WHERE file_real=? LIMIT 1",$f->{del_id});
       return $ses->redirect('?op=admin_transfer_list');
    }
-   if($f->{restart})
+   if($f->{restart} && $ses->checkToken)
    {
       $db->Exec("UPDATE QueueTransfer SET status='PENDING', error='' WHERE file_real=? LIMIT 1",$f->{restart});
       return $ses->redirect('?op=admin_transfer_list');
    }
-   if($f->{del_all})
+   if($f->{del_all} && $ses->checkToken)
    {
       $db->Exec("DELETE FROM QueueTransfer");
       return $ses->redirect('?op=admin_transfer_list');
    }
-   if($f->{restart_all})
+   if($f->{restart_all} && $ses->checkToken)
    {
       $db->Exec("UPDATE QueueTransfer SET status='PENDING', error=''");
       return $ses->redirect('?op=admin_transfer_list');
    }
-                                      #    f.file_title, f.usr_id, f.file_code, f.file_name, f.file_original,
-                                      # f.file_size_o, f.file_size_n, f.file_size_h, f.file_size_l,
    my $list = $db->SelectARef("SELECT q.*, f.*,
                                       UNIX_TIMESTAMP()-UNIX_TIMESTAMP(q.created) as created2,
                                       UNIX_TIMESTAMP()-UNIX_TIMESTAMP(q.updated) as dt,
@@ -1884,10 +1951,8 @@ sub AdminTransferList
       if( $_->{status}=~/^(ERROR|MOVING)$/ && $_->{error} )
       {
          push @stucked, $_->{file_real};
-         #$_->{qstatus}=" <i style='color:#c66;'>[stuck]</i> <a href='?op=admin_transfer_list&restart=$_->{file_real_id}'>[restart]</a>";
          $_->{qstatus}=qq[ <a href="#" onclick="\$('#err$_->{file_real_id}').toggle();return false;"><i style="color:#e66;">[error]</i></a><div id='err$_->{file_real_id}' style='display:none'>$_->{error}</div>
                            <a href='?op=admin_transfer_list&restart=$_->{file_real}'>[restart]</a>];
-         #die $_->{qstatus};
       }
       
       $_->{created2} = $_->{created2}<60 ? "$_->{created2} secs" : ($_->{created2}<7200 ? sprintf("%.0f",$_->{created2}/60).' mins' : sprintf("%.0f",$_->{created2}/3600).' hours');
@@ -1897,6 +1962,8 @@ sub AdminTransferList
       $_->{progress} = sprintf("%.0f", 100*$_->{transferred}/$_->{file_size} ) if $_->{file_size};
       $_->{file_size} = sprintf("%.0f MB",$_->{file_size}/1024/1024);
       $_->{transferred_mb} = sprintf("%.01f",$_->{transferred}/1024/1024);
+      # Prevent odd speeds from being displayed
+      $_->{is_starting} = 1 if $_->{transferred} < 2**20 && $_->{status} eq 'MOVING';
    }
    my $srv_list = $db->SelectARef("SELECT s.srv_name,
                                    SUM(IF(q.status='PENDING',1,0)) as num_pending,
@@ -1911,6 +1978,7 @@ sub AdminTransferList
                        list => $list, 
                        restartall=>@stucked>0?join(',',@stucked):0,
                        srv_list => $srv_list,
+                       'token'      => $ses->genToken,
                       );
 }
 
@@ -1941,7 +2009,7 @@ sub AdminUpdateServerStats
 sub AdminServerImport
 {
    
-   if($f->{'import'})
+   if($f->{'import'} && $ses->checkToken)
    {
       my $usr_id = $db->SelectOne("SELECT usr_id FROM Users WHERE usr_login=?",$f->{usr_login});
       return $ses->message("No such user '$f->{usr_login}'") unless $usr_id;
@@ -1962,6 +2030,7 @@ sub AdminServerImport
    $ses->PrintTemplate("admin_server_import.html",
                        'files'   => \@files,
                        'srv_id'  => $f->{srv_id},
+                       'token'      => $ses->genToken,
                       );
 }
 
@@ -1971,8 +2040,8 @@ sub AdminServerDelete
    
    if($f->{password})
    {
-      $f->{login}=$ses->getUser->{usr_login};
-      return $ses->message("Wrong password") unless &Login(no_redirect => 1);
+      my $user = XUtils::CheckLoginPass($ses, $ses->getUser->{usr_login}, $f->{password});
+      return $ses->message("Wrong password") if !$user;
    }
    else
    {
@@ -1986,24 +2055,16 @@ sub AdminServerDelete
    my $srv = $db->SelectRow("SELECT * FROM Servers WHERE srv_id=?",$f->{id});
    return $ses->message("No such server") unless $srv;
 
-   my $res = $ses->api($srv->{srv_cgi_url},
-                       {
-                          fs_key => $srv->{srv_key},
-                          op     => 'expire_sym',
-                          hours  => 0,
-                       }
-                      );
-
-   my $files = $db->SelectARef("SELECT * FROM Files WHERE srv_id=?",$srv->{srv_id});
-   $ses->DeleteFilesMass($files);
-
-   $db->Exec("DELETE FROM Servers WHERE srv_id=?",$srv->{srv_id});
+   $db->Exec("DELETE FROM Files WHERE srv_id=?", $srv->{srv_id});
+   $db->Exec("DELETE FROM Servers WHERE srv_id=?", $srv->{srv_id});
 
    return $ses->redirect('?op=admin_servers');
 }
 
 sub AdminSettings
 {
+   require PerlConfig;
+
    if($f->{last_notify_time})
    {
       $db->Exec("INSERT INTO Misc SET name='last_notify_time', value='$f->{last_notify_time}'
@@ -2012,9 +2073,33 @@ sub AdminSettings
       return;
    }
 
+   if($f->{expiry_csv})
+   {
+      print qq{Content-Disposition: attachment; filename="[$c->{site_name}] file deletion.csv"\n};
+      print "Content-type: text/csv\n\n";
+      open FILE, "$c->{cgi_path}/temp/expiry_confirmation.csv";
+      print $_ while <FILE>;
+      close FILE;
+      return;
+   }
+
+   if($f->{expiry_confirm})
+   {
+      $db->Exec("DELETE FROM Misc WHERE name='mass_del_confirm_request'");
+      $db->Exec("INSERT INTO Misc SET name='mass_del_confirm_response', value=UNIX_TIMESTAMP()
+         ON DUPLICATE KEY UPDATE value=UNIX_TIMESTAMP()");
+      $ses->redirect('/?op=admin_settings');
+   }
+
+   my @multiline = qw(ip_not_allowed external_links mailhosts_not_allowed coupons fnames_not_allowed bad_comment_words bad_ads_words m_a_code external_keys);
+   push @multiline, grep { /_logins$/ } keys(%$c);
+
+   $c->{$_} =~ s/\|/\n/g for @multiline;
+
    if($f->{save} && $ENV{REQUEST_METHOD} eq 'POST' && $ses->checkToken)
    {
       return $ses->message("Not allowed in Demo mode") if $c->{demo_mode};
+      $db->Exec("DELETE FROM Misc WHERE name='mass_del_confirm_request'");
       my @fields = qw(license_key
                       site_name
                       enable_file_descr
@@ -2063,6 +2148,10 @@ sub AdminSettings
                       solvemedia_authentication_key
                       iframe_breaker
                       file_public_default
+                      agree_tos_default
+                      mask_dl_link
+                      files_approve
+                      files_approve_regular_only
                       m_c
                       m_j
                       m_j_domain
@@ -2119,6 +2208,8 @@ sub AdminSettings
                       m_e_audio_bitrate
                       m_e_flv
                       m_e_flv_bitrate
+                      m_e_preserve_orig
+                      m_e_copy_when_possible
                       m_b
                       m_k
                       m_k_plans
@@ -2137,6 +2228,10 @@ sub AdminSettings
                       external_keys
                       enable_reports
                       adfly_uid
+                      captcha_attempts_h
+                      traffic_plans
+                      ftp_upload_reg
+                      ftp_upload_prem
 
                       enabled_anon
                       max_upload_files_anon
@@ -2160,6 +2255,9 @@ sub AdminSettings
                       file_dl_delay_anon
                       mp3_embed_anon
                       rar_info_anon
+                      m_n_upload_speed_anon
+                      m_n_limit_conn_anon
+                      m_n_dl_resume_anon
 
                       enabled_reg
                       max_upload_files_reg
@@ -2187,6 +2285,9 @@ sub AdminSettings
                       file_dl_delay_reg
                       mp3_embed_reg
                       rar_info_reg
+                      m_n_upload_speed_reg
+                      m_n_limit_conn_reg
+                      m_n_dl_resume_reg
 
                       enabled_prem
                       max_upload_files_prem
@@ -2214,6 +2315,9 @@ sub AdminSettings
                       file_dl_delay_prem
                       mp3_embed_prem
                       rar_info_prem
+                      m_n_upload_speed_prem
+                      m_n_limit_conn_prem
+                      m_n_dl_resume_prem
 
                       tier_sizes
                       tier1_countries
@@ -2293,6 +2397,12 @@ sub AdminSettings
                       catalogue_registered_only
                      );
 
+       my $ftp_status_changed = 1 if $f->{ftp_mod} != $c->{ftp_mod};
+       if($f->{ftp_mod} && $ftp_status_changed && !$f->{ftp_upload_reg} && !$f->{ftp_upload_prem})
+       {
+           $f->{ftp_upload_reg} = $f->{ftp_upload_prem} = 1;
+       }
+
        push @fields, map { $_->{name} } @{ &getPluginsOptions('Payments') };
        push @fields, map { $_->{name} } @{ &getPluginsOptions('Leech') };
        push @fields, map { $_->{name} } @{ &getPluginsOptions('Video') };
@@ -2319,6 +2429,8 @@ sub AdminSettings
                          m_e_audio_bitrate
                          m_e_flv
                          m_e_flv_bitrate
+                         m_e_preserve_orig
+                         m_e_copy_when_possible
                          m_b
                          m_i_magick
                          external_keys
@@ -2350,59 +2462,13 @@ sub AdminSettings
       $f->{payment_plans}=~s/\s//gs;
       $f->{item_name} = uri_escape($f->{item_name});
 
-      my $conf;
-      open(F,"$c->{cgi_path}/XFileConfig.pm")||return $ses->message("Can't read XFileConfig");
-      $conf.=$_ while <F>;
-      close F;
-
-      $f->{ip_not_allowed}=~s/\r//gs;
-      my @ips=grep{/^[\d\.]+$/}split(/\n/,$f->{ip_not_allowed});
-      if($#ips>-1 && open(F,"$c->{site_path}/.htaccess"))
-      {
-         my @arr=<F>;
-         @arr=grep{$_!~/deny from/i}@arr;
-         unshift @arr,"deny from $_\n" for @ips;
-         close F;
-         if( open(F,">$c->{site_path}/.htaccess") )
-         {
-            print F @arr;
-            close F;
-         }
-      }
-
-      for my $key (keys %$f)
-      {
-         $f->{$key}=~s/\r//gs;
-         $f->{$key}=~s/\n/|/gs;
-         $f->{$key}=~s/\|{2,99}/|/gs;
-         $f->{$key}=~s/\|$//gs;
-
-         $f->{$key}=~s/&lt;/</gs;
-         $f->{$key}=~s/&gt;/>/gs;
-         $f->{$key}=~s/\\/\\\\/g;
-         $f->{$key}=~s/'/\\'/g;
-      }
-
       for(qw(ip_not_allowed fnames_not_allowed mailhosts_not_allowed bad_comment_words bad_ads_words))
       {
          $f->{$_} = "($f->{$_})" if $f->{$_};
       }
 
-      for my $x (@fields)
-      {
-         my $val = $f->{$x};
-         
-         unless(exists($c->{$x}))
-         {
-            $conf =~ s/};/ $x => '$val',\n};/
-         }
-
-         $conf=~s/$x\s*=>\s*('.*')\s*,/"$x => '$val',"/e;
-      }
-
-      open(F,">$c->{cgi_path}/XFileConfig.pm")||return $ses->message("Can\'t write XFileConfig");
-      print F $conf;
-      close F;
+      eval { PerlConfig::Write("$c->{cgi_path}/XFileConfig.pm", $f, fields => \@fields, multiline => \@multiline) };
+      return $ses->message($@) if $@;
 
       $f->{site_url}=$c->{site_url};
       $f->{site_cgi}=$c->{site_cgi};
@@ -2424,7 +2490,7 @@ sub AdminSettings
          }
          else
          {
-            print"FAILED!<br>";
+            print"FAILED: $res<br>";
             $failed++;
          }
          #return $ses->message("Can\'t update config for server ID: $_->{srv_id}:$res") unless $res eq 'OK';
@@ -2460,9 +2526,9 @@ sub AdminSettings
    $c->{"m_y_default_$c->{m_y_default}"}=1;
    $c->{"lang_detection_$c->{lang_detection}"}=1;
 
-   for(keys %$c)
+   for(@multiline)
    {
-      $c->{$_} =~ s/\|/\n/g if $_ !~ /^(tier|ext)/;
+      $c->{$_} =~ s/\|/\n/g;
    }
 
    if($c->{tla_xml_key})
@@ -2495,6 +2561,7 @@ sub AdminSettings
    }
 
    my $last_notify_time = $db->SelectOne("SELECT value FROM Misc WHERE name='last_notify_time'");
+   my $mass_del_confirm_request = $db->SelectOne("SELECT value FROM Misc WHERE name='mass_del_confirm_request'");
    my $fastcgi = 1 if $ENV{FCGI_ROLE};
 
    $ses->PrintTemplate("admin_settings.html",
@@ -2510,6 +2577,7 @@ sub AdminSettings
                        'version'    => $ses->getVersion,
                        'last_notify_time' => $last_notify_time||0,
                        'vidplgs'    => \@vidplgs,
+                       'mass_del_confirm_request' => $mass_del_confirm_request,
                        'fastcgi' => $fastcgi,
                       );
 }
@@ -2530,6 +2598,8 @@ sub getPluginsOptions
       $aref = [ { name => "$hashref->{plugin_prefix}\_logins", domain => ucfirst($hashref->{domain}) } ] if $hashref->{plugin_prefix};
 
       $_->{value} = $data ? $data->{$_->{name}} : $c->{$_->{name}} for @$aref;
+      $_->{"type_$_->{type}"} = 1 for @$aref;
+
       push @ret, @$aref;
    }
    return \@ret;
@@ -2556,6 +2626,7 @@ sub MyReports
                   i.usr_id AS downloader_id,
                   i.referer AS referer,
                   i.money AS money,
+                  i.status AS status,
                   u.usr_premium_expire > NOW() AS premium_download
                   FROM IP2Files i
                   LEFT JOIN Files f ON f.file_id = i.file_id
@@ -2701,7 +2772,8 @@ sub AdminStats
       { title => 'File downloads', color => 'black', data => genChart($list, 'downloads') },
       { title => 'New users', color => 'orange', data => genChart($list, 'registered') },
       { title => 'Bandwidth', color => 'red', units => 'Mb', data => genChart($list, 'bandwidth') },
-      { title => 'Payments received', color => 'green', units => $c->{currency_code}, data => genChart($list, 'paid') },
+      { title => 'Payments received', color => 'green', units => $c->{currency_code}, data => genChart($list, 'received') },
+      { title => 'Paid to users', color => 'brown', units => $c->{currency_code}, data => genChart($list, 'paid_to_users') },
    ];
 
    if(!$f->{section} || $f->{section} eq 'charts')
@@ -2714,8 +2786,17 @@ sub AdminStats
 
    if($f->{section} eq 'details')
    {
+      my %totals;
+      for my $x(@$list)
+      {
+         $x->{received} = sprintf("%0.2f", $x->{received});
+         $x->{paid_to_users} = sprintf("%0.2f", $x->{paid_to_users});
+	      $x->{income} = $x->{received} - $x->{paid_to_users};
+	      $totals{"sum_$_"}+=$x->{$_} for keys(%$x);
+      }
       return $ses->PrintTemplate('admin_stats.html',
                              %tmpl_opts,
+                             %totals,
                              list  => $list,
                       );
    }
@@ -2769,7 +2850,7 @@ sub AdminStats
 sub AdminComments
 {
    return $ses->message("Access denied") if !$ses->getUser->{usr_adm} && !($c->{m_d} && $ses->getUser->{usr_mod} && $c->{m_d_c});
-   if($f->{del_selected} && $f->{cmt_id})
+   if($ses->checkToken() && $f->{del_selected} && $f->{cmt_id})
    {
       my $ids = join(',',grep{/^\d+$/}@{&ARef($f->{cmt_id})});
       return $ses->redirect($c->{site_url}) unless $ids;
@@ -2784,23 +2865,59 @@ sub AdminComments
    $filter="WHERE c.cmt_ip=INET_ATON('$f->{ip}')" if $f->{ip};
    $filter="WHERE c.usr_id=$f->{usr_id}" if $f->{usr_id};
    $filter="WHERE c.cmt_name LIKE '%$f->{key}%' OR c.cmt_email LIKE '%$f->{key}%' OR c.cmt_text LIKE '%$f->{key}%'" if $f->{key};
-   my $list = $db->SelectARef("SELECT c.*, INET_NTOA(c.cmt_ip) as ip, u.usr_login, u.usr_id
+   my $list = $db->SelectARef("SELECT c.*, INET_NTOA(c.cmt_ip) as ip, u.usr_login, u.usr_id,
+                                 f.file_name, f.file_code,
+                                 n.news_id, n.news_title
                                FROM Comments c
                                LEFT JOIN Users u ON c.usr_id=u.usr_id
+                               LEFT JOIN Files f ON f.file_id=c.cmt_ext_id
+                               LEFT JOIN News n ON n.news_id=c.cmt_ext_id
                                $filter
                                ORDER BY created DESC".$ses->makePagingSQLSuffix($f->{page},$f->{per_page}));
    my $total = $db->SelectOne("SELECT COUNT(*) FROM Comments c $filter");
+
+   for(@$list)
+   {
+      $_->{"cmt_type_$_->{cmt_type}"} = 1;
+      $_->{download_link} = $ses->makeFileLink($_);
+      $_->{news_link} = "$c->{site_url}/n$_->{news_id}-" . lc($_->{news_title}) . ".html";
+   }
+
    $ses->PrintTemplate("admin_comments.html",
                        'list'   => $list,
                        'key'    => $f->{key}, 
                        'paging' => $ses->makePagingLinks($f,$total),
+                       'token' => $ses->genToken,
                       );
+}
+
+sub AdminCommentEdit
+{
+   if($ses->checkToken() && $f->{save})
+   {
+      $db->Exec("UPDATE Comments SET cmt_text=? WHERE cmt_id=?", $f->{cmt_text}, $f->{cmt_id});
+      return $ses->redirect("$c->{site_url}/?op=admin_comments");
+   }
+   my $comment = $db->SelectRow("SELECT *, u.usr_login, INET_NTOA(cmt_ip) AS ip,
+         f.file_name, f.file_code,
+         n.news_title,
+         c.created
+      FROM Comments c
+      LEFT JOIN Users u ON u.usr_id=c.usr_id
+      LEFT JOIN Files f ON f.file_id=c.cmt_ext_id
+      LEFT JOIN News n ON n.news_id=c.cmt_ext_id
+      WHERE cmt_id=?", $f->{cmt_id});
+   return $ses->PrintTemplate("admin_comment_form.html",
+      %{ $comment },
+      download_link => $ses->makeFileLink($comment),
+      "cmt_type_$comment->{cmt_type}" => 1,
+      token => $ses->genToken);
 }
 
 sub AdminPayments
 {
    
-   if($f->{export_file} && $f->{pay_id})
+   if($f->{export_file} && $f->{pay_id} && $ses->checkToken)
    {
       my $ids = join(',',grep{/^\d+$/}@{&ARef($f->{pay_id})});
       return $ses->redirect($c->{site_url}) unless $ids;
@@ -2820,14 +2937,14 @@ sub AdminPayments
       }
       return;
    }
-   if($f->{mark_paid} && $f->{pay_id})
+   if($f->{mark_paid} && $f->{pay_id} && $ses->checkToken)
    {
       my $ids = join(',',grep{/^\d+$/}@{&ARef($f->{pay_id})});
       return $ses->redirect($c->{site_url}) unless $ids;
       $db->Exec("UPDATE Payments SET status='PAID' WHERE id IN ($ids)" );
       return $ses->redirect_msg("$c->{site_url}/?op=admin_payments","Selected payments marked as Paid");
    }
-   if($f->{mark_rejected} && $f->{pay_id})
+   if($f->{mark_rejected} && $f->{pay_id} && $ses->checkToken)
    {
       my $ids = join(',',grep{/^\d+$/}@{&ARef($f->{pay_id})});
       return $ses->redirect($c->{site_url}) unless $ids;
@@ -2857,6 +2974,7 @@ sub AdminPayments
                        'alertpay_email'      => $c->{alertpay_email},
                        'webmoney_merchant_id'=> $c->{webmoney_merchant_id},
                        'currency_symbol' => ($c->{currency_symbol}||'$'),
+                       'token'      => $ses->genToken,
                        );
 }
 
@@ -2950,17 +3068,18 @@ sub MyAccount
       return $ses->redirect_msg("?op=my_account","Invalid Premium Key") unless $key;
       return $ses->redirect_msg("?op=my_account","This Premium Key already used") if $key->{usr_id_activated};
       my ($val,$m) = $key->{key_time}=~/^(\d+)(\D*)$/;
-      $val = int($val / 30) if $m eq 'm';
+      my $multiplier = { h => 1.0 / 24, d => 1, m => 3 }->{$m} || die("Unknown unit: $m");
+      my $days = $val * $multiplier;
       $db->Exec("UPDATE PremiumKeys SET key_activated=NOW(), usr_id_activated=? WHERE key_id=?",$ses->getUserId,$key->{key_id});
 
       require IPN;
       my $ipn = IPN->new($ses);
       my $transaction = $ipn->createTransaction(amount => $key->{key_price},
-                            days => $val,
+                            days => $days,
                             usr_id => $ses->getUserId||0,
                             referer => $ses->getCookie('ref_url') || $ENV{HTTP_REFERER} || '',
                             aff_id => &getAffiliate()||0);
-      $ipn->upgradePremium($transaction);
+      $ipn->upgradePremium($transaction, days => $days);
 
       $m=~s/h/ hours/i;
       $m=~s/d/ days/i;
@@ -3005,7 +3124,7 @@ sub MyAccount
    {
       return $ses->redirect($c->{site_url}) if !&CheckReferer($ENV{HTTP_REFERER});
       return $ses->message("Not allowed in Demo mode!") if $c->{demo_mode} && $ses->getUser->{usr_adm};
-      my $user=$db->SelectRow("SELECT usr_login,DECODE(usr_password,?) as usr_password,usr_email FROM Users WHERE usr_id=?",$c->{pasword_salt},$ses->getUserId);
+      my $user=$db->SelectRow("SELECT usr_login as usr_password,usr_email FROM Users WHERE usr_id=?",$ses->getUserId);
       if($f->{usr_login} && $user->{usr_login}=~/^\d+$/ && $f->{usr_login} ne $user->{usr_login})
       {
          $f->{usr_login}=$ses->SecureStr($f->{usr_login});
@@ -3017,19 +3136,11 @@ sub MyAccount
          return $ses->message("Error: $ses->{lang}->{lang_login_exist}")  if $db->SelectOne("SELECT usr_id FROM Users WHERE usr_login=?",$f->{usr_login});
          $db->Exec("UPDATE Users SET usr_login=? WHERE usr_id=?",$f->{usr_login},$ses->getUserId);
       }
+
       my $pass_check;
-      if($f->{password_old})
-      {
-         $pass_check = $db->SelectOne("SELECT usr_id FROM Users
-               WHERE usr_id=? 
-               AND (usr_password=ENCODE(?,?)
-               OR usr_password=MD5(?))",
-               $ses->getUserId,
-               $f->{password_old},
-               $c->{pasword_salt},
-               $f->{password_old});
-      }
+      $pass_check = 1 if XUtils::CheckLoginPass($ses, $ses->getUser->{usr_login}, $f->{password_old});
       $pass_check = 1 if !$ses->getUser->{usr_password} || !$ses->getUser->{usr_email};
+
       if($f->{usr_email} ne $ses->getUser->{usr_email} && !$ses->getUser->{usr_security_lock})
       {
          return $ses->message("Old password required") if !$pass_check;
@@ -3044,7 +3155,9 @@ sub MyAccount
          return $ses->message($ses->{lang}->{lang_login_pass_wrong}) if !$pass_check;
          return $ses->message("New password is too short") if length($f->{password_new})<4;
          return $ses->message("New passwords do not match") unless $f->{password_new} eq $f->{password_new2};
-         $db->Exec("UPDATE Users SET usr_password=ENCODE(?,?), usr_social='' WHERE usr_id=?", $f->{password_new}, $c->{pasword_salt}, $ses->getUserId );
+
+         my $hash = XUtils::GenPasswdHash($f->{password_new});
+         $db->Exec("UPDATE Users SET usr_password=?, usr_social='' WHERE usr_id=?", $hash, $ses->getUserId );
          $f->{msg}=$ses->{lang}->{lang_pass_changed_ok}.'<br>';
          $user->{usr_password_new} = $f->{password_new};
       }
@@ -3156,6 +3269,7 @@ sub MyAccount
                        'leech' => $c->{leech},
                        'currency_symbol' => ($c->{currency_symbol}||'$'),
                        'enp_p' => $ses->iPlg('p'),
+                       'usr_premium_traffic_mb' => int($user->{usr_premium_traffic} / 2**20),
                       );
 }
 
@@ -3264,7 +3378,7 @@ sub shorten
 
 sub MyFiles
 {
-   if($f->{token} && $ses->checkToken)
+   if($ses->checkToken)
    {
       if($f->{del_code})
       {
@@ -3302,7 +3416,7 @@ sub MyFiles
             }
             my $files = $db->SelectARef("SELECT * FROM Files WHERE usr_id=? AND file_fld_id=?",$ses->getUserId,$fld_id);
             &TrashFiles(@$files);
-            $db->Exec("DELETE FROM Folders WHERE usr_id=? AND fld_id=?",$ses->getUserId,$fld_id);
+            &TrashFolder($fld_id);
          }
          &delFolder($f->{del_folder});
          return $ses->redirect("$c->{site_url}/?op=my_files&fld_id=$f->{fld_id}");
@@ -3331,7 +3445,8 @@ sub MyFiles
       if($f->{untrash_selected})
       {
          my $ids = join(',',grep{/^\d+$/}@{&ARef($f->{file_id})});
-         $db->Exec("UPDATE Files SET file_trashed=0 WHERE usr_id=? AND file_id IN ($ids)", $ses->getUserId);
+         my $files = $db->SelectARef("SELECT * FROM Files WHERE usr_id=? AND file_id IN ($ids)", $ses->getUserId);
+         &UntrashFiles(@$files);
          return $ses->redirect("$c->{site_url}/?op=my_files&fld_id=-1");
       }
    }
@@ -3440,6 +3555,7 @@ sub MyFiles
    my $filter_key = "AND (file_name LIKE '%$1%' OR file_descr LIKE '%$1%')" if $f->{key} =~ /([^'\\]+)/;
    my $filter_trash = "AND f.file_trashed" . ($f->{fld_id} == -1 ? " > 0" : " = 0");
    my $filter_fld = "AND f.file_fld_id='$1'" if !$filter_key && $f->{fld_id} >= 0 && $f->{fld_id} =~ /^(\d+)$/;
+   my $filter_trashed_folder = "AND fld_trashed" . ($f->{fld_id} == -1 ? " > 0" : " = 0");
 
    my $files = $db->SelectARef("SELECT f.*, DATE(f.file_created) as created, 
                                 (SELECT COUNT(*) FROM Comments WHERE cmt_type=1 AND file_id=cmt_ext_id) as comments,
@@ -3464,12 +3580,15 @@ sub MyFiles
                                   LEFT JOIN Files ff ON f.fld_id=ff.file_fld_id
                                   WHERE f.usr_id=? 
                                   AND fld_parent_id=?
+                                  $filter_trashed_folder
                                   GROUP BY fld_id
                                   ORDER BY fld_name".$ses->makePagingSQLSuffix($f->{page}),$ses->getUserId,$f->{fld_id});
 
    my $folders_total = $db->SelectOne("SELECT COUNT(*) FROM Folders f
                                 WHERE usr_id=?
-                                AND f.fld_parent_id=?",
+                                AND f.fld_parent_id=?
+                                $filter_trashed_folder
+                                ",
                                 $ses->getUserId,
                                 $f->{fld_id}||0);
 
@@ -3481,7 +3600,7 @@ sub MyFiles
    for(@$folders)
    {
       $_->{fld_name_txt} = length($_->{fld_name})>25 ? substr($_->{fld_name},0,25).'&#133;' : $_->{fld_name};
-      $_->{files_total} = $db->SelectOne("SELECT COUNT(*) FROM Files WHERE usr_id=? AND file_fld_id=?", $ses->getUserId, $_->{fld_id});
+      $_->{files_total} = $ses->getFilesTotal($_->{fld_id}, "AND !file_trashed");
    }
 
    my $trashed = $db->SelectARef("SELECT * FROM Files WHERE usr_id=? AND file_trashed > 0", $ses->getUserId);
@@ -3632,7 +3751,7 @@ sub buildTree
 sub buildFoldersTree
 {
    my (%opts) = @_;
-   my $allfld = $db->SelectARef("SELECT * FROM Folders WHERE usr_id=? ORDER BY fld_name",$opts{usr_id});
+   my $allfld = $db->SelectARef("SELECT * FROM Folders WHERE usr_id=? AND !fld_trashed ORDER BY fld_name",$opts{usr_id});
    my $fh;
    push @{$fh->{$_->{fld_parent_id}}},$_ for @$allfld;
    return( &buildTree($fh,0,0) );
@@ -3922,7 +4041,9 @@ sub FileEdit
    $ses->PrintTemplate("file_form.html",
                         %{$file},
                         op => $f->{op},
-                        adm_mode => $adm_mode||0);
+                        adm_mode => $adm_mode||0,
+                        'token'      => $ses->genToken,
+                        );
 }
 
 sub FolderEdit
@@ -3973,12 +4094,18 @@ sub Payments
       $f->{referer}='RESELLER' if $f->{reseller};
 
       my %opts = %{$f};
+      $opts{target} = $f->{target}||'premium_days';
+      $opts{target} = 'reseller' if $f->{reseller};
+
       $opts{usr_id} = $ses->getUser ? $ses->getUserId : 0;
       $opts{aff_id} = &getAffiliate();
       $opts{referer} ||= $ses->getCookie('ref_url') || $ENV{HTTP_REFERER} || '';
       $opts{email} = $ses->getUser->{usr_email} if $ses->getUser;
-      $opts{days} = $ses->ParsePlans($c->{payment_plans}, 'hash')->{$f->{amount}};
-      return $ses->message("Invalid payment amount") if !$f->{reseller} && !$opts{days};
+      $opts{days} = $ses->ParsePlans($c->{payment_plans}, 'hash')->{$f->{amount}} if $opts{target} eq 'premium_days';;
+      $opts{traffic} = $ses->ParsePlans($c->{traffic_plans}, 'hash')->{$f->{amount}} if $opts{target} eq 'premium_traffic';;
+
+      return $ses->message("Invalid payment amount") if $opts{target} eq 'premium_days' && !$opts{days};
+      return $ses->message("Invalid payment amount") if $opts{target} eq 'premium_traffic' && !$opts{traffic};
 
       require IPN;
       my $transaction = IPN->new($ses)->createTransaction(%opts);
@@ -3998,7 +4125,7 @@ sub Payments
       for my $y ('anon','reg','prem')
       {
          my $z = "$x\_$y";
-         $limits->{$z} = $c->{$z} ? "$c->{$z} Mb" : "No limits";
+         $limits->{$z} = $c->{$z} ? "$c->{$z} Mb" : "Unlimited";
       }
    }
    $limits->{max_downloads_number_reg} = $c->{max_downloads_number_reg}||'Unlimited';
@@ -4007,19 +4134,23 @@ sub Payments
    $limits->{files_expire_reg}  = $c->{files_expire_access_reg}  ? "$c->{files_expire_access_reg} $ses->{lang}->{lang_days_after_downl}" : $ses->{lang}->{lang_never};
    $limits->{files_expire_prem} = $c->{files_expire_access_prem} ? "$c->{files_expire_access_prem} $ses->{lang}->{lang_days_after_downl}" : $ses->{lang}->{lang_never};
 
-   $limits->{disk_space_reg} = $c->{disk_space_reg} ? sprintf("%.0f GB",$c->{disk_space_reg}/1024) : "No limit";
-   $limits->{disk_space_prem} = $c->{disk_space_prem} ? sprintf("%.0f GB",$c->{disk_space_prem}/1024) : "No limit";
+   $limits->{disk_space_reg} = $c->{disk_space_reg} ? sprintf("%.0f GB",$c->{disk_space_reg}/1024) : "Unlimited";
+   $limits->{disk_space_prem} = $c->{disk_space_prem} ? sprintf("%.0f GB",$c->{disk_space_prem}/1024) : "Unlimited";
 
    $limits->{bw_limit_anon} = $c->{bw_limit_anon} ? sprintf("%.0f GB",$c->{bw_limit_anon}/1024)." in $c->{bw_limit_days} $ses->{lang}->{lang_days}" : 'Unlimited';
    $limits->{bw_limit_reg}  = $c->{bw_limit_reg}  ? sprintf("%.0f GB",$c->{bw_limit_reg}/1024)." in $c->{bw_limit_days} $ses->{lang}->{lang_days}" : 'Unlimited';
    $limits->{bw_limit_prem} = $c->{bw_limit_prem} ? sprintf("%.0f GB",$c->{bw_limit_prem}/1024)." in $c->{bw_limit_days} $ses->{lang}->{lang_days}" : 'Unlimited';
-   #$c->{disk_space_prem}||='Unlimited';
+   for my $utype (qw(anon reg prem))
+   {
+      $limits->{"download_resume_$utype"} = $c->{m_n} ? $c->{"m_n_dl_resume_$utype"} : $c->{"direct_links_$utype"}
+   }
 
    require Time::Elapsed;
    my $et = new Time::Elapsed;
    my @payment_types = $ses->getPlugins('Payments')->get_payment_buy_with;
    my @plans =  @{ $ses->ParsePlans($c->{payment_plans}, 'array') };
-   for(@plans)
+   my @traffic_packages =  @{ $ses->ParsePlans($c->{traffic_plans}, 'array') };
+   for(@plans, @traffic_packages)
    {
       $_->{payment_types} = \@payment_types;
    }
@@ -4031,15 +4162,16 @@ sub Payments
                         premium => $ses->getUser && $ses->getUser->{premium},
                         expire_elapsed => $ses->getUser && $et->convert($ses->getUser->{exp_sec}),
                         'rand' => $ses->randchar(6),
-                        ask_email => !$ses->getUserId && !$c->{no_anon_payments},
-                        monthprice => &computeMonthPrice(@plans),
+                        ask_email => $utype eq 'anon' && !$c->{no_anon_payments},
+                        monthprice => &computeMonthlyPrice(@plans),
                         'currency_symbol' => ($c->{currency_symbol}||'$'),
+                        'traffic_packages' => \@traffic_packages,
                       );
 }
 
-sub computeMonthPrice
+sub computeMonthlyPrice
 {
-   my @sorted = sort { abs($a->{amount}-30) <=> abs($b->{amount}-30) } @_;
+   my @sorted = sort { abs($a->{day}-30) <=> abs($b->{day}-30) } @_;
    return sprintf("%d", 30 * $sorted[0]->{amount} / $sorted[0]->{days});
 }
 
@@ -4056,22 +4188,20 @@ sub PaymentComplete
    return $ses->message("Your account created successfully.<br>Please check your e-mail for login details") if $trans->{dt}>3600;
    return $ses->message("Your payment have not verified yet.<br>Please refresh this page in 1-3 minutes") unless $trans->{verified};
 
-   my $user = $db->SelectRow("SELECT *, DECODE(usr_password,?) as usr_password, 
-                                     UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec 
+   my $user = $db->SelectRow("SELECT *, UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec 
                               FROM Users 
-                              WHERE usr_id=?",$c->{pasword_salt},$trans->{usr_id});
+                              WHERE usr_id=?",$trans->{usr_id});
    require Time::Elapsed;
    my $et = new Time::Elapsed;
    my $exp = $et->convert($user->{exp_sec});
    $ses->PrintTemplate('message.html',
                   err_title => 'Payment completed',
-            msg => "Your payment processed successfully!<br><br>Login: $user->{usr_login}<br>Password: $user->{usr_password}<br><br>Your premium account expires in:<br>$exp",
+            msg => "Your payment processed successfully!<br>You should receive your password on e-mail in few minutes.<br><br>Login: $user->{usr_login}<br>Password: ******<br><br>Your premium account expires in:<br>$exp",
          );
 }
 
 sub AdminUsersAdd
 {
-   
    my ($list,$result);
    if($f->{generate})
    {
@@ -4099,12 +4229,13 @@ sub AdminUsersAdd
          $days=~s/\D+//g;
          $days||=0;
          push(@arr, "<b>$login:$password:$days - ERROR:login already exist</b>"),next if $db->SelectOne("SELECT usr_id FROM Users WHERE usr_login=?",$login);
+         my $passwd_hash = XUtils::GenPasswdHash($password);
          $db->Exec("INSERT INTO Users 
                     SET usr_login=?, 
-                        usr_password=ENCODE(?,?), 
+                        usr_password=?, 
                         usr_email=?,
                         usr_created=NOW(), 
-                        usr_premium_expire=NOW()+INTERVAL ? DAY",$login,$password,$c->{pasword_salt},$email||'',$days);
+                        usr_premium_expire=NOW()+INTERVAL ? DAY",$login,$passwd_hash,$email||'',$days);
          push @arr, "$login:$password:$days";
       }
       $result = join "<br>", @arr;
@@ -4113,6 +4244,53 @@ sub AdminUsersAdd
                        'list'   => $list,
                        'result' => $result,
                       );
+}
+
+sub AdminApprove
+{
+   return $ses->message("Access denied") if !$ses->getUser->{usr_adm} && !($c->{m_d} && $ses->getUser->{usr_mod} && $c->{files_approve});
+
+	if($ses->checkToken() && $f->{approve_selected})
+	{
+	   my $ids = join(',',grep{/^\d+$/}@{&ARef($f->{file_id})}) if $f->{file_id};
+	   $db->Exec("UPDATE Files SET file_awaiting_approve=0 WHERE file_id IN ($ids)") if $ids;
+	   return $ses->redirect("$c->{site_url}/?op=moderator_approve");
+	}
+	if($ses->checkToken() && $f->{del_selected})
+	{
+	   my $ids = join(',',grep{/^\d+$/}@{&ARef($f->{file_id})}) if $f->{file_id};
+	   my $files = $db->SelectARef("SELECT * FROM Files WHERE file_id IN ($ids)") if $ids;
+	   $ses->DeleteFilesMass($files) if $files;
+	   return $ses->redirect("$c->{site_url}/?op=moderator_approve");
+	}
+
+   my $list = $db->SelectARef("SELECT f.*, u.*, s.srv_htdocs_url, INET_NTOA(file_ip) AS ip2
+      FROM Files f
+      LEFT JOIN Users u ON u.usr_id=f.usr_id
+      LEFT JOIN Servers s ON s.srv_id=f.srv_id
+      WHERE file_awaiting_approve
+      ORDER BY file_created DESC");
+   for(@$list)
+   {
+      $_->{download_link} = $ses->makeFileLink($_);
+
+	   my $thumbs_dir = $_->{srv_htdocs_url};
+	   $thumbs_dir=~s/^(.+)\/.+$/$1\/thumbs/;
+      my $dx = sprintf("%05d",($_->{file_real_id}||$_->{file_id})/$c->{files_per_folder});
+      if($_->{file_name} =~ /\.(avi|divx|xvid|mpg|mpeg|vob|mov|3gp|flv|mp4|wmv|mkv)$/i)
+      {
+		   for my $i (1..10)
+	      {
+	         push @{$_->{series}}, { url => "$thumbs_dir/$dx/$_->{file_real}_$i.jpg" };
+	      }
+      }
+
+      $_->{file_size} = $ses->makeFileSize($_->{file_size});
+   }
+   return $ses->PrintTemplate("admin_approve.html",
+      list => $list,
+      token => $ses->genToken,
+      );
 }
 
 sub AdminNews
@@ -4162,7 +4340,7 @@ sub AdminNewsEdit
       return $ses->redirect('?op=admin_news');
    }
    my $news = $db->SelectRow("SELECT * FROM News WHERE news_id=?",$f->{news_id});
-   $news->{created}||=sprintf("%d-%02d-%02d %02d:%02d:%02d", $ses->getTime() );
+   $news->{created} = $db->SelectOne("SELECT NOW()");
    $ses->PrintTemplate("admin_news_form.html",
                        %{$news},
                        'token'  => $ses->genToken,
@@ -4348,7 +4526,8 @@ sub RequestMoney
       my $login = join '', map int rand 10, 1..7;
       while($db->SelectOne("SELECT usr_id FROM Users WHERE usr_login=?",$login)){ $login = join '', map int rand 10, 1..7; }
       my $password = $ses->randchar(10);
-      $db->Exec("INSERT INTO Users (usr_login,usr_password,usr_created,usr_premium_expire,usr_aff_id) VALUES (?,ENCODE(?,?),NOW(),NOW()+INTERVAL ? DAY,?)",$login,$password,$c->{pasword_salt},$c->{convert_days},$ses->getUserId);
+      my $passwd_hash = XUtils::GenPasswdHash($password);
+      $db->Exec("INSERT INTO Users (usr_login,usr_password,usr_created,usr_premium_expire,usr_aff_id) VALUES (?,?,NOW(),NOW()+INTERVAL ? DAY,?)",$login,$passwd_hash,$c->{convert_days},$ses->getUserId);
       $db->Exec("UPDATE Users SET usr_money=usr_money-? WHERE usr_id=?",$c->{convert_money},$ses->getUserId);
       return $ses->message("$ses->{lang}->{lang_account_generated}<br>$ses->{lang}->{lang_login} / $ses->{lang}->{lang_password}:<br>$login<br>$password");
    }
@@ -4414,6 +4593,7 @@ sub RequestMoney
                        'msg'                 => $f->{msg},
                        'payments'            => $payments,
                        'currency_symbol' => ($c->{currency_symbol}||'$'),
+                       'token'      => $ses->genToken,
                       );
 }
 
@@ -4542,8 +4722,8 @@ sub ReportFile
 
 sub ReportFileSend
 {
-   &ReportFile unless $ENV{REQUEST_METHOD} eq 'POST';
-   &ReportFile unless $ses->SecCheck( $f->{'rand'}, 2, $f->{code} );
+   return &ReportFile unless $ENV{REQUEST_METHOD} eq 'POST';
+   return &ReportFile unless $ses->SecCheck( $f->{'rand'}, 2, $f->{code} );
    my $file = $db->SelectRow("SELECT * FROM Files WHERE file_code=?",$f->{id});
    return $ses->message("No such file") unless $file;
 
@@ -4551,7 +4731,7 @@ sub ReportFileSend
    $f->{msg}.="Name required. " unless $f->{name};
    $f->{msg}.="Message required. " unless $f->{message};
    
-   &ReportFile if $f->{msg};
+   return &ReportFile if $f->{msg};
 
    #$f->{message}="Reason: $f->{reason}\n\n$f->{message}";
    $f->{$_}=$ses->SecureStr($f->{$_}) for keys %$f;
@@ -4578,26 +4758,26 @@ sub AdminReports
       my $report = $db->SelectRow("SELECT *, INET_NTOA(ip) AS ip2 FROM Reports WHERE id=?", $f->{view});
       return $ses->PrintTemplate('admin_report_view.html', %$report);
    }
-   if($f->{decline_selected})
+   if($f->{decline_selected} && $ses->checkToken)
    {
       $db->Exec("UPDATE Reports SET status='DECLINED' WHERE id IN ($ids)") if $ids;
       return $ses->redirect("$c->{site_url}/?op=admin_reports");
    }
-   if($f->{del_selected} && $files)
+   if($f->{del_selected} && $files && $ses->checkToken)
    {
-      $db->Exec("UPDATE Reports SET status='APPROVED' WHERE file_id IN ($ids)") if $ids;
+      $db->Exec("UPDATE Reports SET status='APPROVED' WHERE id IN ($ids)") if $ids;
       $ses->DeleteFilesMass($files) if @$files;
       return $ses->redirect("$c->{site_url}/?op=admin_reports");
    }
-   if($f->{ban_selected} && $files)
+   if($f->{ban_selected} && $files && $ses->checkToken)
    {
       for my $file (@$files)
       {
          $db->Exec("UPDATE Reports SET status='APPROVED', ban_size=?, ban_md5=?
             WHERE file_id=?",
-            $file->{file_id},
             $file->{file_size},
             $file->{file_md5},
+            $file->{file_id},
             );
       }
       $ses->DeleteFilesMass($files) if @$files;
@@ -4625,6 +4805,7 @@ sub AdminReports
                        'list'    => $list,
                        'paging'  => $ses->makePagingLinks($f,$total),
                        'history' => $f->{history},
+                       'token'      => $ses->genToken,
                       );
 }
 
@@ -4706,7 +4887,6 @@ sub CommentAdd
 {
    XUtils::CheckAuth($ses);
    return $ses->message("File comments are not allowed") if $f->{cmt_type}==1 && !$c->{enable_file_comments};
-   #return $ses->message("Comments enabled for registered users only!") 
    print(qq{Content-type:text/html\n\n\$\$('cnew').innerHTML+="<b class='err'>Comments enabled for registered users only!</b><br><br>"}),return
       if $c->{comments_registered_only} && !$ses->getUser;
    die("Invalid object ID") unless $f->{cmt_ext_id}=~/^\d+$/;
@@ -4724,13 +4904,18 @@ sub CommentAdd
    $f->{cmt_text} =~ s/\r//g;
    $f->{cmt_text} = substr($f->{cmt_text},0,800);
    $f->{cmt_name} ||= 'Anonymous';
-   my $err;
-   $err.="E-mail is not valid<br>" if $f->{cmt_email} && $f->{cmt_email}!~/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-   $err.="Too short comment text<br>" if length($f->{cmt_text})<5;
+
+   local *error = sub {
+      print(qq{Content-type:text/html\n\n<b class='err'>$_[0]</b>}),return if $f->{cmt_type} == 1;
+      return $ses->message($_[0]);
+   };
+
+   return &error("E-mail is not valid") if $f->{cmt_email} && $f->{cmt_email}!~/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+   return &error("Too short comment text") if length($f->{cmt_text})<5;
+
    my $txt=$f->{cmt_text};
    $txt=~s/[\s._-]+//gs;
-   $err.="Comment text contain restricted word" if $c->{bad_comment_words} && $txt=~/$c->{bad_comment_words}/i;
-   print(qq{Content-type:text/html\n\n<b class='err'>$err</b>"}),return if $err;
+   return &error("Comment text contain restricted word") if $c->{bad_comment_words} && $txt=~/$c->{bad_comment_words}/i;
 
    $db->Exec("INSERT INTO Comments
               SET usr_id=?,
@@ -4745,17 +4930,19 @@ sub CommentAdd
                   FROM Comments
                   WHERE cmt_id=?",
                   $db->getLastInsertId);
+   my $news = $db->SelectRow("SELECT * FROM News WHERE news_id=?", $f->{cmt_ext_id});
    $ses->setCookie('cmt_name',$f->{cmt_name});
    $ses->setCookie('cmt_email',$f->{cmt_email});
-   return $ses->PrintTemplate2("comment.html", %$comment);
+   return $f->{cmt_type} == 1
+      ? $ses->PrintTemplate2("comment.html", %$comment)
+      : $ses->redirect($ENV{HTTP_REFERER});
 }
 
 sub CommentDel
 {
    return $ses->message("Access denied") unless $ses->getUser && $ses->getUser->{usr_adm};
    $db->Exec("DELETE FROM Comments WHERE cmt_id=?",$f->{cmt_id});
-   print"Content-type:text/html\n\n \$\$('cm$f->{i}').style.display='none';";
-   return;
+   return $ses->redirect($ENV{HTTP_REFERER});
 }
 
 sub CommentRedirect
@@ -4809,21 +4996,27 @@ sub AdminIPNLogs
 sub AdminBansList {
    require List::Util;
    $f->{per_page} = 50;
-   if($f->{unban_all}) {
+
+   if($ses->checkToken() && $f->{unban_all})
+   {
       $db->Exec("UPDATE Users SET usr_status = 'OK' WHERE usr_id IN (SELECT usr_id FROM Bans)");
       $db->Exec("DELETE FROM Bans");
       return $ses->redirect("$c->{site_url}/?op=admin_bans_list");
    }
-   if($f->{unban_user}) {
+   elsif($ses->checkToken() && $f->{unban_user})
+   {
       $db->Exec("UPDATE Users SET usr_status='OK' WHERE usr_id=?", $f->{unban_user});
       $db->Exec("DELETE FROM Bans WHERE usr_id=?", $f->{unban_user});
       $db->Exec("DELETE FROM LoginProtect WHERE usr_id=?", $f->{unban_user});
       return $ses->redirect("$c->{site_url}/?op=admin_bans_list");
-   } elsif($f->{unban_ip}) {
+   }
+   elsif($ses->checkToken() && $f->{unban_ip})
+   {
       $db->Exec("DELETE FROM Bans WHERE ip=INET_ATON(?)", $f->{unban_ip});
       $db->Exec("DELETE FROM LoginProtect WHERE ip=INET_ATON(?)", $f->{unban_ip});
       return $ses->redirect("$c->{site_url}/?op=admin_bans_list");
    }
+
    my $filter_login = "AND u.usr_login LIKE '%$f->{key}%'" if $f->{key};
    my $filter_ip = "AND ip=INET_ATON('$f->{key}')" if $f->{key};
    my $list_users = $db->SelectARef("SELECT t.*, u.usr_login
@@ -4846,6 +5039,7 @@ sub AdminBansList {
                list_ips => $list_ips,
                paging    => $ses->makePagingLinks($f,$total),
                key => $f->{key},
+               token => $ses->genToken(),
             );
 }
 
@@ -4866,7 +5060,13 @@ sub AdminSites {
 }
 
 sub AdminExternal {
-   if($f->{set_perm})
+   my @d1 = $ses->getTime();
+   $d1[2]='01';
+   my @d2 = $ses->getTime();
+   my $day1 = $f->{date1}=~/^\d\d\d\d-\d\d-\d\d$/ ? $f->{date1} : "$d1[0]-$d1[1]-$d1[2]";
+   my $day2 = $f->{date2}=~/^\d\d\d\d-\d\d-\d\d$/ ? $f->{date2} : "$d2[0]-$d2[1]-$d2[2]";
+
+   if($f->{set_perm} && $ses->checkToken())
    {
       my $key_id = $1 if $f->{set_perm} =~ s/_(\d+)$//;
       my $perm = $1 if $f->{set_perm} =~ /^(perm_.*)/;
@@ -4877,7 +5077,7 @@ sub AdminExternal {
       print JSON::encode_json({ status => 'OK' });
       return;
    }
-   if($f->{generate_key})
+   if($f->{generate_key} && $ses->checkToken())
    {
       return $ses->message("Domain not specified") if !$f->{domain};
       my @r = ('a'..'z');
@@ -4885,42 +5085,112 @@ sub AdminExternal {
       $db->Exec("INSERT INTO APIKeys SET domain=?, key_code=?", $f->{domain}, $key_code);
       return $ses->redirect("$c->{site_url}/?op=admin_external");
    }
-   if($f->{del_key})
+   if($f->{del_key} && $ses->checkToken())
    {
       $db->Exec("DELETE FROM APIKeys WHERE key_id=?", $f->{del_key});
       return $ses->redirect("$c->{site_url}/?op=admin_external");
    }
+   if($f->{stats})
+   {
+      my $key = $db->SelectRow("SELECT * FROM APIKeys WHERE key_id=?", $f->{stats});
+      my $list = $db->SelectARef("SELECT * FROM APIStats WHERE key_id=?
+         AND day>=?
+         AND day<=?
+         ORDER BY day",
+         $f->{stats}, $day1, $day2);
+
+      my $max_value = max( map { ($_->{bandwidth_in}, $_->{bandwidth_out}) } @$list );
+      my ($divider, $unit_name) = $max_value > 2**30 ? (2**30, 'Gb') : (2**20, 'Mb');
+
+      for my $row(@$list)
+      {
+         $row->{bandwidth_total} = $row->{bandwidth_in} + $row->{bandwidth_out};
+         for(qw(bandwidth_in bandwidth_out bandwidth_total))
+         {
+            $row->{$_.'2'} = $ses->makeFileSize($row->{$_});
+            $row->{$_} = sprintf("%0.4f", $row->{$_} / $divider);
+         }
+      }
+
+      return $ses->PrintTemplate("admin_external_stats.html",
+         %$key,
+         list => $list,
+         date1 => $day1,
+         date2 => $day2,
+         data => JSON::encode_json($list),
+         unit_name => $unit_name);
+   }
+
    my $list = $db->SelectARef("SELECT * FROM APIKeys");
+   for(@$list)
+   {
+      $_->{requests_last_month} = $db->SelectOne("SELECT SUM(downloads + uploads) FROM APIStats
+         WHERE key_id=?
+         AND day > NOW() - INTERVAL 30 DAY",
+         $_->{key_id});
+      $_->{requests_last_month} ||= 0;
+   }
+
    $ses->PrintTemplate('admin_external.html',
-               list => $list);
+               list => $list,
+               token => $ses->genToken);
+}
+
+sub update_api_stats
+{
+   my ($key, %opts) = @_;
+
+   my @params = map { $opts{"inc_$_"} || 0 } qw(uploads downloads bandwidth_in bandwidth_out);
+
+   $db->Exec("INSERT INTO APIStats SET key_id=?, day=CURDATE(),
+      uploads=?, downloads=?, bandwidth_in=?, bandwidth_out=?
+      ON DUPLICATE KEY UPDATE uploads=uploads+?, downloads=downloads+?, bandwidth_in=bandwidth_in+?, bandwidth_out=bandwidth_out+?",
+      $key->{key_id},
+      @params,
+      @params);
 }
 
 sub External
 {
    my ($key_id,$key_code) = $f->{api_key}=~/^(\d+)(\w+)$/;
-   my $api_access = $db->SelectRow("SELECT * FROM APIKeys WHERE key_id=? AND key_code=?", $key_id, $key_code);
-   return &SendJSON({ err => "Unauthorized" }) if !$api_access;
+   my $key = $db->SelectRow("SELECT * FROM APIKeys WHERE key_id=? AND key_code=?", $key_id, $key_code);
+   return &SendJSON({ err => "Unauthorized" }) if !$key;
+   return &SendJSON({ err => "No action" }) if !$f->{download} && !$f->{upload};
+
    for(qw(download upload))
    {
-      return &SendJSON({ err => "Access denied: '$_'" }) if $f->{$_} && !$api_access->{"perm_$_"};
+      return &SendJSON({ err => "Access denied: '$_'" }) if $f->{$_} && !$key->{"perm_$_"};
    }
+
    if($f->{download})
    {
+      update_api_stats($key, inc_downloads => 1);
+
       my $file = $db->SelectRow("SELECT f.*, s.* FROM Files f
             LEFT JOIN Servers s ON s.srv_id=f.srv_id 
             WHERE file_code=?",
             $f->{file_code});
       return &SendJSON({ err => "No such file" }) if !$file;
+
+      update_api_stats($key, inc_bandwidth_out => $file->{file_size});
+
       return &SendJSON({ direct_link => $ses->getPlugins('CDN')->genDirectLink($file) });
    }
    elsif($f->{upload})
    {
-      my $user = &CheckLoginPass($f->{login}, $f->{password});
+      my $user = XUtils::CheckLoginPass($ses,$f->{login}, $f->{password});
       return &SendJSON({ err => "Invalid login/pass" }) if $f->{login} && !$user;
-      my $sess_id = &GetSession($user->{usr_id}) if $user;
-      my $server = &SelectServer();
+
+      # Need to create a new session even for anonymous user in
+      # order to register the stats after the file will be uploaded
+      my $sess_id = &GetSession($user ? $user->{usr_id} : 0);
+      die("No session") if !$sess_id;
+      $db->Exec("UPDATE Sessions SET api_key_id=? WHERE session_id=?", $key->{key_id}, $sess_id);
+      my $server = XUtils::SelectServer($ses, $user);
+      my $utype = $user && $user->{utype} ? $user->{utype} : 'anon';
+
       return &SendJSON({
-         upload_url => "$server->{srv_cgi_url}/upload.cgi?utype=$user->{utype}",
+         upload_url => "$server->{srv_cgi_url}/upload.cgi?utype=$utype",
          sess_id => $sess_id,
       });
    }

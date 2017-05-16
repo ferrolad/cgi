@@ -4,6 +4,7 @@ use XFileConfig;
 use Session;
 use CGI::Carp qw(fatalsToBrowser);
 use XUtils;
+use List::Util qw(sum min);
 
 $SIG{__WARN__} = sub {};
 my $ses = Session->new();
@@ -36,7 +37,7 @@ for my $srv (@$servers)
                       );
    if($res=~/OK/)
    {
-      print"Done.<br>";
+      print"Done.<br>\n";
    }
    else
    {
@@ -46,67 +47,103 @@ for my $srv (@$servers)
    
 }
 
+my %to_expire;
 
-# Delete expired files
-if($c->{files_expire_access_anon} || $c->{files_expire_access_reg} || $c->{files_expire_access_prem})
+for my $srv(@$servers)
 {
-   for my $srv (@$servers)
+   my $srv_id = $srv->{srv_id};
+   my $filter_ext = "f.file_name NOT RLIKE '\.($c->{ext_not_expire})\$'" if $c->{ext_not_expire};
+   if($c->{files_expire_access_anon})
    {
-      my @files;
-      if($c->{files_expire_access_anon})
-      {
-         my $list = $db->SelectARef("SELECT f.*
-                                     FROM Files f
-                                     WHERE srv_id=?
-                                     AND f.usr_id=0
-                                     AND file_last_download < NOW()-INTERVAL ? DAY
-                                     AND f.file_name NOT RLIKE '\.($c->{ext_not_expire})\$'",
-                                     $srv->{srv_id},$c->{files_expire_access_anon});
-         push @files, @$list;
-      }
-      if($c->{files_expire_access_reg})
-      {
-         my $list = $db->SelectARef("SELECT f.*
-                                     FROM Files f, Users u
-                                     WHERE srv_id=?
-                                     AND f.usr_id=u.usr_id
-                                     AND usr_premium_expire<NOW()-INTERVAL 3 DAY
-                                     AND file_last_download < NOW()-INTERVAL ? DAY
-                                     AND f.file_name NOT RLIKE '\.($c->{ext_not_expire})\$'",
-                                     $srv->{srv_id},$c->{files_expire_access_reg});
-         push @files, @$list;
-      }
-      if($c->{files_expire_access_prem})
-      {
-         my $list = $db->SelectARef("SELECT f.*
-                                     FROM Files f, Users u
-                                     WHERE srv_id=?
-                                     AND f.usr_id=u.usr_id
-                                     AND usr_premium_expire>=NOW()
-                                     AND file_last_download < NOW()-INTERVAL ? DAY
-                                     AND f.file_name NOT RLIKE '\.($c->{ext_not_expire})\$'",
-                                     $srv->{srv_id},$c->{files_expire_access_prem});
-         push @files, @$list;
-      }
-
-      next if $#files==-1;
-      print"Have ".($#files+1)." files to delete from SRV=$srv->{srv_id}...\n";
-      $ses->DeleteFilesMass(\@files);
-      print"Done.<br>\n";
+      push @{ $to_expire{$srv_id} }, selectFiles($srv_id, $c->{files_expire_access_anon}, "f.usr_id=0", $filter_ext);
    }
+   if($c->{files_expire_access_reg})
+   {
+      push @{ $to_expire{$srv_id} }, selectFiles($srv_id, $c->{files_expire_access_reg}, "usr_premium_expire < NOW()-INTERVAL 3 DAY", $filter_ext);
+   }
+   if($c->{files_expire_access_prem})
+   {
+      push @{ $to_expire{$srv_id} }, selectFiles($srv_id, $c->{files_expire_access_prem}, "usr_premium_expire >= NOW()", $filter_ext);
+   }
+}
+
+my $current_time = $db->SelectOne("SELECT UNIX_TIMESTAMP()");
+my $files_count = $db->SelectOne("SELECT COUNT(*) FROM Files");
+my $files_to_delete = sum( map { int(@{ $_ }) } values(%to_expire) );
+my $confirmation_needed = 1 if $files_count > 5000 && $files_to_delete > $files_count * 0.05;
+my $mass_del_confirm_response = $db->SelectOne("SELECT UNIX_TIMESTAMP(updated) FROM Misc WHERE name='mass_del_confirm_response'");
+my $has_confirmation = $mass_del_confirm_response && ($current_time < $mass_del_confirm_response + 24 * 3600);
+
+$db->Exec("DELETE FROM Misc WHERE name='mass_del_confirm_response'") if $files_to_delete == 0;
+
+print "Total files count: $files_count To delete: $files_to_delete Confirmation needed: $confirmation_needed Has confirmation: $has_confirmation<br>\n";
+
+if($confirmation_needed && !$has_confirmation)
+{
+   open(FILE, ">$c->{cgi_path}/temp/expiry_confirmation.csv") || die("Couldn't open file: $!");
+   print FILE join(",", qw(url created last_download days_ago user_name user_type file_name)), "\n";
+
+   my @array;
+   push @array, @{ $to_expire{$_} } for keys(%to_expire);
+   @array = sort { $b->{file_last_download} cmp $a->{file_last_download} } @array;
+
+   for(@array)
+   {
+      my $usr_login = $_->{usr_login}||'-';
+      my $utype = $_->{usr_login} ? ($_->{is_prem} ? 'prem' : 'reg') : 'anon';
+      print FILE "$c->{site_url}/$_->{file_code},$_->{file_created},$_->{file_last_download},$_->{days_ago} days ago,$usr_login,$utype,$_->{file_name}\n";
+   }
+   close(FILE);
+
+   $db->Exec("INSERT INTO Misc SET name='mass_del_confirm_request', value='$files_to_delete' ON DUPLICATE KEY UPDATE value='$files_to_delete'");
+}
+else
+{
+   for my $srv_id (keys %to_expire)
+   {
+      my @list = @{ $to_expire{$srv_id} };
+      my @portion = @list[0..min($#list, 7000)];
+      print int(@list), " files to delete from srv#$srv_id, ", int(@portion), " in this portion<br>\n";
+      $ses->DeleteFilesMass(\@portion) if @portion;
+   }
+}
+
+sub selectFiles
+{
+   my ($srv_id, $expire_after, @filters) = @_;
+   @filters = grep { $_ } @filters;
+   return if !$srv_id || !$expire_after || !@filters;
+
+   my $sql_filters = join(' ', map { "AND $_"} @filters);
+
+   my $list = $db->SelectARef("SELECT f.*,
+            u.usr_login,
+            u.usr_premium_expire > NOW() AS is_prem,
+            TIMESTAMPDIFF(DAY, file_last_download, NOW()) AS days_ago
+            FROM Files f
+            LEFT JOIN Users u ON u.usr_id=f.usr_id
+            WHERE srv_id=?
+            AND file_last_download < NOW()-INTERVAL ? DAY
+            $sql_filters",
+            $srv_id,
+            $expire_after);
+   return @$list;
 }
 
 if($c->{dmca_expire})
 {
    my $reports = $db->SelectARef("SELECT f.* FROM Reports r
                                     LEFT JOIN Users u ON u.usr_id=r.usr_id
-                LEFT JOIN Files f ON f.file_id=r.file_id
+                                    LEFT JOIN Files f ON f.file_id=r.file_id
                                     WHERE r.status='PENDING'
                                     AND u.usr_dmca_agent
                                     AND r.created < NOW() - INTERVAL ? HOUR
-                AND f.file_id
+                                    AND f.file_id
                                     GROUP BY r.file_id",
                                     $c->{dmca_expire});
+
+   print int(@$reports), " files to delete by DMCA reports\n";
+   $db->Exec("UPDATE Reports SET status='APPROVED' WHERE file_id=?", $_->{file_id}) for @$reports;
    $ses->DeleteFilesMass($reports) if @$reports;
 }
 
@@ -119,6 +156,13 @@ if($c->{trash_expire})
                         $c->{trash_expire});
    print int(@$trashed), " files to delete from trash\n";
    $ses->DeleteFilesMass($trashed) if @$trashed;
+
+   my $trashed_folders = $db->SelectARef("SELECT * FROM Folders WHERE fld_trashed");
+
+   for(@$trashed_folders)
+   {
+      $db->Exec("DELETE FROM Folders WHERE fld_id=?", $_->{fld_id}) if $ses->getFilesTotal($_->{fld_id}) eq '0';
+   }
 }
 
 # Delete old reports
@@ -219,7 +263,7 @@ if($c->{ping_google_sitemaps})
 if($c->{cron_test_servers})
 {
    $c->{email_text}=1;
-   my $servers = $db->SelectARef("SELECT * FROM Servers WHERE srv_status<>'OFF'");
+   my $servers = $db->SelectARef("SELECT * FROM Servers WHERE srv_status<>'OFF' AND srv_cdn=''");
    for my $s (@$servers)
    {
       print"Checking server $s->{srv_name}...";
@@ -283,22 +327,10 @@ if($c->{torrent_autorestart})
    }
 }
 
+=pod
 if($c->{ftp_mod}) {
-   my $premiums = $db->SelectARef("SELECT usr_login, DECODE(usr_password,?) as password FROM Users", $c->{pasword_salt} );
-   
-   print"Syncing FTP users ($#$premiums)...\n";
-   my $users = join("\n", map{"$_->{usr_login}:$_->{password}"}@$premiums );
-   my $servers = $db->SelectARef("SELECT * FROM Servers WHERE srv_ftp");
-   foreach(@$servers)
-   {
-      my $res = $ses->api2($_->{srv_id},
-                          {
-                             op     => 'add_ftp_users',
-                             list  => $users,
-                          }
-                         );
-      print"FTP($_->{srv_id}):($res)";
-   }
+   # Deprecated in a favor of new integration scheme
 }
+=cut
 
 print"-----------------------<br>ALL DONE<br><br><a href='$c->{site_url}/?op=admin_servers'>Back to server management</a>";

@@ -3,12 +3,13 @@
 <br>
 
 <TMPL_IF msg><font class="ok"><TMPL_VAR msg></font><br><br></TMPL_IF>
-<TMPL_VAR lang_acc_balance>: <b><TMPL_VAR currency_symbol> <TMPL_VAR usr_money></b>
+<TMPL_VAR lang_acc_balance>: <span id="balance"><b><TMPL_VAR currency_symbol> <TMPL_VAR usr_money></b></span>
 
 
 <br><br>
 <form method="post">
 <input type="hidden" name="op" value="payments">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="reseller" value="1">
 Add money to reseller balance: <TMPL_VAR currency_symbol><input type="text" name="amount" value="50.00" size=6>
 <select name="type">
@@ -20,14 +21,14 @@ Add money to reseller balance: <TMPL_VAR currency_symbol><input type="text" name
 </form>
 <br><br>
 
-<Table class="tbl1">
+<Table class="tbl1" id="reseller_plans">
 <tr class="hdr"><td>Premium time</td><td>Your Price</td><td>Generate</td></tr>
 <TMPL_IF plans>
 <TMPL_LOOP plans>
 <tr>
-<td><TMPL_VAR time></td>
-<td><TMPL_VAR currency_symbol><TMPL_VAR price></td>
-<td><input type="button" value="Generate Premium Key" onClick="window.location='?op=my_reseller&generate=<TMPL_VAR price>'"<TMPL_UNLESS enough> disabled</TMPL_UNLESS>></td>
+<td name="time"><TMPL_VAR time></td>
+<td name="price"><TMPL_VAR currency_symbol><TMPL_VAR price></td>
+<td><input type="button" name="generate_key" value="Generate Premium Key" onClick="window.location='?op=my_reseller&generate=<TMPL_VAR price>'"<TMPL_UNLESS enough> disabled</TMPL_UNLESS>></td>
 </tr>
 </TMPL_LOOP>
 <TMPL_ELSE>
@@ -37,7 +38,7 @@ Add money to reseller balance: <TMPL_VAR currency_symbol><input type="text" name
 
 <br><br>
 
-<Table class="tbl1" cellpadding=2>
+<Table class="tbl1" cellpadding=2 id="generated_keys">
 <TR class="hdr">
     <td>Premium Key</td>
     <td>Premium time</td>
@@ -60,7 +61,7 @@ Add money to reseller balance: <TMPL_VAR currency_symbol><input type="text" name
 
 <br><br>
 
-<Table class="tbl1" cellpadding=2>
+<Table class="tbl1" cellpadding=2 id="generated_keys">
 <TR class="hdr">
     <td>Reseller API</td>
 </TR>

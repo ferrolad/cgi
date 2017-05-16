@@ -43,7 +43,7 @@
 					<tr>
 						<th colspan="5">
 						<input type="text" size="18" name="create_new_folder" class="input1">
-						<input value="" class="f-btn-green" type="submit">
+						<input value="" class="f-btn-green" name="create_folder_submit" type="submit">
 						</th>
 					</tr>
 					</TMPL_UNLESS>
@@ -55,7 +55,7 @@
 					{
 						$('#publish_link').click(function()
 						{
-							var input = $('<input type="text" readonly>');
+							var input = $('<input type="text" id="public_link" readonly>');
 							$(input).css('width', '97%');
 							$(input).attr('value', '<TMPL_VAR site_url>/users/<TMPL_VAR my_login>/<TMPL_IF current_fld_id><TMPL_VAR current_fld_id>/<TMPL_VAR current_folder></TMPL_IF>');
 							$(this).parent().html(input);

@@ -4,7 +4,8 @@
 
 <form method="POST" action="">
 	<input type="hidden" name="op" value="admin_bans_list">
-	Search User / IP: <input type="text" name="key" value="<TMPL_VAR key>"> <input type="submit"> <input type="submit" name="unban_all" value="Clear All">
+   <input type="hidden" name="token" value="<TMPL_VAR token>">
+	Search User / IP: <input type="text" name="key" value="<TMPL_VAR key>"> <input type="submit" name="search"> <input type="submit" name="unban_all" value="Unban All">
 </form>
 <table width="800">
 	<tr>
@@ -22,7 +23,7 @@
 				<td><a href="/?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></td>
 				<td align="center"><TMPL_VAR reason></td>
 				<td align="center"><TMPL_VAR created></td>
-				<td align="center"><a href="?op=admin_bans_list;unban_user=<TMPL_VAR usr_id>" alt="Unban"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></td>
+				<td align="center"><a href="?op=admin_bans_list&unban_user=<TMPL_VAR usr_id>&token=<TMPL_VAR token>" name="delete"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></td>
 			</tr>
 			</TMPL_LOOP>
          <TMPL_ELSE>
@@ -44,7 +45,7 @@
 				<td><TMPL_VAR ip></td>
 				<td align="center"><TMPL_VAR reason></td>
 				<td align="center"><TMPL_VAR created></td>
-				<td align="center"><a href="?op=admin_bans_list;unban_ip=<TMPL_VAR ip>" alt="Unban"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></td>
+				<td align="center"><a href="?op=admin_bans_list&unban_ip=<TMPL_VAR ip>&token=<TMPL_VAR token>" name="delete"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></td>
 			</tr>
 			</TMPL_LOOP>
          <TMPL_ELSE>

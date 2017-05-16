@@ -158,6 +158,7 @@ sub ProcessFile
                        compile      => $f->{compile}||'', # Desktop uploader
                        usr_login    => $file->{usr_login}||$f->{usr_login}||'',
                        uploader_id  => $f->{uploader_id}||0,
+                       file_upload_method => $f->{file_upload_method}||'',
                        }
                       );
    my $info = $res->content;

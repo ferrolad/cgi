@@ -34,7 +34,7 @@
 						<span><b><TMPL_VAR fsize></b></span>
 					</td>
 					<td>
-						<ul>
+						<ul id="sharebuttons">
 							<li><a href="javascript:share_facebook(document.location)" class="fb" title="Facebook"></a></li>
 							<li><a href="javascript:share_twitter(document.location)" class="tw" title="Twitter"></a></li>
 							<li><a href="javascript:share_vk(document.location)" class="vk" title="Vk"></a></li>
@@ -70,23 +70,22 @@
 				<div id="player_code" class="player" style="width: 600px;height:<TMPL_VAR vid_height>px"><TMPL_VAR video_code></div>
 				</TMPL_IF>
 				<TMPL_IF song_url>
-				<script type='text/javascript' src='<TMPL_VAR site_url>/player/swfobject.js'></script>
+				<script type='text/javascript' src='/player/jw6.js'></script>
+				<script type='text/javascript' src='/player/jwplayer.html5.js'></script>
 				<div id='mp3player'>This text will be replaced</div>
 				<script type='text/javascript'>
-				var so = new SWFObject('<TMPL_VAR site_url>/player/jw5.swf','mpl','100%','24','9');
-				so.addParam('allowfullscreen','true');
-				so.addParam('allowscriptaccess','always');
-				so.addParam('wmode','opaque');
-				so.addVariable('duration','<TMPL_VAR mp3_secs>');
-				so.addVariable('file','<TMPL_VAR song_url>');
-				<TMPL_IF mp3_mod_autoplay>so.addVariable('autostart','true');</TMPL_IF>
-				so.write('mp3player');
+				jwplayer("mp3player").setup({
+					file: "<TMPL_VAR song_url>",
+					width: '100%',
+					height: 26,
+					autostart: '<TMPL_IF mp3_mod_autoplay>true<TMPL_ELSE>false</TMPL_IF>',
+				});
 				</script>
 				</TMPL_IF>
 				<TMPL_IF docviewer_url><iframe src="<TMPL_VAR docviewer_url>" style="height:500px;" frameborder="0"></iframe></TMPL_IF>
 				<TMPL_IF image_url>
 				<script src="<TMPL_VAR site_url>/js/scaleimg.js"></script>
-				<img id="img-preview" src="<TMPL_VAR image_url>" style="border: 1px #e4e4e4 solid" class="pic" alt="<TMPL_VAR file_name>" GALLERYIMG="no" onload="scaleImg(this, 980);">
+				<img id="img-preview" src="<TMPL_VAR image_url>" style="border: 1px #e4e4e4 solid" class="pic" alt="<TMPL_VAR file_name>" GALLERYIMG="no" onload="scaleImg(this, 600);">
 				</TMPL_IF>
 				<TMPL_IF file_adult>
 				<!-- Adult ads -->
@@ -97,11 +96,10 @@
 					<div class="section">
 						<ul class="tabs">
 							<li class="current">Download link</li>
-							<li>Link for forums</li>
+							<li>Code for forums</li>
 							<li>HTML code</li>
 							<TMPL_IF embed_code>
 							<li>Embed code</li>
-							<TMPL_IF video_embed_code><li>Embed code 2</li></TMPL_IF>
 							</TMPL_IF>
 						</ul>
 						
@@ -112,12 +110,12 @@
 						</div>
 						<div class="box">
 							<div class="tabcontent">
-								<textarea readonly="" style="width: 100%">[URL=<TMPL_VAR download_link>]<TMPL_VAR file_name> - <TMPL_VAR fsize>[/URL]</textarea>
+								<textarea readonly="" style="width: 100%"><TMPL_VAR forum_code></textarea>
 							</div>
 						</div>
 						<div class="box">
 							<div class="tabcontent">
-								<textarea readonly="" style="width: 100%"><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name> - <TMPL_VAR fsize></a></textarea>
+								<textarea readonly="" style="width: 100%"><TMPL_VAR html_code></textarea>
 							</div>
 						</div>
 						<TMPL_IF video_embed_code>
@@ -126,30 +124,12 @@
 								<textarea readonly="" style="width: 100%"><IFRAME SRC="<TMPL_VAR site_url>/embed-<TMPL_VAR file_code>-<TMPL_VAR vid_width>x<TMPL_VAR vid_height>.html" FRAMEBORDER=0 MARGINWIDTH=0 MARGINHEIGHT=0 SCROLLING=NO WIDTH=<TMPL_VAR vid_width> HEIGHT=<TMPL_VAR vid_height2> ALLOWFULLSCREEN></IFRAME></textarea>
 							</div>
 						</div>
+						</TMPL_IF>
+						<TMPL_IF mp3_embed_code>
 						<div class="box">
 							<div class="tabcontent">
-							<textarea readonly="" style="width: 100%">
-<object classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' width='<TMPL_VAR vid_width>' height='<TMPL_VAR vid_height>'>
-<param name='movie' value='<TMPL_VAR site_url>/player/jw5.swf'>
-<param name='allowfullscreen' value='true'>
-<param name='allowscriptaccess' value='always'>
-<param name='wmode' value='transparent'>
-<param name='flashvars' value='file=<TMPL_VAR site_url>/vidembed-<TMPL_VAR file_code>.<TMPL_VAR ext>&image=<TMPL_VAR video_img_url>&provider=http'>
-<embed src='<TMPL_VAR site_url>/player/jw5.swf' width='<TMPL_VAR vid_width>' height='<TMPL_VAR vid_height>' bgcolor='#000000' allowscriptaccess='always' allowfullscreen='true' flashvars='file=<TMPL_VAR site_url>/vidembed-<TMPL_VAR file_code>.<TMPL_VAR ext>&image=<TMPL_VAR video_img_url>&provider=http' />
-</object></textarea>
+								<textarea readonly="" style="width: 100%"><IFRAME SRC="<TMPL_VAR site_url>/embedmp3-<TMPL_VAR file_code>.html" FRAMEBORDER=0 MARGINWIDTH=0 MARGINHEIGHT=0 SCROLLING=NO WIDTH=400 HEIGHT=26 ALLOWFULLSCREEN></IFRAME></textarea>
 							</div>
-						</div>
-						</TMPL_IF>
-						<TMPL_IF mp3_embed_code>                                                                                                              
-						<div class="box">
-							<textarea id="ic4-<TMPL_VAR file_id>" style="width:98%;" cols=24 rows=3 onFocus="copy(this);"><object classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' width='450' height='24'>
-<param name='movie' value='<TMPL_VAR site_url>/player/player.swf'>
-<param name='allowfullscreen' value='true'>
-<param name='allowscriptaccess' value='always'>
-<param name='wmode' value='transparent'>
-<param name='flashvars' value='file=<TMPL_VAR site_url>/mp3embed-<TMPL_VAR file_code>.mp3&duration=<TMPL_VAR mp3_secs>'>
-<embed src='<TMPL_VAR site_url>/player/player.swf' width='450' height='24' allowscriptaccess='always' allowfullscreen='true' flashvars='file=<TMPL_VAR site_url>/mp3embed-<TMPL_VAR file_code>.mp3&duration=<TMPL_VAR mp3_secs>' />
-</object></textarea>
 						</div>
 						</TMPL_IF>
 						
@@ -206,7 +186,7 @@
 						<li><span class="infoname">Description:</span><span><TMPL_VAR file_descr></span></li>
 						<li><span class="snap">Snapshot:</span>
 							<span>
-								<img src="<TMPL_VAR video_thumb_url>" style="border: 1px #ddd solid">
+								<img id="snapshot" src="<TMPL_VAR video_thumb_url>" style="border: 1px #ddd solid">
 							</span>
 						</li>
 					</ul>
@@ -231,7 +211,7 @@
 				<TMPL_IF ihtml><br/><TMPL_VAR ihtml></TMPL_IF>
 				<TMPL_IF bittorrent>
 				<br>
-				You may only download this file with BitTorrent as it has reached a download limit.
+				You may only download this file with BitTorrent as it has reached the download limit.
 				<br>
 				<button id="dl_bittorent" class="downloadbtn">
 					<span class="bicon">
@@ -254,6 +234,17 @@
 			</div>
 			</form>
 			<!--end right column-->
+
+			<TMPL_IF more_files>
+			<br>
+			<Table name="more_files" class="tbl1" cellpadding=2 cellspacing=1 width="60%">
+				<TR class="hdr"><TD colspan=2><TMPL_VAR lang_more_from_user></TD></TR>
+				<TMPL_LOOP more_files>
+				<TR><TD><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a></TD><TD width="1%" nowrap align=right><TMPL_VAR file_size></TD></TR>
+				</TMPL_LOOP>
+			</Table>
+			<br>
+			</TMPL_IF>
 		</div> <!-- end container -->
 	</div> <!-- end content -->
 	<script>

@@ -2,6 +2,7 @@ package Plugins::Video::divx;
 use strict;
 use vars qw($ses);
 use XFileConfig;
+use HTTP::BrowserDetect;
 
 
 sub options {
@@ -12,7 +13,12 @@ sub options {
 
 sub makeCode {
 	my ($self, $file, $direct_link) = @_;
-	return if $file->{file_name} !~ /\.(avi|divx|mkv)$/i;
+	return if $file->{file_name} !~ /\.(avi|divx|mkv)$/i || $file->{file_size_encoded};
+
+	my $browser = new HTTP::BrowserDetect( $ENV{HTTP_USER_AGENT} );
+	my $mobile_device = 1 if $c->{mobile_design} && $browser->mobile;
+	return if $mobile_device;
+
 	my $code = qq[document.write('<object id="ie_vid" classid="clsid:67DABFBF-D0AB-41fa-9C46-CC0F21721616" width="$file->{vid_width}" height="$file->{vid_height}" codebase="http://go.divx.com/plugin/DivXBrowserPlugin.cab">
 <param name="custommode" value="Stage6" />
 <param name="wmode" value="transparent" />

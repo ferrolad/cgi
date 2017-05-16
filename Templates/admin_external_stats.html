@@ -1,0 +1,83 @@
+<h2>API stats for <TMPL_VAR domain></h2>
+
+<Form>
+<input type="hidden" name="op" value="admin_external">
+<input type="hidden" name="stats" value="<TMPL_VAR key_id>">
+From <input type="text" class="date" name="date1" value="<TMPL_VAR date1>" size=10> to <input type="text" class="date" name="date2" value="<TMPL_VAR date2>" size=10>
+<input type="submit" name="show" value="Show">
+</Form>
+
+<div id="chart_div" style="width: 100%; height: 360px">
+<TMPL_UNLESS list>
+<style>#chart_div { line-height: 360px }</style>
+No data for selected period
+</TMPL_UNLESS>
+</div>
+
+<input type='hidden' name='op' value='admin_external'>
+<table name="stats" class="tbl1" width="80%">
+   <tr class="hdr">
+      <td>Date</td>
+      <td>Upload requests</td>
+      <td>Download requests</td>
+      <td>In</td>
+      <td>Out</td>
+   </tr>
+   <TMPL_LOOP list>
+   <tr>
+      <td align='center'><TMPL_VAR day></td>
+      <td align='center'><TMPL_VAR uploads></td>
+      <td align='center'><TMPL_VAR downloads></td>
+      <td align='center'><TMPL_VAR bandwidth_in2></td>
+      <td align='center'><TMPL_VAR bandwidth_out2></td>
+   </tr>
+   </TMPL_LOOP>
+   <tr class="hdr">
+      <td colspan='7' style='text-align: left'>
+      </td>
+   </tr>
+</table>
+
+<link href="<TMPL_VAR site_url>/css/jquery-ui.css" rel="stylesheet"/>
+<script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>
+<script>
+    $('.date').datepicker({
+        dateFormat: 'yy-mm-dd',
+    });
+</script>
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script>
+  var data = <TMPL_VAR data>;
+  google.load("visualization", "1", {packages:["corechart"]});
+  google.setOnLoadCallback(drawChart);
+  function drawChart() {
+    var table_data = [['Day', 'In', 'Out']];
+    $(data).each(function(_, row)
+    {
+        table_data.push([row.day,
+            parseFloat(row.bandwidth_in),
+            parseFloat(row.bandwidth_out),
+            ]);
+    });
+
+    var table = google.visualization.arrayToDataTable(table_data);
+
+    $(table_data[0]).each(function(i, _)
+    {
+	    var formatter = new google.visualization.NumberFormat({ fractionDigits: 2, suffix: ' <TMPL_VAR unit_name>' });
+	    if (i >= 1) formatter.format(table, i);
+    });
+
+    var options = {
+      hAxis: {titleTextStyle: {color: '#333'} },
+      vAxis: {minValue: 0, format: '#.## <TMPL_VAR unit_name>', textStyle: { fontSize: 12 } },
+      chartArea: { width: 600, height: 300, backgroundColor: { stroke: 'black' } },
+      legend: { position: 'bottom', textStyle: { fontSize: 12 } },
+      series: { 0: { color: 'green' }, 1: { color: 'red' } },
+    };
+
+    var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+    <TMPL_IF list>chart.draw(table, options);</TMPL_IF>
+  }
+</script>

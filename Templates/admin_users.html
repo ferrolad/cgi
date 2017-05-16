@@ -16,7 +16,7 @@ With money &gt;= <TMPL_VAR currency_symbol><input type="text" name="money" value
 <Form method="POST">
 <input type="hidden" name="op" value="admin_users">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
-<Table class="tbl1" cellspacing=1 cellpadding=3>
+<Table name="users" class="tbl1" cellspacing=1 cellpadding=3>
 <TR class="hdr">
 <TD></TD>
 <TD title="Sort by Username"><TMPL_VAR s_usr_login><TMPL_VAR lang_username><TMPL_VAR s2_usr_login></TD>
@@ -32,9 +32,7 @@ With money &gt;= <TMPL_VAR currency_symbol><input type="text" name="money" value
 <TMPL_LOOP users>
 <TR<TMPL_UNLESS __ODD__> class="hi"</TMPL_UNLESS> align=center>
 <TD><input type="checkbox" name="usr_id" value="<TMPL_VAR usr_id>"></TD>
-<TD align=left><a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a>
-<TMPL_IF premium><img src="<TMPL_VAR site_url>/images/star.gif" title="Premium"></TMPL_IF>
-</TD>
+<TD align=left><a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a><TMPL_IF premium><img src="<TMPL_VAR site_url>/images/star.gif" title="Premium"></TMPL_IF></TD>
 <TD align=left><small><TMPL_VAR usr_email></small></TD>
 <TMPL_IF status_PENDING>
 <TD colspan=4><a href="?op=admin_users&resend_activation=<TMPL_VAR usr_id>">Re-send activation email</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href="?op=admin_users&activate=<TMPL_VAR usr_id>">Activate</a></TD>
@@ -64,19 +62,19 @@ With money &gt;= <TMPL_VAR currency_symbol><input type="text" name="money" value
 <input type="hidden" name="op" value="admin_users">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <TMPL_VAR lang_extend_premiums> <input type="text" name="extend_premium_all" size=2> <TMPL_VAR lang_days> 
-<input type="submit" value="<TMPL_VAR lang_submit>">
+<input type="submit" name="submit_extend_premium" value="<TMPL_VAR lang_submit>">
 </Form>
 
 <Form method="POST">
 <input type="hidden" name="op" value="admin_users">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 Delete PENDING users created more than <input type="text" name="del_pending" size=2> days ago
-<input type="submit" value="<TMPL_VAR lang_submit>">
+<input type="submit" name="submit_del_pending" value="<TMPL_VAR lang_submit>">
 </Form>
 
 <Form method="POST">
 <input type="hidden" name="op" value="admin_users">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 Delete users not logged more than <input type="text" name="del_inactive" size=2> days
-<input type="submit" value="<TMPL_VAR lang_submit>">
+<input type="submit" name="submit_del_inactive" value="<TMPL_VAR lang_submit>">
 </Form>

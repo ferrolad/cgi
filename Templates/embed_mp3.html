@@ -1,18 +1,14 @@
 <HTML>
 <BODY topmargin=0 leftmargin=0>
-<div style="float:left;margin-right:3px;">
-<embed
-  flashvars="file=<TMPL_VAR song_url>&duration=<TMPL_VAR mp3_secs>"
-
-  allowfullscreen="true"
-  allowscripaccess="always"
-  id="player1"
-  name="player1"
-  src="<TMPL_VAR site_url>/player/player.swf"
-
-  width="400"
-  height="20"
-/>
-</div>
-<input type="button" value="Download" onClick="top.window.location='<TMPL_VAR download_url>';" style="float:left;width:70px;height:20px;border:1px solid #a3a3a3;font:bold 11px Arial;">
+<script type='text/javascript' src='/player/jw6.js'></script>
+<script type='text/javascript' src='/player/jwplayer.html5.js'></script>
+<span id='mp3player'>This text will be replaced</span>
+<script type='text/javascript'>
+jwplayer("mp3player").setup({
+file: "<TMPL_VAR song_url>",
+width: 400,
+height: 26,
+autostart: '<TMPL_IF mp3_mod_autoplay>true<TMPL_ELSE>false</TMPL_IF>',
+});
+</script>
 </BODY></HTML>

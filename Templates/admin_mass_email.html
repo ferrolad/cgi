@@ -4,10 +4,10 @@
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <Table class="tbl1" cellpadding=2 cellspacing=1>
 <TMPL_IF users>
-<TR><TD align=right><b>Filter:</b></TD><TD>
+<TR><TD align=right><b>Filter</b></TD><TD>
 <TMPL_VAR users_num> selected users
 <TMPL_ELSE>
-<TR><TD align=right rowspan="2"><b>Filter:</b></TD><TD>
+<TR><TD align=right rowspan="2"><b>Filter</b></TD><TD>
 <input type="radio" id="filter_utype_all" name="filter_utype" value="all" checked> <label for="filter_utype_all">All</label>
 <input type="radio" id="filter_utype_prem" name="filter_utype" value="prem"> <label for="filter_utype_prem">Premium</label>
 <input type="radio" id="filter_utype_free" name="filter_utype" value="free"> <label for="filter_utype_free">Free</label>
@@ -15,8 +15,8 @@
 Logged in last <input type="text" name="filter_lastlogin" size="1"> days
 </TD></TR>
 </TMPL_IF>
-<TR><TD align=right><b>Subject:</b></TD><TD><input type="text" name="subject" size=36></TD></TR>
-<TR><TD align=right><b>Text message:</b></TD><TD><Textarea name="body" cols=42 rows=7></Textarea>
+<TR><TD align=right><b>Subject</b></TD><TD><input type="text" name="subject" size=36></TD></TR>
+<TR><TD align=right><b>Text message</b></TD><TD><Textarea name="body" cols=42 rows=7></Textarea>
 <br>Use <b>%username%</b> to insert login into message
 <br>Use <b>%unsubscribe_url%</b> to insert Unsubscription URL into message
 </TD></TR>

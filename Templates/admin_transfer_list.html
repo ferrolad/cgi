@@ -18,6 +18,7 @@
 
 <form method="POST" action="">
 <input type="hidden" name="op" value="admin_transfer_list">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <Table class="tbl1" cellspacing=1 cellpadding=3 id="xfiles">
 <TR class="hdr">
 <TD>Title</TD>
@@ -37,12 +38,21 @@
 <TD nowrap><small><TMPL_VAR created2></small></TD>
 <TD><TMPL_VAR srv_name1> [<TMPL_VAR srv_id1>]</TD>
 <TD><TMPL_VAR srv_name2> [<TMPL_VAR srv_id2>]</TD>
-<TD align=left class="enc_td"><div style="position:relative;"><div class="enc_status" style="width:<TMPL_VAR progress>%;"></div><div class="enc_value"><TMPL_VAR progress>%<TMPL_IF transferred> (<TMPL_VAR transferred_mb> of <TMPL_VAR file_size>, <TMPL_VAR speed> KB/s)</TMPL_IF></div></div></TD>
-<TD><a href="?op=admin_transfer_list&del_id=<TMPL_VAR file_real>"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
+<TD align=left class="enc_td">
+   <div style="position:relative;">
+      <TMPL_IF is_starting>
+      Starting...
+      <TMPL_ELSE>
+      <div class="enc_status" style="width:<TMPL_VAR progress>%;"></div>
+      <div class="enc_value"><TMPL_VAR progress>%<TMPL_IF transferred> (<TMPL_VAR transferred_mb> of <TMPL_VAR file_size>, <TMPL_VAR speed> KB/s)</TMPL_IF></div>
+      </TMPL_IF>
+   </div>
+</TD>
+<TD><a href="?op=admin_transfer_list&del_id=<TMPL_VAR file_real>&token=<TMPL_VAR token>"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
 </TR>
 </TMPL_LOOP>
 <TR>
-<TD colspan="7">
+<TD colspan="8">
    <input type="submit" name="del_all" value="Delete all">
    <input type="submit" name="restart_all" value="Restart all">
 </TD>

@@ -17,7 +17,10 @@ Downloader IP: <input type="text" name="ip" value="<TMPL_VAR ip>" size=15><br>
     <TD><TMPL_VAR money></TD>
     <TD><a href="?op=admin_downloads&usr_login=<TMPL_VAR usr_login>"><TMPL_VAR usr_login></a></TD>
     <TD><a href="?op=admin_downloads&ip=<TMPL_VAR ip>"><TMPL_VAR ip></a><TMPL_IF ip_country> / <TMPL_VAR ip_country></TMPL_IF></TD>
-    <TMPL_IF m_n_100_complete><TD nowrap=""><TMPL_VAR finished> (<TMPL_VAR percent> %)</TD></TMPL_IF>
+    <TMPL_IF m_n_100_complete><TD nowrap="">
+        <TMPL_IF finished>Yes<TMPL_ELSE>No</TMPL_IF>
+        (<TMPL_VAR percent> %)
+    </TD></TMPL_IF>
     <TD align=left><TMPL_VAR referer></TD>
     <TD align=center><TMPL_IF status><TMPL_VAR status><TMPL_ELSE>Payed</TMPL_IF></TD>
 </TR>

@@ -1,3 +1,6 @@
+<link href="<TMPL_VAR site_url>/css/jquery-ui.css" rel="stylesheet"/>
+<script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>
+
 <span id="messages">
 <TMPL_LOOP messages>
 <div style="padding:5px;background:#ff9;margin:10px;"><TMPL_VAR info></div>
@@ -32,7 +35,7 @@
 <TR valign=top><TD align=right><b><TMPL_VAR lang_captcha_mode></b></TD><TD>
 <input type="radio" name="captcha_mode" value="1" id="c1" onClick="changeCaptchaType(null);"<TMPL_VAR captcha_1>><label for="c1"><TMPL_VAR lang_captcha_image></label> &nbsp; 
 <input type="radio" name="captcha_mode" value="2" id="c2" onClick="changeCaptchaType(null);"<TMPL_VAR captcha_2>><label for="c2"><TMPL_VAR lang_captcha_text></label> &nbsp; 
-<input type="radio" name="captcha_mode" value="3" id="c3" onClick="changeCaptchaType('rc');"<TMPL_VAR captcha_3>><label for="c3">reCaptcha</label> &nbsp; 
+<input type="radio" name="captcha_mode" value="3" id="c3" onClick="changeCaptchaType('rc');"<TMPL_VAR captcha_3>><label for="c3">reCaptcha 2.0</label> &nbsp; 
 <input type="radio" name="captcha_mode" value="4" id="c4" onClick="changeCaptchaType('sv');"<TMPL_VAR captcha_4>><label for="c4">Solve Media</label>
 <div id="div_rc"<TMPL_UNLESS captcha_3> style="display:none"</TMPL_UNLESS>>
 	reCaptcha public Key: <input type="text" name="recaptcha_pub_key" value="<TMPL_VAR recaptcha_pub_key>" size=36><br>
@@ -65,6 +68,7 @@
 <TR><TD align=right><b><TMPL_VAR lang_email_from>:</b></TD><TD><input type="text" name="email_from" value="<TMPL_VAR email_from>" size=32></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_contact_email></b></TD><TD><input type="text" name="contact_email" value="<TMPL_VAR contact_email>" size=32></TD></TR>
 <TR valign=top><TD align=right><b>Restricted IPs</b><br>(<TMPL_VAR lang_one_ip_per_row>)<br><TMPL_VAR lang_use_wildcard></TD><TD><Textarea name="ip_not_allowed" cols=16 rows=3><TMPL_VAR ip_not_allowed></Textarea></TD></TR>
+<TR><TD align=right><b>Show captcha after</b></TD><TD><input type="text" name="captcha_attempts_h" value="<TMPL_VAR captcha_attempts_h>" size=2 maxlength=3> failed logins/h</TD></TR>
 <TR><TD align=right><b>Ban after</b></TD><TD><input type="text" name="max_login_attempts_h" value="<TMPL_VAR max_login_attempts_h>" size=2 maxlength=3> failed logins/h</TD></TR>
 <TR><TD align=right><b>Ban after</b></TD><TD><input type="text" name="max_login_ips_h" value="<TMPL_VAR max_login_ips_h>" size=2 maxlength=3> ip changes/h</TD></TR>
 <TR><TD align=right><b>Show last news in header</b></TD><TD><input type="text" name="show_last_news_days" value="<TMPL_VAR show_last_news_days>" size=2 maxlength=3> days after addition <small>(0 to disable)</small></TD></TR>
@@ -128,6 +132,7 @@ http://www.site.com/<select name="link_format">
  &nbsp; <input type="checkbox" name="comments_registered_only" value="1" id="cro"<TMPL_IF comments_registered_only> checked</TMPL_IF>><label for="cro">for registered users only</label>
 </TD></TR>
 <TR><TD align=right><b>Uploads are public by default</b></TD><TD><input type="checkbox" name="file_public_default" value="1" id="file_public_default"<TMPL_IF file_public_default> checked</TMPL_IF>><label for="file_public_default"><TMPL_VAR lang_enabled></label></TD></TR>
+<TR><TD align=right><b>Agree with TOS by default</b></TD><TD><input type="checkbox" name="agree_tos_default" value="1" id="agree_tos_default"<TMPL_IF agree_tos_default> checked</TMPL_IF>><label for="agree_tos_default"><TMPL_VAR lang_enabled></label></TD></TR>
 <TR valign=top><TD align=right><b>Comments banned words</b><br>(<TMPL_VAR lang_one_word_per_row>)</TD><TD><Textarea name="bad_comment_words" cols=16 rows=4><TMPL_VAR bad_comment_words></Textarea></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_expire_temp_links></b></TD><TD><input type="text" name="symlink_expire" value="<TMPL_VAR symlink_expire>" size=2> <TMPL_VAR lang_hours_after_create> <small>(<TMPL_VAR lang_add_to_cron_jobs>)</small></TD></TR>
 
@@ -172,7 +177,6 @@ http://www.site.com/<select name="link_format">
     <input type="checkbox" name="mp3_mod" value="1" id="mfs"<TMPL_IF mp3_mod> checked</TMPL_IF>><label for="mfs"><TMPL_VAR lang_enabled></label> &nbsp; 
     <input type="checkbox" name="mp3_mod_no_download" value="1" id="mfs2"<TMPL_IF mp3_mod_no_download> checked</TMPL_IF>><label for="mfs2">No download button</label> &nbsp; 
     <input type="checkbox" name="mp3_mod_autoplay" value="1" id="mfs3"<TMPL_IF mp3_mod_autoplay> checked</TMPL_IF>><label for="mfs3">Autoplay</label>
-    <input type="checkbox" name="mp3_mod_embed" value="1" id="mfs4"<TMPL_IF mp3_mod_embed> checked</TMPL_IF>><label for="mfs4">Embed</label>
 </TD></TR>
 <TR><TD align=right><b>Show document viewer</b></TD><TD>
     <input type="checkbox" name="docviewer" value="1" id="docviewer"<TMPL_IF docviewer> checked</TMPL_IF>><label for="docviewer"><TMPL_VAR lang_enabled></label> &nbsp; 
@@ -203,14 +207,26 @@ http://www.site.com/<select name="link_format">
 </TD></TR>
 <TR><TD align=right width="5%" nowrap><b>Archives mod</b></TD><TD><input type="checkbox" name="m_b" value="1" id="mdb"<TMPL_IF m_b> checked</TMPL_IF><TMPL_UNLESS enp_b> disabled</TMPL_UNLESS>><label for="mdb"><TMPL_VAR lang_enabled></label><TMPL_UNLESS enp_b> <small>(not available with your license)</small></TMPL_UNLESS> [<a href="http://sibsoft.net/xfilesharing_mod_archives.html" target=_blank class="url2">?</a>]</TD></TR>
 <TR><TD align=right><b>Server GeoIP mod</b></TD><TD><input type="checkbox" name="m_g" value="1" id="msg"<TMPL_IF m_g> checked</TMPL_IF><TMPL_UNLESS enp_g> disabled</TMPL_UNLESS>><label for="msg"><TMPL_VAR lang_enabled></label><TMPL_UNLESS enp_g> <small>(not available with your license)</small></TMPL_UNLESS> [<a href="http://www.sibsoft.net/xfs-mod-g.html" onClick="return OpenWin(this.href,320,240)" class="url2">?</a>]</TD></TR>
-<TR><TD align=right><b>NGINX mod</b></TD><TD><input type="checkbox" name="m_n" value="1" id="mdn"<TMPL_IF m_n> checked</TMPL_IF><TMPL_UNLESS enp_n> disabled</TMPL_UNLESS>><label for="mdn"><TMPL_VAR lang_enabled></label><TMPL_UNLESS enp_n> <small>(not available with your license)</small></TMPL_UNLESS> [<a href="http://www.sibsoft.net/xfs-mod-n.html" onClick="return OpenWin(this.href,320,240)" class="url2">?</a>]</TD></TR>
-<TR><TD align=right><b>100% complete mod</b></TD><TD><input type="checkbox" name="m_n_100_complete" value="1" id="m_n_100_complete"<TMPL_IF m_n_100_complete> checked</TMPL_IF><TMPL_UNLESS enp_n> disabled</TMPL_UNLESS>><label for="m_n_100_complete"><TMPL_VAR lang_enabled></label>
-<TMPL_IF enp_n> <small>(Nginx tweak required)</small><TMPL_ELSE><small>(not available with your license)</small></TMPL_IF> [<a href="http://sibsoft.net/xfilesharing.html#custom_mods" onClick="return OpenWin(this.href,1024,240)" class="url2">?</a>]
-<br><small>Alter percent: </small><input type="text" name="m_n_100_complete_percent" value="<TMPL_VAR m_n_100_complete_percent>" size=3> %
-</TD></TR>
-<TR><TD align=right><b>FTP mod</b></TD><TD><input type="checkbox" name="ftp_mod" value="1" id="ftp_mod"<TMPL_IF ftp_mod> checked</TMPL_IF><TMPL_UNLESS enp_n> disabled</TMPL_UNLESS>><label for="ftp_mod"><TMPL_VAR lang_enabled></label> <small>(Proftpd tweak required)</small> [<a href="http://sibsoft.net/xfilesharing.html#custom_mods" onClick="return OpenWin(this.href,1024,240)" class="url2">?</a>]</TD></TR>
+<TR>
+   <TD align=right rowspan="2"><b>NGINX mod</b></TD>
+   <TD>
+      <input type="checkbox" name="m_n" value="1" id="mdn"<TMPL_IF m_n> checked</TMPL_IF><TMPL_UNLESS enp_n> disabled</TMPL_UNLESS> onchange="setNginxEnabled(this.checked)"><label for="mdn"><TMPL_VAR lang_enabled></label><TMPL_UNLESS enp_n> <small>(not available with your license)</small></TMPL_UNLESS> [<a href="http://www.sibsoft.net/xfs-mod-n.html" onClick="return OpenWin(this.href,320,240)" class="url2">?</a>]
+      <br>
+   </TD>
+</TR>
+<TR>
+   <TD>
+      Count download after <input class="requires_m_n" type="text" name="m_n_100_complete_percent" value="<TMPL_VAR m_n_100_complete_percent>" size=3> % finished
+   </TD>
+<TR>
+   <TD align=right><b>FTP mod</b></TD>
+   <TD>
+      <input type="checkbox" name="ftp_mod" value="1" id="ftp_mod"<TMPL_IF ftp_mod> checked</TMPL_IF><TMPL_UNLESS enp_n> disabled</TMPL_UNLESS>><label for="ftp_mod"><TMPL_VAR lang_enabled></label> <small>(Proftpd tweak required)</small> [<a href="http://sibsoft.net/xfilesharing.html#custom_mods" onClick="return OpenWin(this.href,1024,240)" class="url2">?</a>]
+   </TD>
+</TR>
 <TR><TD align=right><b>Happy Hours</b></TD><TD><input type="text" name="happy_hours" value="<TMPL_VAR happy_hours>" size=24> 2X speed for specified hours <small>(e.g. 3,4,5)</small></TD></TR>
-<TR><TD align=right><b>IFrame breaker</b></TD><TD><input type="checkbox" name="iframe_breaker" value="1" id="iframe_breaker"<TMPL_IF iframe_breaker> checked</TMPL_IF>><label for="iframe_breaker"><TMPL_VAR lang_enabled></label></TD></TR>
+<TR><TD align=right><b>IFrame breaker</b></TD><TD><input type="checkbox" name="iframe_breaker" value="1" id="iframe_breaker"<TMPL_IF iframe_breaker> checked</TMPL_IF>><label for="iframe_breaker"><TMPL_VAR lang_enabled></label> <small>(redirect to original link if opened in IFrame)</small></TD></TR>
+<TR><TD align=right><b>Mask download link</b></TD><TD><input type="checkbox" name="mask_dl_link" value="1" id="mask_dl_link"<TMPL_IF mask_dl_link> checked</TMPL_IF>><label for="mask_dl_link"><TMPL_VAR lang_enabled></label> <small>(hide an actual download link in URL bar)</small></TD></TR>
 <TR><TD align=right><b>Memcached location</b></TD><TD><input type="text" name="memcached_location" value="<TMPL_VAR memcached_location>" size=24> <small>ip:port or UNIX socket path (recommended)</small></TD></TR>
 <TR><TD align=right><b>Adf.ly UID</b></TD><TD><input type="text" name="adfly_uid" value="<TMPL_VAR adfly_uid>" size=8></TD></TR>
 </Table>
@@ -336,10 +352,6 @@ http://www.site.com/<select name="link_format">
     <TD><input type="checkbox" name="m_e" value="1" id="mde"<TMPL_IF m_e> checked</TMPL_IF><TMPL_UNLESS enp_e> disabled</TMPL_UNLESS>><label for="mde"><TMPL_VAR lang_enabled></label><TMPL_UNLESS enp_e> <small>(not available with your license)</small></TMPL_UNLESS> [<a href="http://sibsoft.net/xfilesharing_mod_mp4_encoding.html" target=_blank class="url2">?</a>]</TD>
 </TR>
 <TR>
-    <TD align=right><b>FLV video format</b></TD>
-    <TD><input type="checkbox" name="m_e_flv" value="1" onClick="if(this.checked){$('#vq1').hide();$('#vq2').show();}else{$('#vq2').hide();$('#vq1').show();}" id="mdef"<TMPL_IF m_e_flv> checked</TMPL_IF><TMPL_UNLESS enp_e> disabled</TMPL_UNLESS>><label for="mdef"><TMPL_VAR lang_enabled></label></TD>
-</TR>
-<TR>
     <TD align=right><b>Video width</b></TD>
     <TD><input type="text" name="m_e_vid_width" value="<TMPL_VAR m_e_vid_width>" size=4<TMPL_UNLESS enp_e> disabled</TMPL_UNLESS>> pixels</TD>
 </TR>
@@ -353,6 +365,14 @@ http://www.site.com/<select name="link_format">
 <TR>
     <TD align=right><b>Audio bitrate</b></TD>
     <TD><input type="text" name="m_e_audio_bitrate" value="<TMPL_VAR m_e_audio_bitrate>" size=3<TMPL_UNLESS enp_e> disabled</TMPL_UNLESS>> kbps</TD>
+</TR>
+<TR>
+    <TD align=right><b>Copy stream when possible</b></TD>
+    <TD><input type="checkbox" name="m_e_copy_when_possible" value="1" id="m_e_copy_when_possible"<TMPL_IF m_e_copy_when_possible> checked</TMPL_IF><TMPL_UNLESS enp_e> disabled</TMPL_UNLESS>><label for="m_e_copy_when_possible"><TMPL_VAR lang_enabled></label><TMPL_UNLESS enp_e> <small>(not available with your license)</small></TMPL_UNLESS></TD>
+</TR>
+<TR>
+    <TD align=right><b>Save original files</b></TD>
+    <TD><input type="checkbox" name="m_e_preserve_orig" value="1" id="m_e_preserve_orig"<TMPL_IF m_e_preserve_orig> checked</TMPL_IF><TMPL_UNLESS enp_e> disabled</TMPL_UNLESS>><label for="m_e_preserve_orig"><TMPL_VAR lang_enabled></label><TMPL_UNLESS enp_e> <small>(not available with your license)</small></TMPL_UNLESS></TD>
 </TR>
 </TR>
 </TMPL_IF>
@@ -383,6 +403,13 @@ Format: domain:key</small>
 <TR><TD align=right><b>File moderation</b></TD><TD><input type="checkbox" name="m_d_f" value="1" id="mdd1"<TMPL_IF m_d_f> checked</TMPL_IF><TMPL_UNLESS enp_d> disabled</TMPL_UNLESS>><label for="mdd1"><TMPL_VAR lang_enabled></label></TD></TR>
 <TR><TD align=right><b>Abuse management</b></TD><TD><input type="checkbox" name="m_d_a" value="1" id="mdd2"<TMPL_IF m_d_a> checked</TMPL_IF><TMPL_UNLESS enp_d> disabled</TMPL_UNLESS>><label for="mdd2"><TMPL_VAR lang_enabled></label></TD></TR>
 <TR><TD align=right width="5%" nowrap><b>Comments moderation</b></TD><TD><input type="checkbox" name="m_d_c" value="1" id="mdd3"<TMPL_IF m_d_c> checked</TMPL_IF><TMPL_UNLESS enp_d> disabled</TMPL_UNLESS>><label for="mdd3"><TMPL_VAR lang_enabled></label></TD></TR>
+<TR>
+   <TD align=right><b>Files pre-approve</b></TD>
+   <TD>
+     <input type="checkbox" name="files_approve" value="1" id="files_approve"<TMPL_IF files_approve> checked</TMPL_IF><TMPL_UNLESS enp_d> disabled</TMPL_UNLESS>><label for="files_approve"><TMPL_VAR lang_enabled></label>
+     <input type="checkbox" name="files_approve_regular_only" value="1" id="files_approve_regular_only"<TMPL_IF files_approve_regular_only> checked</TMPL_IF><TMPL_UNLESS enp_d> disabled</TMPL_UNLESS>><label for="files_approve_regular_only">for non-approved affiliates only</label>
+   </TD>
+</TR>
 </Table>
 </div>
 
@@ -662,11 +689,51 @@ Format: domain:key</small>
     <TD align=left><small>Number or parallel uploads</small></TD>
 </TR>
 <TR align=center>
-    <TD align=right><b>Fallback to Bittorrent after</b></TD>
+    <TD align=right><b>Webseed with Bittorrent after</b></TD>
     <TD><input type="text" name="torrent_fallback_after_anon" value="<TMPL_VAR torrent_fallback_after_anon>" size=4></TD>
     <TD><input type="text" name="torrent_fallback_after_reg" value="<TMPL_VAR torrent_fallback_after_reg>" size=4></TD>
     <TD><input type="text" name="torrent_fallback_after_prem" value="<TMPL_VAR torrent_fallback_after_prem>" size=4></TD>
     <TD align=left><small>GBs of traffic generated by file (0 = disabled)</small></TD>
+</TR>
+</TMPL_IF>
+<TMPL_IF enp_n>
+<TR align=center>
+    <TD align=right><b>Upload speed</TD>
+    <TD><input type="text" class="requires_m_n" name="m_n_upload_speed_anon" value="<TMPL_VAR m_n_upload_speed_anon>" size=4></TD>
+    <TD><input type="text" class="requires_m_n" name="m_n_upload_speed_reg" value="<TMPL_VAR m_n_upload_speed_reg>" size=4></TD>
+    <TD><input type="text" class="requires_m_n" name="m_n_upload_speed_prem" value="<TMPL_VAR m_n_upload_speed_prem>" size=4></TD>
+    <TD align=left>
+      Kbytes/sec
+      <TMPL_UNLESS m_n><span class="requires_m_n_label"><small>(Nginx mod required)</small> [<a href="http://www.sibsoft.net/xfs-mod-n.html" onClick="return OpenWin(this.href,320,240)" class="url2">?</a>]</span></TMPL_UNLESS>
+    </TD>
+</TR>
+<TR align=center>
+    <TD align=right><b>Connections limitation</TD>
+    <TD><input type="text" class="requires_m_n" name="m_n_limit_conn_anon" value="<TMPL_VAR m_n_limit_conn_anon>" size=4></TD>
+    <TD><input type="text" class="requires_m_n" name="m_n_limit_conn_reg" value="<TMPL_VAR m_n_limit_conn_reg>" size=4></TD>
+    <TD><input type="text" class="requires_m_n" name="m_n_limit_conn_prem" value="<TMPL_VAR m_n_limit_conn_prem>" size=4></TD>
+    <TD align=left>
+      per IP / file server
+      <TMPL_UNLESS m_n><span class="requires_m_n_label"><small>(Nginx mod required)</small> [<a href="http://www.sibsoft.net/xfs-mod-n.html" onClick="return OpenWin(this.href,320,240)" class="url2">?</a>]</span></TMPL_UNLESS>
+    </TD>
+</TR>
+<TR align=center>
+    <TD align=right><b>Download resume</TD>
+    <TD><input type="checkbox" class="requires_m_n" name="m_n_dl_resume_anon" value="1"<TMPL_IF m_n_dl_resume_anon> checked</TMPL_IF>></TD>
+    <TD><input type="checkbox" class="requires_m_n" name="m_n_dl_resume_reg" value="1"<TMPL_IF m_n_dl_resume_reg> checked</TMPL_IF>></TD>
+    <TD><input type="checkbox" class="requires_m_n" name="m_n_dl_resume_prem" value="1"<TMPL_IF m_n_dl_resume_prem> checked</TMPL_IF>></TD>
+    <TD align=left>
+      <TMPL_UNLESS m_n><span class="requires_m_n_label"><small>(Nginx mod required)</small> [<a href="http://www.sibsoft.net/xfs-mod-n.html" onClick="return OpenWin(this.href,320,240)" class="url2">?</a>]</span></TMPL_UNLESS>
+    </TD>
+</TR>
+</TMPL_IF>
+<TMPL_IF ftp_mod>
+<TR align=center>
+    <TD align=right><b>FTP upload</b></TD>
+    <TD> - </TD>
+    <TD><input type="checkbox" name="ftp_upload_reg" value="1"<TMPL_IF ftp_upload_reg> checked</TMPL_IF>></TD>
+    <TD><input type="checkbox" name="ftp_upload_prem" value="1"<TMPL_IF ftp_upload_prem> checked</TMPL_IF>></TD>
+    <TD align=left></TD>
 </TR>
 </TMPL_IF>
 <TR align=center>
@@ -710,6 +777,10 @@ Format: domain:key</small>
 <TR>
     <TD align=right><b><TMPL_VAR lang_premium_plans></b></TD>
     <TD><input type="text" name="payment_plans" value="<TMPL_VAR payment_plans>" size=56><br><small><TMPL_VAR lang_payments_format><br>e.g: <b>5.00=7,9.00=14,15.00=30</b></small></TD>
+</TR>
+<TR>
+    <TD align=right><b>Premium traffic packages</b></TD>
+    <TD><input type="text" name="traffic_plans" value="<TMPL_VAR traffic_plans>" size=56><br><small>Format: payment_amount=GBs, comma delimited<br>e.g: <b>5.00=10,9.00=50,13.00=100</b></small></TD>
 </TR>
 <TR>
     <TD align=right><b><TMPL_VAR lang_currency></b></TD>
@@ -885,6 +956,8 @@ Format: domain:key</small>
 <input type="button" name="search" value="&nbsp;" onclick="settings_finder.isearch();" class="searchbtn">
 <br><br>
 
+<small>XFileSharingPro v.<TMPL_VAR version></small>
+
 </Form>
 <script>
 function sync(obj) {
@@ -906,6 +979,14 @@ function changeCaptchaType(type) {
     $('#div_'+type).style.display = '';
 }
 
+function setNginxEnabled(is_enabled)
+{
+   $('.requires_m_n').attr('disabled', !is_enabled)
+   $('.requires_m_n_label').attr('hidden', is_enabled)
+}
+
+setNginxEnabled(<TMPL_IF m_n>true<TMPL_ELSE>false</TMPL_IF>);
+
 var site_url = '<TMPL_VAR site_url>';
 var last_notify_time = '<TMPL_VAR last_notify_time>';
 var xfs_version = '<TMPL_VAR version>';
@@ -923,4 +1004,36 @@ var xfs_version = '<TMPL_VAR version>';
 $('#search-input').keyup(settings_finder.isearch_impl);
 </script>
 </div>
-<style>table { width: 100% }</style>
+<style>
+table { width: 100% }
+table tr:hover td{background: #fbfbfb; }
+</style>
+
+<div id="mass_del_confirm_request" class="hide" title="Mass expiry confirmation">
+ The system is going to expire <b><TMPL_VAR mass_del_confirm_request></b> of files due to your Users Limits configuration.
+ <br>Please confirm that's exactly what you would like to do.
+ <br><br>
+ <a href="<TMPL_VAR site_url>/?op=admin_settings&expiry_csv=1">Download expiry list as CSV</a>
+ <br><br>
+ <input type="button" name="change_expiry_settings" value="Change expiry settings" onclick="return changeExpirySettings()">
+ <input type="button" name="confirm_deletion" value="Confirm deletion >>" onclick="document.location = '?op=admin_settings&expiry_confirm=1'">
+</div>
+<TMPL_IF mass_del_confirm_request>
+<script>
+$('#mass_del_confirm_request').dialog({ modal: true, width: 700, height: 200 })
+function changeExpirySettings()
+{
+   $('#mass_del_confirm_request').dialog('close');
+
+   (new TabberWalker($('#tabber0'))).open_tab('Users Limits');
+   var input = $('input[name=files_expire_access_anon]');
+   $(input).parents('tr').addClass('search-results');
+
+   setTimeout(function() {
+      var offset = $(input).offset();
+      $('body').scrollTo(offset.top - window.innerHeight / 2);
+      $(input).focus();
+   }, 0);
+}
+</script>
+</TMPL_IF>

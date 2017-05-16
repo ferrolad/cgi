@@ -2,9 +2,54 @@
 use strict;
 use lib '.';
 use XFileConfig;
+use XUtils;
+
+BEGIN
+{
+   my $ok = "<b style='background:#1a1;color:#fff;padding:2px;'>OK</b>";
+   my $err = "<b>Fail</b>";
+
+   my @modules =
+   (                                                   
+       {module=>'CGI', file=>'CGI.pm', redhat=>'perl-CGI', debian=>'libcgi-pm-perl'}, 
+       {module=>'DBI', file=>'DBI.pm', redhat=>'perl-DBI', debian=>'libdbi-perl'}, 
+       {module=>'DBD::mysql', file=>'DBD/mysql.pm', redhat=>'perl-DBD-MySQL', debian=>'libdbd-mysql-perl'}, 
+       {module=>'Digest::SHA', file=>'Digest/SHA.pm', redhat=>'perl-Digest-SHA', debian=>'libdigest-sha-perl'},
+       {module=>'LWP', file=>'LWP/UserAgent.pm', redhat=>'perl-libwww-perl', debian=>'libwww-perl'},
+   );
+
+   my @failed_modules = grep { ! eval { require $_->{file} } && $@ } @modules;
+   my %is_failed = map { $_->{module} => 1 } @failed_modules;
+
+   if(@failed_modules)
+   {
+      my @redhat_pkgs = map { $_->{redhat} } @failed_modules if -e '/usr/bin/yum';
+      my @debian_pkgs = map { $_->{debian} } @failed_modules if -e '/usr/bin/apt-get';
+
+      print "Content-type: text/html\n\n";
+      print "Testing modules...<br><br>\n";
+      print "<table style='width: 320px'>\n";
+
+      for(@modules)
+      {
+         my $status = $is_failed{ $_->{module} } ? $err : $ok;
+         print "<tr><td><b>$_->{module}...</b></td><td>$status</td></tr>\n";
+      }
+
+      print "</table><br><br>\n";
+
+      print "It looks like there are some Perl modules are missing.<br>\n";
+      print "You can install all of them at once by issuing the following command from root SSH console:<br><br>\n" if @redhat_pkgs || @debian_pkgs;
+      printf ("<font style='font-family: monospace'>yum install %s</font>", join(' ', @redhat_pkgs)) if @redhat_pkgs;
+      printf ("<font style='font-family: monospace'>yum install %s</font>", join(' ', @debian_pkgs)) if @debian_pkgs;
+
+      exit();
+   }
+};
+
 use Session;
 use CGI::Carp qw(fatalsToBrowser);
-require DBI;
+use DBI;
 
 my $ok = "<br><b style='background:#1a1;color:#fff;padding:2px;'>OK</b>";
 
@@ -88,7 +133,10 @@ if($f->{create_sql})
    $sql.=$_ while <FILE>;
    $sql=~s/CREATE TABLE/CREATE TABLE IF NOT EXISTS/gis;
    $db->Exec($_) for grep{length($_)>17} split(';',$sql);
-   $db->Exec("INSERT INTO Users (usr_login,usr_email,usr_password,usr_created,usr_adm) VALUES (?,?,ENCODE(?,?),NOW(),1)",$f->{usr_login},$f->{usr_email},$f->{usr_password},$c->{pasword_salt});
+   
+   my $passwd_hash = XUtils::GenPasswdHash($f->{usr_password});
+
+   $db->Exec("INSERT INTO Users (usr_login,usr_email,usr_password,usr_created,usr_adm) VALUES (?,?,?,NOW(),1)",$f->{usr_login},$f->{usr_email},$passwd_hash);
    $db->Exec("INSERT INTO Misc SET name='last_notify_time', value=UNIX_TIMESTAMP()");
    $ses->redirect('install.cgi');
 }
@@ -131,32 +179,33 @@ if($f->{remove_install})
 print"Content-type:text/html\n\n";
 print"<HTML><BODY style='font:13px Arial;'><h2>XFileSharingPro Installation Script</h2>";
 
-#######
-
+############
+print"<hr>";
+############
 
 print"<b>1) Permissions Check</b><br><br>";
 my $perms = {
-               'logs.txt'  	=> 0666,
-               'ipn_log.txt'  	=> 0666,
-               'fs.cgi'    	=> 0755,
-               'index.cgi' 	=> 0755,
-               'index_box.cgi'	=> 0755,
-               'index_dl.cgi' 	=> 0755,
-               'ipn.cgi' 	=> 0755,
-               'cron.pl'   	=> 0755,
+               'logs.txt'     => 0666,
+               'ipn_log.txt'     => 0666,
+               'fs.cgi'       => 0755,
+               'index.cgi'    => 0755,
+               'index_box.cgi'   => 0755,
+               'index_dl.cgi'    => 0755,
+               'ipn.cgi'    => 0755,
+               'cron.pl'      => 0755,
                'cron_deleted_email.pl' => 0755,
-               'dl.cgi'   	=> 0755,
-               'up.cgi'   	=> 0755,
-               'uu.cgi'   	=> 0755,
+               'dl.cgi'      => 0755,
+               'up.cgi'      => 0755,
+               'uu.cgi'      => 0755,
                'upload.cgi'     => 0755,
-               'up_flash.cgi'  	=> 0755,
+               'up_flash.cgi'     => 0755,
                'api.cgi'        => 0755,
                'transfer.pl'    => 0755,
                'XFileConfig.pm' => 0666,
                'XFSConfig.pm'   => 0666,
                'temp'           => 0777,
                'uploads'        => 0777,
-               'logs'		=> 0777,
+               'logs'      => 0777,
                'Templates/static'         => 0777,
                "$c->{site_path}/files"    => 0777,
                "$c->{site_path}/i"        => 0777,

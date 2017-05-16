@@ -57,7 +57,7 @@ my $sub={
          get_file_size  => \&GetFileSize,
          reencode       => \&Reencode,
          rethumb        => \&Rethumb,
-         start_seeding  => \&StartSeeding,
+         get_pieces     => \&GetPieces,
 	}->{ $f->{op} };
 if($sub)
 {
@@ -75,7 +75,10 @@ sub GenerateLink
    my $file_name = $f->{file_name};
    my $ip        = $f->{ip};
    my $dx = sprintf("%05d",$f->{file_id}/$c->{files_per_folder});
-   &Send("ERROR:no_file") unless -f "$c->{upload_dir}/$dx/$file_code";
+   my $orig_dir = "$1/orig" if $c->{upload_dir} =~ /^(.*)\/uploads/;
+   my $file_path = $f->{orig} ? "$orig_dir/$dx/$file_code" : "$c->{upload_dir}/$dx/$file_code";
+
+   &Send("ERROR:no_file") unless -f $file_path;
    my $x1 = int(rand(10));
    my $rand = &randchar(14);
    unless(-d "$c->{htdocs_dir}/$x1")
@@ -87,7 +90,7 @@ sub GenerateLink
    while(-d "$c->{htdocs_dir}/$rand"){$rand = &randchar(14);}
    mkdir("$c->{htdocs_dir}/$rand") || &Send("ERROR:mkdir");
    chmod 0777, "$c->{htdocs_dir}/$rand";
-   symlink("$c->{upload_dir}/$dx/$file_code","$c->{htdocs_dir}/$rand/$file_name") || &Send("ERROR:sym_create_failed");
+   symlink($file_path,"$c->{htdocs_dir}/$rand/$file_name") || &Send("ERROR:sym_create_failed");
 
    if($ip)
    {
@@ -144,12 +147,16 @@ sub DeleteFiles
    my @arr = split(/:/,$list);
    my $idir = $c->{htdocs_dir};
    $idir=~s/^(.+)\/.+$/$1\/i/;
+
+   my $orig_dir = "$1/orig" if $c->{upload_dir} =~ /^(.*)\/uploads/;
+
    for my $x (@arr)
    {
       my ($file_id,$file_code)=split('-',$x);
       my $dx = sprintf("%05d",$file_id/$c->{files_per_folder});
       unlink("$c->{upload_dir}/$dx/$file_code") if -f "$c->{upload_dir}/$dx/$file_code";
       unlink <$idir/$dx/$file_code*>;
+      unlink <$orig_dir/$dx/$file_code*> if $orig_dir;
       print"\n";
    }
    print"OK";
@@ -227,7 +234,7 @@ sub ImportListDo
       my $file = {file_tmp=>"$import_dir/$fn", file_name_orig=>$fn, file_public=>$pub, usr_id=>$usr_id, no_limits=>1};
       $f->{ip}='1.1.1.1';
       # --------------------
-      $file = &XUpload::ProcessFile($file,$f) unless $file->{file_status};
+      $file = &XUpload::ProcessFile($file,{ %$f, file_upload_method => 'import' }) unless $file->{file_status};
       # --------------------
       &Send("Error: $file->{file_status}") if $file->{file_status};
 
@@ -309,6 +316,8 @@ sub Test
 
 sub UpdateConfig
 {
+   require PerlConfig;
+
    my $str = $f->{data};
    my $cc;
    for(split(/\~/,$str))
@@ -317,30 +326,10 @@ sub UpdateConfig
       $cc->{$1}=$2;
    }
 
-   my $conf;
-   open(F,"$c->{cgi_dir}/XFSConfig.pm")||&Send("Can't read Config: $!");
-   $conf.=$_ while <F>;
-   close F;
+   eval { PerlConfig::Write("$c->{cgi_dir}/XFSConfig.pm", $cc, fields => [ keys %{$cc} ]) };
+   &Send($@) if $@;
 
-   for my $x (keys %{$cc})
-   {
-      my $val = $cc->{$x};
-      
-      unless(exists($c->{$x}))
-      {
-         $conf =~ s/};/ $x => '$val',\n};/
-      }
-
-      $conf=~s/$x\s*=>\s*('.*')\s*,/"$x => '$val',"/e;
-   }
-
-   open(F,">>$c->{temp_dir}/XFSConfig.pm")||&Send("Can't write Config: $!");
-   print F $conf;
-   close F;
-
-   move("$c->{temp_dir}/XFSConfig.pm", "$c->{cgi_dir}/XFSConfig.pm") || die("Can't move Config: $!");
-
-   $conf='';
+   my $conf='';
    open(F,"$c->{htdocs_dir}/.htaccess");
    $conf.=$_ while <F>;
    close F;
@@ -382,7 +371,7 @@ sub CompileChunks
    $file->{file_name_orig} = $fname;
    $f->{compile} = 1; # Dump download and delete link
    $f->{sess_id} = $sess_id;
-   $file = &XUpload::ProcessFile($file,$f);
+   $file = &XUpload::ProcessFile($file,{ %$f, file_upload_method => 'uploader' });
 
    print("<Error>".$file->{msg}."</Error>"),exit unless $file->{msg}=~/^OK/;
    my ($link,$del_link) = $file->{msg}=~/^OK=(.+?)\|(.+)$/;
@@ -420,21 +409,9 @@ sub TorrentDone
 	my @files;
    my $sid = $1 if $f->{sid} =~ /^([a-z0-9]+)$/;
    die("No sid") if !$sid;
-   XUpload::ImportDir("Torrents/workdir/$sid/", %$f);
+   XUpload::ImportDir("Torrents/workdir/$sid/", %$f, file_upload_method => 'torrent');
    #rmtree("Torrents/workdir/$sid/");
    print "Content-type: text/html\n\nOK";
-   exit;
-}
-
-sub StartSeeding
-{
-   require TorrentClient;
-   my $tc = TorrentClient->new(rpc_url => "http://127.0.0.1:9092");
-   my $dx = sprintf("%05d",($f->{file_real_id}||$f->{file_id})/$c->{files_per_folder});
-   my $metainfo = $tc->startseeding(fs_key => $c->{fs_key},
-      virtpath => $f->{file_name},
-      realpath => "$c->{upload_dir}/$dx/$f->{file_real}");
-   print "Content-type: application/x-bittorrent\n\n$metainfo";
    exit;
 }
 
@@ -471,6 +448,30 @@ sub Rethumb
    print "Content-type: text/html\n\nOK";
    exit;
 }
+
+sub GetPieces
+{
+  require Digest::SHA;
+
+  my $dx = sprintf("%05d",$f->{file_id}/$c->{files_per_folder});
+  my $file_path = "$c->{upload_dir}/$dx/$f->{file_real}";
+  my $file_size = -s $file_path;
+  my $piece_size = $f->{piece_size};
+
+  my (@ret, $buffer);
+  open FILE, $file_path;
+  binmode FILE;
+  for(my $i = 0; $i < $file_size; $i += $piece_size)
+  {
+     seek(FILE, $i, 0);
+     read(FILE, $buffer, $piece_size);
+     push @ret, Digest::SHA::sha1($buffer);
+  }
+  close FILE;
+
+  &SendJSON({ file_size => $file_size, pieces => join('', @ret), piece_size => $f->{piece_size} });
+}
+
 
 sub rarPasswordChange
 {
@@ -552,7 +553,7 @@ sub withTempDirectory
                  file_public     => 1, 
                 };
         push @files, $file;
-        XUpload::ProcessFile($file, $f) if $opts{onfinish} eq 'ProcessFile';
+        XUpload::ProcessFile($file, { %$f, file_upload_method => 'unpack' }) if $opts{onfinish} eq 'ProcessFile';
     }
     return(@files);
 }

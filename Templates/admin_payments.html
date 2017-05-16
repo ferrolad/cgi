@@ -5,8 +5,9 @@
 <TMPL_IF msg><font class="ok"><TMPL_VAR msg></font><br><br></TMPL_IF>
 <Form method="POST">
 <input type="hidden" name="op" value="admin_payments">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="reject_info" value="">
-<Table class="tbl1" cellpadding=2 cellspacing=1 style="width: 800px">
+<Table name="payments_list" class="tbl1" cellpadding=2 cellspacing=1 style="width: 800px">
 <TR class="hdr"><TD colspan=8><TMPL_VAR lang_pending_payments></TD></TR>
 <TR class="hdr">
     <TD><input type="checkbox" onClick="if(!this.form.pay_id)return false;for(i=0;i<this.form.pay_id.length;i++){this.form.pay_id[i].checked=this.checked;}if(this.form.pay_id.value)this.form.pay_id.checked=this.checked;"></TD>

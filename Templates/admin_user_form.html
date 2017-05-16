@@ -24,6 +24,11 @@
 <TR><TD align=right><b>Uploads per <TMPL_VAR up_limit_days> <TMPL_VAR lang_days></b></TD><TD><input type="text" name="usr_up_limit" value="<TMPL_VAR usr_up_limit>" size=7> Mb (0 = default)</TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_max_bandw_last></b></TD><TD><input type="text" name="usr_bw_limit" value="<TMPL_VAR usr_bw_limit>" size=7> Mb per <TMPL_VAR bw_limit_days> days</TD></TR>
 <TR><TD align=right><b>Max URL Leech</b></TD><TD><input type="text" name="usr_max_rs_leech" value="<TMPL_VAR usr_max_rs_leech>" size=7> Mb per 1 day</TD></TR>
+<TMPL_IF enp_p>
+<TR><TD align=right><b>Sales profits</b></TD><TD><input type="text" name="usr_sales_percent" value="<TMPL_VAR usr_sales_percent>" size=3> % (0 = default)</TD></TR>
+<TR><TD align=right><b>Rebills profits</b></TD><TD><input type="text" name="usr_rebills_percent" value="<TMPL_VAR usr_rebills_percent>" size=3> % (0 = default)</TD></TR>
+<TR><TD align=right><b>Website profits</b></TD><TD><input type="text" name="usr_m_x_percent" value="<TMPL_VAR usr_m_x_percent>" size=3> % (0 = default)</TD></TR>
+</TMPL_IF>
 <TR><TD align=right><b>Affiliate ID</b></TD><TD><input type="text" name="usr_aff_id" value="<TMPL_VAR usr_aff_id>" size=5></TD></TR>
 <TR><TD align=right><b>Approved affiliate</b></TD><TD><input type="checkbox" name="usr_aff_enabled" value="1"<TMPL_IF usr_aff_enabled> checked</TMPL_IF>></TD></TR>
 <TMPL_IF m_d><TR><TD align=right><b>DMCA agent</b></TD><TD><input type="checkbox" name="usr_dmca_agent" value="1"<TMPL_IF usr_dmca_agent> checked</TMPL_IF>></TD></TR></TMPL_IF>
@@ -37,7 +42,7 @@
 </TD></TR>
 </TMPL_IF>
 <TMPL_IF m_k_manual><TR><TD align=right><b>Reseller account</b></TD><TD><input type="checkbox" name="usr_reseller" value="1"<TMPL_IF usr_reseller> checked</TMPL_IF>></TD></TR></TMPL_IF>
-<TR><TD colspan="2" align="center"><a href="<TMPL_VAR site_url>/?login_as=<TMPL_VAR usr_id>">Login</a></TD></TR>
+<TR><TD colspan="2" align="center"><a name="login_as" href="<TMPL_VAR site_url>/?login_as=<TMPL_VAR usr_id>">Login</a></TD></TR>
 <TR><TD align=left colspan=2><b>Notes:</b><br><textarea name="usr_notes" cols=32 rows=7 style="width:98%"><TMPL_VAR usr_notes></textarea></TD></TR>
 </Table>
 <input type="submit" name="save" value=" Save user details ">

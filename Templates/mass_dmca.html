@@ -13,6 +13,7 @@ $(div).dialog({ modal: true });
 <h2>Mass takedown</h2>
 <form action="" method="POST">
 <input type="hidden" name="op" value="mass_dmca">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <textarea name="urls" style="width:98%" rows="20"></textarea>
 <br><br>
 <input type="submit" value="Process >>">

@@ -35,9 +35,10 @@ sub InitDB{
 }
 
 sub InitMemd {
+  require Cache::Memcached;
   my $self=shift;
   my @servers;
-  push @servers, $c->{memcached_location} if eval {require Cache::Memcached; }||!$@;
+  push @servers, $c->{memcached_location};
   $self->{memd} = new Cache::Memcached { 'servers' => \@servers };
 }
 
@@ -85,19 +86,32 @@ sub SelectRow
 
 sub DoCached
 {
-  my ($self, $realm, $cb, @args) = @_;
-  return $cb->($self, @args) if !$c->{memcached_location};
+  my ($self, $realm, $cb, $sql, @args) = @_;
+  return $cb->($self, $sql, @args) if !$c->{memcached_location};
 
   my $key = sha1_hex(join(' ',$c->{dl_key}, $realm, @args), '');
   my $res = $self->{memd}->get($key);
   return($res) if($res);
 
-  $res = $cb->($self, @args);
+  $res = $cb->($self, $sql, @args);
   $self->{memd}->set($key, $res, 3000);
   return($res);
 }
 
-sub SelectRowCached { shift->DoCached('SelectRow', \&SelectRow, @_) }
+sub Uncache
+{
+  my ($self, $realm, @args) = @_;
+  return if !$c->{memcached_location};
+
+  my $key = sha1_hex(join(' ',$c->{dl_key}, $realm, @args), '');
+  $self->{memd}->delete($key);
+}
+
+sub SelectRowCached
+{
+   my ($self, $realm, $sql, @args) = @_;
+   return $self->DoCached($realm, \&SelectRow, $sql, @args);
+}
 
 sub Select
 {

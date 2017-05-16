@@ -243,5 +243,113 @@ sub CheckAuth
   return $ses->{user};
 }
 
+sub CheckLoginPass
+{
+   use MIME::Base64;
+   use PBKDF2::Tiny;
+
+   my ($ses, $login, $pass) = @_;
+
+   my $user = $ses->db->SelectRow("SELECT * FROM Users WHERE usr_login=?  AND !usr_social", $login);
+
+   my $answer = $user->{usr_password} =~ /^sha256:/
+      ? _check_password_pbkdf2($pass, $user->{usr_password})
+      : _check_password_legacy($pass, $ses->db, $user->{usr_id});
+
+   return GetUser($ses, $user->{usr_id}) if $answer;
+   return 0;
+}
+
+sub _check_password_pbkdf2
+{
+   my ($actual_pass, $hashed_pass) = @_;
+   my ($algo, $turns, $salt, $data) = split(/:/, $hashed_pass);
+   return PBKDF2::Tiny::verify( decode_base64($data), 'SHA-256', $actual_pass, decode_base64($salt), $turns );
+}
+
+sub _check_password_legacy
+{
+   my ($actual_pass, $db, $usr_id) = @_;
+   return $db->SelectOne("SELECT usr_id FROM Users
+      WHERE usr_id=?
+      AND usr_password=ENCODE(?, ?)",
+      $usr_id,
+      $actual_pass,
+      $c->{pasword_salt});
+}
+
+sub GetUser
+{
+   my ($ses, $usr_id) = @_;
+   my $user = $ses->db->SelectRow("SELECT *, UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec 
+         FROM Users 
+         WHERE usr_id=?", $usr_id );
+   if($user && $user->{usr_status} eq 'BANNED')
+   {
+      delete $ses->{user};
+      return $ses->message("Your account was banned by administrator.");
+   }
+
+   $user->{utype} = $user ? ($user->{exp_sec} > 0 ? 'prem' : 'reg') : 'anon' if $user;
+
+   return $user;
+}
+
+sub SelectServer
+{
+   my $ses = shift;
+   my $user = shift;
+
+   my @custom_filters = map { " AND $_"} @_;
+   my $type_filter = $user && $user->{utype} eq 'prem' ? "AND srv_allow_premium=1" : "AND srv_allow_regular=1";
+   my $country_filter;
+
+   if($c->{m_g} && -f "$c->{cgi_path}/GeoIP.dat")
+   {
+      require Geo::IP;
+      my $gi = Geo::IP->new("$c->{cgi_path}/GeoIP.dat");
+      my $country = $gi->country_code_by_addr($ses->getIP);
+      $country_filter="AND (srv_countries LIKE '%$country%' OR srv_countries='')" if $country;
+      $country_filter||="AND srv_countries=''";
+   }
+
+   my $server = $ses->db->SelectRow("SELECT * FROM Servers 
+                                WHERE srv_status='ON' 
+                                AND srv_disk+? <= srv_disk_max*0.99
+                                $type_filter
+                                $country_filter
+                                @custom_filters
+                                ORDER BY RAND()
+                                LIMIT 1",$c->{max_upload_filesize}||100);
+   if($c->{m_g} && !$server)
+   {
+      $server = $ses->db->SelectRow("SELECT * FROM Servers 
+                                WHERE srv_status='ON' 
+                                AND srv_disk+? <= srv_disk_max*0.98
+                                $type_filter
+                                @custom_filters
+                                ORDER BY RAND()
+                                LIMIT 1",$c->{max_upload_filesize}||100);
+   }
+
+   return $server;
+}
+
+sub GenPasswdHash
+{
+   require PBKDF2::Tiny;
+   require MIME::Base64;
+
+   my ($pass) = @_;
+   my $turns = 1000;
+   my $salt = join('', map { chr( rand(256) ) } (1..24));
+   my $data = PBKDF2::Tiny::derive('SHA-256', $pass, $salt, $turns);
+   my $hash = sprintf("sha256:%d:%s:%s",
+      $turns,
+      MIME::Base64::encode_base64($salt, ''),
+      MIME::Base64::encode_base64($data, ''));
+
+   return $hash;
+}
 
 1;

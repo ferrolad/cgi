@@ -3,8 +3,8 @@ use XFileConfig;
 use WWW::SolveMedia;
 
 my @auth_data = ($c->{solvemedia_challenge_key},
-                            $c->{solvemedia_verification_key},
-                            $c->{solvemedia_authentication_key});
+   $c->{solvemedia_verification_key},
+   $c->{solvemedia_authentication_key});
 
 sub generate
 {

@@ -233,7 +233,7 @@ lang_file_server        => "Файл-сервер",
 lang_edit               => "Редактировать",
 lang_add                => "Добавить",
 lang_reports_history    => "История жалоб",
-lang_reported_by        => "Жалоьа от",
+lang_reported_by        => "Жалоба от",
 lang_reason             => "Причина",
 lang_downloads          => "скачиваний",
 lang_rep_file_deleted   => "файл удалён",
@@ -443,6 +443,11 @@ lang_lock_link_sent     => "Ссылка для выключения Security Lo
 lang_lock_activated     => "Security Lock был включен",
 lang_lock_disabled      => "Security Lock был выключен",
 lang_added_prem_time    => "Добавлено премиум времени",
+
+lang_last_news => "Последние новости",
+lang_copy_files => "Копировать",
+
+lang_copy_files         => "Copy files",
 };
 
 sub getLang{return $lang;}

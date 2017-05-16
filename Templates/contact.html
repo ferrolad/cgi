@@ -18,6 +18,7 @@ function CheckForm(f)
 <br>
 <Form method="post" action="<TMPL_VAR site_url>/" onSubmit="return CheckForm(this);">
 <input type="hidden" name="op" value="contact_send">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="rand" value="<TMPL_VAR rand>">
 <table border=0>
 <tr><td><TMPL_VAR lang_name>:</td><td><input type="text" name="name" value="<TMPL_VAR name>" maxlength=32 style="width: 99%"></td></tr>
@@ -28,7 +29,7 @@ function CheckForm(f)
 <tr><td colspan=2 align=center><TMPL_VAR ihtml></td></tr>
 </TMPL_IF>
 
-<tr><td colspan=2 align=center><font class="err"><TMPL_VAR msg></font><br><input type="submit" name="btn" value="<TMPL_VAR lang_send_message>"></td></tr>
+<tr><td colspan=2 align=center><font class="err"><TMPL_VAR msg></font><br><input name="submit_message" type="submit" name="btn" value="<TMPL_VAR lang_send_message>"></td></tr>
 </table>
 </Form>
 

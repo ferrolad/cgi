@@ -7,6 +7,7 @@
    <td>Domain</td>
    <td>Premium</td>
    <td>Amount</td>
+   <td>Reason</td>
 </tr>
 <TMPL_LOOP list>
 <tr>
@@ -16,6 +17,7 @@
    <td align="center"><TMPL_VAR domain></td>
    <td align="center"><TMPL_VAR premium_download></td>
    <td align="center">$<TMPL_VAR money></td>
+   <td align="center"><TMPL_VAR status></td>
 </tr>
 </TMPL_LOOP>
 </table>

@@ -4,7 +4,7 @@
 <TR class="hdr"><td colspan=6>Torrents running<br><small>Progress updating every 15 seconds</small></td></TR>
 <TMPL_LOOP torrents>
 <TR>
-    <TD onmouseover="return tooltip('<TMPL_VAR file_list>','Torrent files');" onmouseout="return hideTip();"><TMPL_IF title><TMPL_VAR title><TMPL_ELSE>[waiting to start]</TMPL_IF></TD>
+    <TD onmouseover="return tooltip('<TMPL_VAR file_list>','Torrent files');" onmouseout="return hideTip();"><TMPL_IF title><TMPL_VAR title><TMPL_ELSE><i>Waiting to start...</i></TMPL_IF></TD>
     <TD align=right><TMPL_VAR done> of <TMPL_VAR total> Mb (<TMPL_VAR percent>%)</TD>
     <TD align=right><TMPL_VAR down_speed>/s</TD>
     <TD align=right><TMPL_VAR up_speed>/s</TD>
@@ -37,8 +37,8 @@
 			<div class="folders"> <!--START FOLDERS BLOCK -->
 				<!-- Start Space Status -->
 				<div class="freespace">
-					<span><b><TMPL_VAR total_size></b>  <TMPL_VAR lang_of> <b><TMPL_VAR disk_space></b></span>
-					<span><TMPL_VAR files_total> <TMPL_VAR lang_files></span>
+					<span id="occupied"><b><TMPL_VAR total_size></b>  <TMPL_VAR lang_of> <b><TMPL_VAR disk_space></b></span>
+					<span id="files_total"><TMPL_VAR files_total> <TMPL_VAR lang_files></span>
 					<div class="clear"></div>
 					<div class="indicator">
 						<span class="occupied" style="width: <TMPL_VAR occupied_percent>%;"></span>

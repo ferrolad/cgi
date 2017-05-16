@@ -3,7 +3,7 @@
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="settings_save" value="1">
 
-<Table>
+<Table name="user_info">
 <TR><TD style="width:35%"><TMPL_VAR lang_username></TD><TD><b><TMPL_VAR my_login></b></TD></TR>
 
 <TMPL_IF premium>
@@ -12,13 +12,14 @@
 
 <TMPL_IF m_k><TR><TD><TMPL_VAR lang_apply_prem_key></TD><TD><b><input type="text" name="premium_key" value="" size=24 class="myForm">&nbsp;<input type="submit" name="premium_key_apply" value="<TMPL_VAR lang_apply>" class=""></b></TD></TR></TMPL_IF>
 
-<TR><TD><TMPL_VAR lang_acc_balance></TD><TD><b><TMPL_VAR currency_symbol><TMPL_VAR usr_money></b>&nbsp;<TMPL_UNLESS usr_reseller><input type="button" class="" value="<TMPL_VAR lang_request_payout>" onClick="document.location='?op=request_money'"></TMPL_UNLESS>
+<TR><TD><TMPL_VAR lang_acc_balance></TD><TD><b><TMPL_VAR currency_symbol><TMPL_VAR usr_money></b>&nbsp;<TMPL_UNLESS usr_reseller><input type="button" class="" name="request_payout" value="<TMPL_VAR lang_request_payout>" onClick="document.location='?op=request_money'"></TMPL_UNLESS>
         <TMPL_IF rsl> <input type="button" class="" value="<TMPL_VAR lang_my_reseller>" onClick="document.location='?op=my_reseller'"></TMPL_IF>
     </TD>
 </TR>
 
 <TR><TD><TMPL_VAR lang_used_disk_space></TD><TD><b><TMPL_VAR total_size><TMPL_IF disk_space> <TMPL_VAR lang_of> <TMPL_VAR disk_space></TMPL_IF> GB</b></TD></TR>
 <TR><TD><TMPL_VAR lang_traffic_available></TD><TD><b><TMPL_IF traffic_left><TMPL_VAR traffic_left> Mb<TMPL_ELSE>Unlimited</TMPL_IF></b></TD></TR>
+<TMPL_IF usr_premium_traffic><TR><TD>Premium traffic remaining</TD><TD><b><TMPL_VAR usr_premium_traffic_mb> MB</b></TD></TR></TMPL_IF>
 <TR><TD><TMPL_VAR lang_my_public_link></TD><TD colspan=2><a href="<TMPL_VAR site_url>/users/<TMPL_VAR usr_login>" target=_blank><TMPL_VAR site_url>/users/<TMPL_VAR usr_login></a></TD></TR>
 <TR><TD><TMPL_VAR lang_my_affiliate_link></TD><TD colspan=2><a href="<TMPL_VAR site_url>/free<TMPL_VAR usr_id>.html"><TMPL_VAR site_url>/free<TMPL_VAR usr_id>.html</a></TD></TR>
 <TR><TD><TMPL_VAR lang_my_referrals></TD><TD><a href="?op=my_referrals"><TMPL_VAR referrals></a></TD></TR>
@@ -59,10 +60,10 @@
 
 <TR><TD align=right><b><TMPL_VAR lang_security_lock></b></TD><TD nowrap>
 <TMPL_IF usr_security_lock>
-<b>ON</b> <a href="?op=my_account&disable_lock=1"><TMPL_VAR lang_disable></a>
+<span name="security_lock_status"><b>ON</b></span> <a name="disable_lock" href="?op=my_account&disable_lock=1"><TMPL_VAR lang_disable></a>
 <TMPL_ELSE>
-<b>OFF</b> <a href="?op=my_account&enable_lock=1"><TMPL_VAR lang_enable></a>
-</TMPL_IF></TD></TR>
+<span name="security_lock_status"><b>OFF</b></span> <a name="enable_lock" href="?op=my_account&enable_lock=1"><TMPL_VAR lang_enable></a>
+</TMPL_IF>
 </TD></TR>
 
 <TMPL_IF premium><TR><TD colspan=2><input type="checkbox" name="usr_direct_downloads" id="cdl" value="1"<TMPL_IF usr_direct_downloads> checked</TMPL_IF>> <label for="cdl"><b><TMPL_VAR lang_direct_downloads></b></label> <small>(<TMPL_VAR lang_premium_only>)</small></TD></TR></TMPL_IF>
@@ -72,10 +73,10 @@
 <TR><TD colspan=2 align=center>
 <TMPL_IF twitter_login>
 Twitter authentification received.<br>
-<input type="button" value="Disable Twitter posting" onClick="window.location='?op=my_account&twitter_stop=1'">
+<input type="button" name="disable_twitter_posting" value="Disable Twitter posting" onClick="window.location='?op=my_account&twitter_stop=1'">
 <br><input type="checkbox" name="twitter_filename" value="1" id="twi3"<TMPL_IF twitter_filename> checked</TMPL_IF>><label for="twi3">Post filename before URL</label>
 <TMPL_ELSE>
-<input type="button" value="Get Twitter authentification" onClick="window.location='?op=my_account&twitter1=1'">
+<input type="button" name="get_twitter_auth" value="Get Twitter authentification" onClick="window.location='?op=my_account&twitter1=1'">
 </TMPL_IF>
 <br><small><TMPL_VAR lang_twitter_info></small>
 </TD></TR>
@@ -111,7 +112,7 @@ Site URL:<input type="text" name="site_add" size=24> <input type="submit" name="
 
 </Table>
 
-<br><input type="submit" value="<TMPL_VAR lang_save_settings>"><br><br>
+<br><input type="submit" name="save" value="<TMPL_VAR lang_save_settings>"><br><br>
 
 <TMPL_IF leech>
 <Table class="tbl1" cellpadding=2 cellspacing=1 width=420>

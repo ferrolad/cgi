@@ -12,6 +12,7 @@ function CheckForm(f)
 
 <Form method="post" action="<TMPL_VAR site_url>/" onSubmit="return CheckForm(this);">
 <input type="hidden" name="op" value="report_file_send">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="rand" value="<TMPL_VAR rand>">
 <input type="hidden" name="id" value="<TMPL_VAR id>">
 <table cellpadding=3 cellspacing=1 class="tbl1">

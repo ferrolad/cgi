@@ -89,7 +89,7 @@
                </TMPL_IF>
                </TMPL_IF>
                <TMPL_IF mangle>
-               <li><a href="<TMPL_VAR site_url>/?logout=1" style="color:#c47a66;">Back to administration</a></li>
+               <li><a name="back_to_administration" href="<TMPL_VAR site_url>/?logout=1" style="color:#c47a66;">Back to administration</a></li>
                <TMPL_ELSE>
                <li><a href="<TMPL_VAR site_url>/?op=logout" style="color:#c47a66;"><TMPL_VAR lang_logout></a></li>
                </TMPL_IF>
@@ -124,12 +124,30 @@
    </div> <!--end header-->
    
    <div class="clear"></div>
+
+   <TMPL_IF usr_mod>
+   <TMPL_UNLESS admin>
+   <div id="wheader">
+      <div class="container1">
+         <div id="wmenu"><!--start main menu-->
+               <ul>
+                  <TMPL_IF approve_count><li><a href="<TMPL_VAR site_url>/?op=admin_approve">Approve files (<TMPL_VAR approve_count>)</a></li></TMPL_IF>
+						<TMPL_IF m_d_f><li><a href="<TMPL_VAR site_url>/?op=moderator_files"><TMPL_VAR lang_adm_file_mgmt></a></li></TMPL_IF>
+						<TMPL_IF m_d_a><li><a href="<TMPL_VAR site_url>/?op=admin_reports"><TMPL_VAR lang_adm_abuse></a></li></TMPL_IF>
+						<TMPL_IF m_d_c><li><a href="<TMPL_VAR site_url>/?op=admin_comments"><TMPL_VAR lang_file_cmt_sett></a></li></TMPL_IF>
+               </ul>
+         </div>
+      </div>
+   </div>
+   </TMPL_UNLESS>
+   </TMPL_IF>
    
    <TMPL_IF admin>
    <div id="wheader">
       <div class="container1">
          <div id="wmenu"><!--start main menu-->
                <ul>
+                  <TMPL_IF approve_count><li><a href="<TMPL_VAR site_url>/?op=admin_approve">Approve files (<TMPL_VAR approve_count>)</a></li></TMPL_IF>
                   <li><a href="<TMPL_VAR site_url>/?op=admin_files"><TMPL_VAR lang_adm_file_mgmt></a></li>
                   <li><a href="<TMPL_VAR site_url>/?op=admin_users"><TMPL_VAR lang_adm_user_mgmt></a></li>
                   <li><a href="<TMPL_VAR site_url>/?op=admin_servers"><TMPL_VAR lang_adm_server_mgmt></a></li>
@@ -139,7 +157,8 @@
                   <li><a href="<TMPL_VAR site_url>/?op=admin_comments"><TMPL_VAR lang_file_cmt_sett></a></li>
                   <li><a href="<TMPL_VAR site_url>/?op=admin_payments"><TMPL_VAR lang_adm_payments></a></li>
                   <li><a href="<TMPL_VAR site_url>/?op=admin_stats"><TMPL_VAR lang_adm_stats></a></li>
-                  <li><a href="<TMPL_VAR site_url>/?op=admin_settings"><TMPL_VAR lang_adm_settings></a></li>
+                  <li><a href="<TMPL_VAR site_url>/?op=admin_external">API keys</a></li>
+                  <li><a href="<TMPL_VAR site_url>/?op=admin_settings"><TMPL_VAR lang_adm_settings><TMPL_IF del_confirm_request_count> (<TMPL_VAR del_confirm_request_count>)</TMPL_IF></a></li>
                </ul>
          </div>
       </div>
@@ -160,7 +179,7 @@
 <footer>
    <div class="container1">
       <div style="float: left;">
-         <p style="line-height: 50px;">© 2015  <a href="http://sibsoft.net">Sibsoft, ltd</a></p> 
+         <p style="line-height: 50px;">© 2016  <a href="http://sibsoft.net">Sibsoft, ltd</a></p> 
       </div>
       <div id="fmenu"><!--start footer menu-->
             <ul>

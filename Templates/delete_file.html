@@ -8,6 +8,7 @@
 <TMPL_VAR lang_do_you_want_delete>: <b><TMPL_VAR fname></b> ?<br><br>
 <Form method="POST" action="<TMPL_VAR site_url>/">
 <input type="hidden" name="op" value="del_file">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="id" value="<TMPL_VAR id>">
 <input type="hidden" name="del_id" value="<TMPL_VAR del_id>">
 <input type="hidden" name="confirm" value="yes">

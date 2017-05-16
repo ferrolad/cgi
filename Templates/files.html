@@ -29,7 +29,7 @@
 						<td class="icontd"><input type="checkbox" name="file_public"<TMPL_IF file_public> checked</TMPL_IF> onClick="setFileFlag([<TMPL_VAR file_id>], 'file_public', this.checked);"></td>
 						</TMPL_IF>
 						<TMPL_IF trashed_at>
-						<td colspan="2"><a href="<TMPL_VAR site_url>/?op=my_files&untrash_selected=1&file_id=<TMPL_VAR file_id>&token=<TMPL_VAR token>"><img src="<TMPL_VAR site_url>/images/icon_untrash.png" alt="Untrash"></a></td>
+						<td colspan="2"><a href="<TMPL_VAR site_url>/?op=my_files&untrash_selected=1&file_id=<TMPL_VAR file_id>&token=<TMPL_VAR token>"><img src="<TMPL_VAR site_url>/images/icon_untrash.png" name="untrash" alt="Untrash"></a></td>
 						<TMPL_ELSE>
 						<td class="icontd"><a href="?op=file_edit&amp;file_code=<TMPL_VAR file_code>"><img src="<TMPL_VAR site_url>/images/icon_edit.png"></a></td>
 						<td class="icontd"><a href="?op=my_files&amp;del_code=<TMPL_VAR file_code>&token=<TMPL_VAR token>" onClick="return confirm('<TMPL_VAR lang_delete_file>')"><img src="<TMPL_VAR site_url>/images/icon_delete.png"></a></td>

@@ -1,5 +1,6 @@
-<Form method="POST">
+<Form name="file_options" method="POST">
 <input type="hidden" name="op" value="<TMPL_VAR op>">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="file_id" value="<TMPL_VAR file_id>">
 <Table class="tbl1" cellpadding=3 cellspacing=1 style="width: 800px">
 <TR class="hdr"><TD colspan=2><TMPL_VAR lang_edit> <TMPL_VAR lang_fname_descr></TD></TR>
@@ -10,6 +11,7 @@
 <TMPL_IF adm_mode>
 <TR><TD align=right><b>file_code</b></TD><TD><input type="text" name="file_code" value="<TMPL_VAR file_code>" size=13></TD></TR>
 <TR><TD align=right><b>file_real</b></TD><TD><a href="?op=admin_files&file_real=<TMPL_VAR file_real>"><TMPL_VAR file_real></a></TD></TR>
+<TR><TD align=right><b>Upload method</b></TD><TD><TMPL_VAR file_upload_method></TD></TR>
 </TMPL_IF>
 <TMPL_IF smartp><TR><TD align=right><b>Premium Only</b></TD><TD><input type="checkbox" name="file_premium_only" value="1"<TMPL_IF file_premium_only> checked</TMPL_IF>></TD></TR></TMPL_IF>
 </Table>
@@ -18,13 +20,14 @@
 </Form>
 <br><br>
 
-<Form method="POST">
+<Form name="archives_mod" method="POST">
 <input type="hidden" name="op" value="<TMPL_VAR op>">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="file_id" value="<TMPL_VAR file_id>">
 
 <TMPL_IF rar_password>
 <tr><td colspan=2 align=center>
-<b>File is password protected.</b><br>
+<span class="err"><b>File is password protected.</b></span><br>
 Current password:<input type="text" name="rar_pass" size=12><br>
 <input type="submit" name="rar_pass_remove" value="Remove password from archive">
 </td></tr>

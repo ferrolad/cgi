@@ -3,16 +3,21 @@
 <Form>
 <input type="hidden" name="op" value="my_reports">
 From <input type="text" class="date" name="date1" value="<TMPL_VAR date1>" size=10> to <input type="text" class="date" name="date2" value="<TMPL_VAR date2>" size=10>
-<input type="submit" value="Show">
+<input type="submit" name="show" value="Show">
 </Form>
 
 <br>
 
-<div id="chart_div" style="width: 100%; height: 360px"></div>
+<div id="chart_div" style="width: 100%; height: 360px">
+<TMPL_UNLESS list>
+<style>#chart_div { line-height: 360px }</style>
+No earnings for selected period
+</TMPL_UNLESS>
+</div>
 
 <br><br>
 
-<Table class="tbl1" cellpadding=2>
+<Table name="reports" class="tbl1" cellpadding=2>
 <TR class="hdr">
     <td>Date</td>
     <td>Downloads</td>
