@@ -25,10 +25,15 @@ sub AUTOLOAD
     my $res = $self->{rpc_agent}->post($self->{rpc_url},
     {
         op => $op,
+        fs_key => $self->{fs_key},
         @args
     }, 'Content_Type' => 'form-data');
 
-    die($res->decoded_content) if $res->code == 500;
+    if($res->code == 500)
+    {
+      print STDERR "Error while adding torrent: ", $res->decoded_content, "\n";
+      return;
+    }
 
     eval { JSON::decode_json($res->decoded_content) } || $res->decoded_content;
 }

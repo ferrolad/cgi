@@ -72,7 +72,7 @@ unless($transaction->{usr_id})
 }
 else
 {
-  my $xx = $db->SelectRow("SELECT usr_login, DECODE(usr_password,?) as password FROM Users WHERE usr_id=?",$c->{pasword_salt},$transaction->{usr_id});
+  my $xx = $db->SelectRow("SELECT usr_login FROM Users WHERE usr_id=?", $transaction->{usr_id});
   $transaction->{login} = $xx->{usr_login};
   $transaction->{password} = '*' x 6;
 }
@@ -88,6 +88,23 @@ if($transaction->{target} eq 'premium_traffic')
 elsif($transaction->{target} eq 'reseller')
 {
    $ipn->acceptResellersMoney($transaction);
+}
+elsif($transaction->{target} =~ /^file_(\d+)_access$/)
+{
+   $ipn->acceptVIPFilePayment($transaction);
+   my $file = $db->SelectRow("SELECT * FROM Files WHERE file_id=?", $transaction->{file_id});
+   my $t = $ses->CreateTemplate("vip_file_notification.html");
+   $t->param('amount' => $transaction->{amount},
+                   'file_name' => $file->{file_name},
+                   'download_link' => $ses->makeFileLink($file),
+                   'login'  => $transaction->{login},
+                   'password' => $transaction->{password},
+                   'currency_symbol' => $c->{currency_symbol}||'$',
+                   'site_name' => $c->{site_name},
+                   'site_url' => $c->{site_url},
+            );
+   $c->{email_text}=0;
+   $ses->SendMail($user->{usr_email}, $c->{email_from}, "$c->{site_name} Payment Notification", $t->output) if $user->{usr_email};
 }
 else
 {

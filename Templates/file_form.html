@@ -7,6 +7,7 @@
 <TR><TD align=right><b><TMPL_VAR lang_file_name></b></TD><TD><input type="text" name="file_name" value="<TMPL_VAR file_name>" size=48></TD></TR>
 <TR><TD align=right valign=top><b><TMPL_VAR lang_description></b></TD><TD><textarea name="file_descr" cols=48 rows=7><TMPL_VAR file_descr></textarea></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_password></b></TD><TD><input type="text" name="file_password" value="<TMPL_VAR file_password>" size=16></TD></TR>
+<TMPL_IF allow_vip_files><TR><TD align=right><b>Price</b></TD><TD><input type="text" name="file_price" value="<TMPL_VAR file_price>" size=5> <TMPL_VAR currency_code> <small>(0.00 = not a VIP file)</TD></TR></TMPL_IF>
 <TR><TD align=right><b><TMPL_VAR lang_public></b></TD><TD><input type="checkbox" name="file_public" value="1"<TMPL_IF file_public> checked</TMPL_IF>></TD></TR>
 <TMPL_IF adm_mode>
 <TR><TD align=right><b>file_code</b></TD><TD><input type="text" name="file_code" value="<TMPL_VAR file_code>" size=13></TD></TR>

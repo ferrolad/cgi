@@ -1,6 +1,7 @@
 #!/usr/bin/perl -X
 use strict;
 
+use lib '.';
 use XFileConfig;
 use Session;
 use XUtils;

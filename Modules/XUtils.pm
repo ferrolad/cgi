@@ -176,18 +176,10 @@ sub CheckAuth
 
      $ses->{lang}->{fake_user} = 1;
   }
-<<<<<<< .mine
   else
   {
      $ses->{lang}->{fake_user} = 0;
   }
-||||||| .r3
-=======
-  else
-  {
-     $ses->{lang}->{mangle} = 0;
-  }
->>>>>>> .r4
   if($ses->{user}->{usr_status} eq 'BANNED')
   {
      delete $ses->{user};
@@ -279,13 +271,7 @@ sub SelectServer
    my $user = shift;
 
    my @custom_filters = map { " AND $_"} @_;
-<<<<<<< .mine
    my $type_filter = $user && $user->{exp_sec} > 0 ? "AND srv_allow_premium=1" : "AND srv_allow_regular=1";
-||||||| .r3
-   my $type_filter = $user && $user->{utype} eq 'prem' ? "AND srv_allow_premium=1" : "AND srv_allow_regular=1";
-=======
-   my $type_filter = $user && $user->{premium} ? "AND srv_allow_premium=1" : "AND srv_allow_regular=1";
->>>>>>> .r4
    my $country_filter;
 
    if($c->{m_g} && -f "$c->{cgi_path}/GeoIP.dat")
@@ -372,7 +358,6 @@ sub TrackDL
 
       refuse('MAX24_REACHED') if $c->{max_money_last24} && $db->SelectOne("SELECT SUM(money) FROM IP2Files WHERE ip=INET_ATON(?) AND created>NOW()-INTERVAL 24 HOUR",$opts{ip}) >= $c->{max_money_last24};
       refuse('MAX24_REACHED') if $c->{max_paid_dls_last24} && $db->SelectOne("SELECT COUNT(*) FROM IP2Files WHERE ip=INET_ATON(?) AND created>NOW()-INTERVAL 24 HOUR AND money > 0",$opts{ip}) >= $c->{max_paid_dls_last24};
-      #$ses->AdminLog("SmartProfit: IP=".$ses->getIP." Country=$country Money=$money");
    }
    else
    {
@@ -391,11 +376,11 @@ sub TrackDL
    my $owner = $db->SelectRow("SELECT * FROM Users WHERE usr_id=?", $file->{usr_id}) if $file->{usr_id};
    if($owner && $ses->iPlg('p'))
    {
-      $file->{usr_profit_mode} = lc $file->{usr_profit_mode};
-      my $perc = $c->{"m_y_$file->{usr_profit_mode}_dl"};
-      refuse('NO_MIXED_PERCENT') if !$perc && $file->{usr_profit_mode} eq 'mix';
-      refuse('NOT_PPD') if !$perc && $file->{usr_profit_mode} ne 'ppd';
-      refuse("NO_PERCENT_SPECIFIED") if !$perc;
+      my $profit_mode = lc($owner->{usr_profit_mode});
+      my $perc = $c->{"m_y_$profit_mode\_dl"};
+      refuse('NO_MIXED_PERCENT') if !$perc && $profit_mode eq 'mix';
+      refuse('NOT_PPD') if !$perc && $profit_mode ne 'ppd';
+      refuse("NO_PERCENT_SPECIFIED: ".$profit_mode) if !$perc;
 
       if($c->{m_y_manual_approve} && !$owner->{usr_aff_enabled})
       {
@@ -404,7 +389,7 @@ sub TrackDL
       }
 
       $money = $money*$perc/100;
-      refuse("NOT_PPD") if !$money && $file->{usr_profit_mode} ne 'ppd';
+      refuse("NOT_PPD") if !$money && $profit_mode ne 'ppd';
    }
 
    $money = sprintf("%.05f",$money);
@@ -533,9 +518,8 @@ sub getTorrents
       for my $t (@$torrents)
       {
          my $files = eval { JSON::decode_json($t->{files}) } if $t->{files};
-         $t->{file_list} = join('<br>',map{"$_->{path} (<i>".sprintf("%.1f Mb",$_->{size}/1048576)."<\/i>)"} @$files );
-         $t->{file_list} =~ s/'/\\'/g;
-         $t->{title}=$files->[0]->{path} if $files;
+         $t->{file_list} = join('<br>',map{$ses->SecureStr($_->{path}) . " (<i>".sprintf("%.1f Mb",$_->{size}/1048576)."<\/i>)"} @$files );
+         $t->{title} = $ses->SecureStr($t->{name});
          $t->{title}=~s/\/.+$//;
          $t->{title}=~s/:\d+$//;
          ($t->{done},$t->{total},$t->{down_speed},$t->{up_speed})=split(':',$t->{progress});
@@ -628,6 +612,7 @@ sub StartSession
    $Engine::Core::db->Exec("DELETE FROM Sessions WHERE last_time + INTERVAL 5 DAY < NOW()");
    $Engine::Core::db->Exec("INSERT INTO Sessions (session_id,usr_id,last_ip,last_useragent,last_time) VALUES (?,?,?,?,NOW())",
       $sess_id,$usr_id,$Engine::Core::ses->getIP,$Engine::Core::ses->getEnv('HTTP_USER_AGENT')||'');
+   $Engine::Core::db->Exec("UPDATE Users SET usr_lastlogin=NOW(), usr_lastip=INET_ATON(?) WHERE usr_id=?", $Engine::Core::ses->getIP, $usr_id );
    return $sess_id;
 }
 
@@ -893,7 +878,7 @@ sub UserFilters
    my @filters = ();
    push @filters, "AND usr_lastlogin > NOW() - INTERVAL $f->{filter_lastlogin} DAY" if $f->{filter_lastlogin};
    push @filters, "AND usr_premium_expire>NOW()" if $f->{status} eq 'premium';
-   push @filters, "AND usr_premium_expire <= NOW()" if $f->{filter_utype} eq 'free';
+   push @filters, "AND usr_premium_expire <= NOW()" if $f->{status} eq 'free';
    push @filters, "AND usr_reseller" if $f->{status} eq 'reseller';
    push @filters, "AND usr_dmca_agent" if $f->{status} eq 'dmca_agent';
    push @filters, "AND usr_aff_enabled" if $f->{status} eq 'aff_enabled';
@@ -946,43 +931,48 @@ sub SMSConfirm
    my $ses = $Engine::Core::ses;
    my $db = $Engine::Core::db;
    my $f = $ses->f;
-   my ($realm) = @_;
+   my ($purpose, $msg) = @_;
 
-   my $confirmation_needed = 0;
-   $confirmation_needed = 1 if $c->{two_factor} eq 'optional' && $ses->{user}->{usr_2fa};
-   $confirmation_needed = 1 if $c->{two_factor} eq 'mandatory';
-   return 1 if !$confirmation_needed;
+   $db->Exec("DELETE FROM SecurityTokens WHERE created < NOW() - INTERVAL 30 MINUTE AND purpose=?", $purpose);
 
-   my $existing_token = $db->SelectRow("SELECT * FROM SecurityTokens WHERE purpose=? AND usr_id=?", $realm, $ses->{user}->{usr_id});
-
-   if($existing_token && $f->{code})
+   if($f->{confirm})
    {
-      if($f->{code} eq $existing_token->{value})
+      delete $f->{confirm};
+      my $token = $Engine::Core::db->SelectRow("SELECT * FROM SecurityTokens WHERE usr_id=? AND ip=INET_ATON(?) AND purpose=? AND value=? AND created > NOW() - INTERVAL 30 MINUTE",
+         $ses->getUserId, $ses->getIP, $purpose, $f->{code});
+      $db->Exec("DELETE FROM SecurityTokens WHERE usr_id=? AND purpose=?", $token->{usr_id}, $token->{purpose}) if $token;
+      return $token && $token->{id} ? 1 : SMSConfirm($purpose, "Invalid code");
+   }
+   else
+   {
+      my $user = $ses->getUser;
+      my $token = $Engine::Core::db->SelectRow("SELECT * FROM SecurityTokens WHERE usr_id=? AND ip=INET_ATON(?) AND purpose=? AND created > NOW() - INTERVAL 1 MINUTE",
+         $ses->getUserId, $ses->getIP, $purpose);
+
+      if(!$token)
       {
-         $db->Exec("DELETE FROM SecurityTokens WHERE purpose=? AND usr_id=?", $realm, $ses->{user}->{usr_id});
-         return 1;
+         my $secret_code = $ses->randchar(8);
+
+         $db->Exec("INSERT INTO SecurityTokens SET usr_id=?, purpose=?, ip=INET_ATON(?), value=?, phone=?",
+            $ses->getUserId, $purpose, $ses->getIP, $secret_code, $user->{usr_phone});
+
+         return $ses->message("Error while sending SMS: $ses->{errstr}")
+            if !$ses->SendSMS( $user->{usr_phone}, "$c->{site_name} login confirmation code: $secret_code" );
       }
-      $f->{msg} = 'Code is wrong or expired';
+   
+      my @fields = map { { name => $_, value => $f->{$_} } } grep { !/^(confirm|token|code)$/ } keys(%$f);
+
+      delete($ses->{user});
+      $f->{msg} ||= $msg;
+
+      $ses->PrintTemplate("sms_check.html",
+         phone => $user->{usr_phone},
+         usr_id => $user->{usr_id},
+         purpose => $purpose,
+         interval => $c->{countdown_before_next_sms}||60,
+         fields => \@fields);
+      return undef;
    }
-
-   my $security_token = $existing_token ? $existing_token->{value} : $ses->randchar(5);
-
-   if(!$existing_token)
-   {
-      $db->Exec("INSERT INTO SecurityTokens SET purpose='login', usr_id=?, value=? ON DUPLICATE KEY UPDATE value=?", $ses->{user}->{usr_id}, $security_token, $security_token);
-      $ses->SendSMS($ses->{user}->{usr_phone}, "$c->{site_name} security code: $security_token");
-   }
-
-   my $phone = $ses->{user}->{usr_phone};
-   delete($ses->{user});
-
-   $ses->PrintTemplate("sms_check.html",
-      msg => $f->{msg},
-      phone => $phone,
-      fields => [ map { { name => $_, value => $f->{$_} } } grep { $_ ne 'code' } keys(%$f) ],
-      );
-
-   return 0;
 }
 
 sub CloneFile
@@ -1033,40 +1023,88 @@ sub CloneFile
    return $code;
 }
 
-sub genUploadURL
+sub GetPremiumComparison
 {
-   my ($ses, $server, $usr_id, $speed) = @_;
-   use Digest::MD5 qw(md5);
-   require HCE_MD5;
-   my $hce = HCE_MD5->new($c->{dl_key}, "XFileSharingPRO");
-   my $usr_id = $ses->getUserId if $ses->getUser;
+   # Do not modify $c directly to prevent affecting FastCGI
+   my $ses = $Engine::Core::ses;
 
-   my @data = ($server->{srv_id}, time + 8 * 3600, $speed * 1024);
-   my $md5 = md5(join('', @data));
-   my $hash = $ses->encode32( $hce->hce_block_encrypt(pack("SLLA32", @data, $md5)) );
-   return "$1:182/u/?upload_type=file&token=$hash" if $server->{srv_htdocs_url} =~ /^(https?:\/\/[^\/]+)/;
+   my $limits = {%$c};
+   for my $x ('max_upload_filesize')
+   {
+      for my $y ( 'anon', 'reg', 'prem' )
+      {
+         my $z = "$x\_$y";
+         $limits->{$z} = $c->{$z} ? "$c->{$z} Mb" : "Unlimited";
+      }
+   }
+   $limits->{max_downloads_number_reg}  = $c->{max_downloads_number_reg}  || 'Unlimited';
+   $limits->{max_downloads_number_prem} = $c->{max_downloads_number_prem} || 'Unlimited';
+   $limits->{files_expire_anon} =
+     $c->{files_expire_access_anon}
+     ? "$c->{files_expire_access_anon} $ses->{lang}->{lang_days_after_downl}"
+     : $ses->{lang}->{lang_never};
+   $limits->{files_expire_reg} =
+     $c->{files_expire_access_reg}
+     ? "$c->{files_expire_access_reg} $ses->{lang}->{lang_days_after_downl}"
+     : $ses->{lang}->{lang_never};
+   $limits->{files_expire_prem} =
+     $c->{files_expire_access_prem}
+     ? "$c->{files_expire_access_prem} $ses->{lang}->{lang_days_after_downl}"
+     : $ses->{lang}->{lang_never};
+
+   $limits->{disk_space_reg}  = $c->{disk_space_reg}  ? sprintf( "%.0f GB", $c->{disk_space_reg} / 1024 )  : "Unlimited";
+   $limits->{disk_space_prem} = $c->{disk_space_prem} ? sprintf( "%.0f GB", $c->{disk_space_prem} / 1024 ) : "Unlimited";
+
+   $limits->{bw_limit_anon} =
+     $c->{bw_limit_anon}
+     ? sprintf( "%.0f GB", $c->{bw_limit_anon} / 1024 ) . " in $c->{bw_limit_days} $ses->{lang}->{lang_days}"
+     : 'Unlimited';
+   $limits->{bw_limit_reg} =
+     $c->{bw_limit_reg}
+     ? sprintf( "%.0f GB", $c->{bw_limit_reg} / 1024 ) . " in $c->{bw_limit_days} $ses->{lang}->{lang_days}"
+     : 'Unlimited';
+   $limits->{bw_limit_prem} =
+     $c->{bw_limit_prem}
+     ? sprintf( "%.0f GB", $c->{bw_limit_prem} / 1024 ) . " in $c->{bw_limit_days} $ses->{lang}->{lang_days}"
+     : 'Unlimited';
+
+   for my $utype (qw(anon reg prem))
+   {
+      $limits->{"download_resume_$utype"} = $c->{m_n} ? $c->{"m_n_dl_resume_$utype"} : $c->{"direct_links_$utype"};
+   }
+
+   return $limits;
 }
 
-sub CheckToken
+sub CheckForDelayedRedirects
 {
-   my ($ses, $purpose, $value) = @_;
-   my $token = $ses->db->SelectRow("SELECT * FROM SecurityTokens WHERE usr_id=? AND purpose=? AND value=? AND created > NOW() - INTERVAL 1 HOUR",
-      $ses->getUserId, $purpose, $value);
-   return $token;
+   my ($user) = @_;
+   return if !$user;
+
+   my $ses = $Engine::Core::ses;
+   my $db = $Engine::Core::db;
+
+   if ( $user->{usr_notes} =~ /^payments/ )
+   {
+      $db->Exec( "UPDATE Users SET usr_notes='' WHERE usr_id=?", $user->{usr_id} );
+      my $token = $ses->genToken(op => 'payments');
+      return $ses->redirect("?op=payments&type=$1&amount=$2&target=$3&token=$token") if($user->{usr_notes} =~ /^payments-(\w+)-([\d\.]+)-([\w_]+)/);
+      return $ses->redirect("?op=payments&type=$1&amount=$2&token=$token") if($user->{usr_notes} =~ /^payments-(\w+)-([\d\.]+)/);
+   }
+
+   return undef;
 }
 
-sub InsertSecurityToken
+sub isVipFile
 {
-   my ($ses, $purpose, %opts) = @_;
-   my $code = $ses->randchar(6);
+   my ($file) = @_;
+   return 0 if $file->{file_price} <= 0;
 
-   $ses->db->Exec("INSERT INTO SecurityTokens SET usr_id=?, purpose=?, ip=INET_ATON(?), value=?, phone=?, created=NOW()
-      ON DUPLICATE KEY UPDATE ip=INET_ATON(?), value=?, phone=?, created=NOW()",
-         $ses->getUserId, $purpose,
-         $ses->getIP, $code, $opts{phone}||'',
-         $ses->getIP, $code, $opts{phone}||'');
+   my $owner = $Engine::Core::db->SelectRow("SELECT *, usr_premium_expire > NOW() AS is_premium FROM Users WHERE usr_id=?", $file->{usr_id});
+   return 1 if $owner->{usr_allow_vip_files};
 
-   return $code;
+   my $owner_utype = $owner->{is_premium} ? 'prem' : 'reg';
+   return $c->{"allow_vip_files_$owner_utype"};
 }
 
 1;

@@ -1,9 +1,3 @@
--- MySQL dump 10.13  Distrib 5.1.73, for redhat-linux-gnu (x86_64)
---
--- Host: localhost    Database: xfs25
--- ------------------------------------------------------
--- Server version	5.1.73
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -166,6 +160,7 @@ CREATE TABLE `Files` (
   `file_trashed` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `file_awaiting_approve` tinyint(1) NOT NULL DEFAULT '0',
   `file_upload_method` varchar(16) NOT NULL DEFAULT '',
+  `file_price` decimal(10,2) unsigned NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`file_id`),
   KEY `real` (`file_real`),
   KEY `server` (`srv_id`),
@@ -408,7 +403,8 @@ CREATE TABLE `PaymentsLog` (
   `usr_id_to` mediumint(8) unsigned NOT NULL,
   `amount` decimal(9,5) DEFAULT NULL,
   `type` varchar(16) DEFAULT NULL,
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `transaction_id` varchar(10) NOT NULL DEFAULT ''
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -442,12 +438,12 @@ DROP TABLE IF EXISTS `PremiumPackages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `PremiumPackages` (
-  `usr_id` mediumint(8) unsigned DEFAULT NULL,
-  `type` varchar(16) DEFAULT NULL,
+  `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `type` varchar(32) NOT NULL,
   `quantity` mediumint(10) unsigned NOT NULL DEFAULT '0',
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `expires_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  KEY `usr_id` (`usr_id`)
+  PRIMARY KEY (`usr_id`,`type`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -512,13 +508,14 @@ DROP TABLE IF EXISTS `SecurityTokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `SecurityTokens` (
+  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `usr_id` mediumint(8) unsigned NOT NULL,
+  `ip` int(20) unsigned NOT NULL,
   `purpose` varchar(32) NOT NULL,
-  `ip` int(20) unsigned NOT NULL DEFAULT '0',
   `value` varchar(16) NOT NULL,
   `phone` varchar(20) DEFAULT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`usr_id`,`purpose`)
+  PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -567,6 +564,7 @@ CREATE TABLE `Sessions` (
   `api_key_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `last_useragent` varchar(256) DEFAULT NULL,
   `last_ip` varchar(32) DEFAULT NULL,
+  `view_as` mediumint(8) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`session_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -667,6 +665,7 @@ CREATE TABLE `Transactions` (
   `txn_id` varchar(100) NOT NULL DEFAULT '',
   `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `aff_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `file_id` int(10) unsigned NOT NULL DEFAULT '0',
   `ip` int(20) unsigned NOT NULL DEFAULT '0',
   `plugin` varchar(16) NOT NULL DEFAULT '',
   `verified` tinyint(4) unsigned NOT NULL DEFAULT '0',
@@ -674,7 +673,7 @@ CREATE TABLE `Transactions` (
   `ref_url` varchar(255) NOT NULL DEFAULT '',
   `email` varchar(64) NOT NULL DEFAULT '',
   `rebill` tinyint(1) NOT NULL DEFAULT '0',
-  `target` varchar(16) NOT NULL DEFAULT '',
+  `target` varchar(32) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `user` (`usr_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
@@ -742,6 +741,7 @@ CREATE TABLE `Users` (
   `usr_phone` varchar(20) NOT NULL DEFAULT '',
   `usr_restricted_ips` text,
   `usr_2fa` tinyint(1) NOT NULL DEFAULT '0',
+  `usr_allow_vip_files` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`usr_id`),
   KEY `login` (`usr_login`),
   KEY `aff_id` (`usr_aff_id`)
@@ -772,5 +772,3 @@ CREATE TABLE `Websites` (
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2017-04-26 13:46:10

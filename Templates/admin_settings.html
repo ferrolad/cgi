@@ -226,20 +226,6 @@ http://www.site.com/<select name="link_format">
    <TD>
       <TMPL_VAR lang_count_download_after> <input class="requires_m_n" type="text" name="m_n_100_complete_percent" value="<TMPL_VAR m_n_100_complete_percent>" size=3> % <TMPL_VAR lang_finished>
    </TD>
-<<<<<<< .mine
-||||||| .r3
-<TR>
-   <TD align=right><b>FTP mod</b></TD>
-   <TD>
-      <input type="checkbox" name="ftp_mod" value="1" id="ftp_mod"<TMPL_IF ftp_mod> checked</TMPL_IF><TMPL_UNLESS enp_n> disabled</TMPL_UNLESS>><label for="ftp_mod"><TMPL_VAR lang_enabled></label> <small>(Proftpd tweak required)</small> [<a href="http://sibsoft.net/xfilesharing.html#custom_mods" onClick="return OpenWin(this.href,1024,240)" class="url2">?</a>]
-   </TD>
-=======
-<TR>
-   <TD align=right><b>FTP mod</b></TD>
-   <TD>
-      <input type="checkbox" name="ftp_mod" value="1" id="ftp_mod"<TMPL_IF ftp_mod> checked</TMPL_IF>><label for="ftp_mod"><TMPL_VAR lang_enabled></label> <small>(Proftpd tweak required)</small> [<a href="http://sibsoft.net/xfilesharing.html#custom_mods" onClick="return OpenWin(this.href,1024,240)" class="url2">?</a>]
-   </TD>
->>>>>>> .r4
 </TR>
 <TR><TD align=right><b><TMPL_VAR lang_happy_hours></b></TD><TD><input type="text" name="happy_hours" value="<TMPL_VAR happy_hours>" size=24> <TMPL_VAR lang_2x_speed_for_specified><small>(<TMPL_VAR lang_eg_345>)</small></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_iframe_breaker></b></TD><TD><input type="checkbox" name="iframe_breaker" value="1" id="iframe_breaker"<TMPL_IF iframe_breaker> checked</TMPL_IF>><label for="iframe_breaker"><TMPL_VAR lang_enabled></label> <small>(<TMPL_VAR lang_redirect_to_original_link>)</small></TD></TR>
@@ -247,7 +233,6 @@ http://www.site.com/<select name="link_format">
 <TR><TD align=right><b><TMPL_VAR lang_memcached_location></b></TD><TD><input type="text" name="memcached_location" value="<TMPL_VAR memcached_location>" size=24> <small>ip:port or UNIX socket path (recommended)</small></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_adfly_uid></b></TD><TD><input type="text" name="adfly_uid" value="<TMPL_VAR adfly_uid>" size=8></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_no_adblock_earnings></b></TD><TD><input type="checkbox" name="no_adblock_earnings" value="1" id="no_adblock_earnings"<TMPL_IF no_adblock_earnings> checked</TMPL_IF>><label for="no_adblock_earnings"><TMPL_VAR lang_enabled></label> <small>(<TMPL_VAR lang_ppd_fee_will_not>)</small></TD></TR>
-<TR><TD align=right><b>No Adblock earnings</b></TD><TD><input type="checkbox" name="no_adblock_earnings" value="1" id="no_adblock_earnings"<TMPL_IF no_adblock_earnings> checked</TMPL_IF>><label for="no_adblock_earnings"><TMPL_VAR lang_enabled></label> <small>(PPD fee will not be paid out if Adblock was detected)</small></TD></TR>
 </Table>
 
 <br>
@@ -561,9 +546,15 @@ http://www.site.com/<select name="link_format">
       <tr>
          <td align="right"><b><TMPL_VAR lang_twofactor_authentication_by_sms></b></td>
          <td>
-            <input type="radio" name="two_factor" value="" id="two_factor_1"<TMPL_VAR two_factor_1><TMPL_UNLESS enp_5> disabled</TMPL_UNLESS>><label for="two_factor_1"><TMPL_VAR lang_not_required></label> &nbsp;
+            <input type="radio" name="two_factor" value="disabled" id="two_factor_1"<TMPL_VAR two_factor_disabled><TMPL_UNLESS enp_5> disabled</TMPL_UNLESS>><label for="two_factor_1"><TMPL_VAR lang_disabled></label> &nbsp;
             <input type="radio" name="two_factor" value="optional" id="two_factor_2"<TMPL_VAR two_factor_optional><TMPL_UNLESS enp_5> disabled</TMPL_UNLESS>><label for="two_factor_2"><TMPL_VAR lang_optional></label> &nbsp;
             <input type="radio" name="two_factor" value="mandatory" id="two_factor_3"<TMPL_VAR two_factor_mandatory><TMPL_UNLESS enp_5> disabled</TMPL_UNLESS>><label for="two_factor_3"><TMPL_VAR lang_mandatory></label> &nbsp;
+            <br>
+            <div>
+               Warning: SMS sending requires funds in <a href="http://sibsoft.net/cgi-bin/client.cgi?id=<TMPL_VAR cliid>">client's area</a>.
+               <br>
+               Please check that first in order not to break the login page.
+            </div>
          </td>
       </tr>
       <tr>
@@ -571,7 +562,7 @@ http://www.site.com/<select name="link_format">
          <td>
             <input type="checkbox" name="mod_sec_session_list" value="1" id="mjhi"<TMPL_IF mod_sec_session_list> checked</TMPL_IF><TMPL_UNLESS enp_5> disabled</TMPL_UNLESS>> <TMPL_VAR lang_enabled>
             <input type="checkbox" id="mod_sec_session_list_editable" name="mod_sec_session_list_editable" value="1" id="mjhi"<TMPL_IF mod_sec_session_list_editable> checked</TMPL_IF><TMPL_UNLESS enp_5> disabled</TMPL_UNLESS>>
-            <label for="mod_sec_session_list_editable"><TMPL_VAR lang_editable></label>
+            <label for="mod_sec_session_list_editable">Allow terminating sessions</label>
          </td>
       </tr>
       <tr>
@@ -579,7 +570,7 @@ http://www.site.com/<select name="link_format">
          <td><input type="text" name="mod_sec_delete_sessions_after" value="<TMPL_VAR mod_sec_delete_sessions_after>" size=3<TMPL_UNLESS enp_5> disabled</TMPL_UNLESS>> <TMPL_VAR lang_hours_of_inactivity> <small>(<TMPL_VAR lang_default_72_hours>)</small></td>
       </tr>
       <tr>
-         <td align="right"><b>Perform session IP check</b></td>
+         <td align="right"><b>Restrict sessions to single IP</b></td>
          <td>
             <input type="checkbox" name="mod_sec_restrict_session_ip" name="mod_sec_restrict_session_ip" value="1" id="mjhi"<TMPL_IF mod_sec_restrict_session_ip> checked</TMPL_IF><TMPL_UNLESS enp_5> disabled</TMPL_UNLESS>> <TMPL_VAR lang_enabled>
          </td>
@@ -783,26 +774,26 @@ http://www.site.com/<select name="link_format">
 </TR>
 </TMPL_IF>
 <TR align=center>
+    <TD align=right><b><TMPL_VAR lang_file_upload_speed></TD>
+    <TD><input type="text" name="m_n_upload_speed_anon" value="<TMPL_VAR m_n_upload_speed_anon>" size=4<TMPL_UNLESS enp_n> disabled</TMPL_UNLESS>></TD>
+    <TD><input type="text" name="m_n_upload_speed_reg" value="<TMPL_VAR m_n_upload_speed_reg>" size=4<TMPL_UNLESS enp_n> disabled</TMPL_UNLESS>></TD>
+    <TD><input type="text" name="m_n_upload_speed_prem" value="<TMPL_VAR m_n_upload_speed_prem>" size=4<TMPL_UNLESS enp_n> disabled</TMPL_UNLESS>></TD>
+    <TD align=left>
+      Kbytes/sec
+      <TMPL_UNLESS m_n><span class="requires_m_n_label"><small>(<TMPL_VAR lang_nginx_mod_required>)</small> [<a href="http://www.sibsoft.net/xfilesharing/mods/advanced_download.html" onClick="return OpenWin(this.href,320,240)" class="url2">?</a>]</span></TMPL_UNLESS>
+    </TD>
+</TR>
+<TR align=center>
     <TD align=right><b><TMPL_VAR lang_remote_upload_speed></TD>
     <TD><input type="text" name="remote_upload_speed_anon" value="<TMPL_VAR remote_upload_speed_anon>" size=4></TD>
     <TD><input type="text" name="remote_upload_speed_reg" value="<TMPL_VAR remote_upload_speed_reg>" size=4></TD>
     <TD><input type="text" name="remote_upload_speed_prem" value="<TMPL_VAR remote_upload_speed_prem>" size=4></TD>
     <TD align=left>
       Kbytes/sec
-      <TMPL_UNLESS m_n><span class="requires_m_n_label"><small>(<TMPL_VAR lang_timehires_required>)</small></TMPL_UNLESS>
+      <TMPL_UNLESS m_n><span class="requires_m_n_label"></TMPL_UNLESS>
     </TD>
 </TR>
 <TMPL_IF enp_n>
-<TR align=center>
-    <TD align=right><b><TMPL_VAR lang_file_upload_speed></TD>
-    <TD><input type="text" class="requires_m_n" name="m_n_upload_speed_anon" value="<TMPL_VAR m_n_upload_speed_anon>" size=4></TD>
-    <TD><input type="text" class="requires_m_n" name="m_n_upload_speed_reg" value="<TMPL_VAR m_n_upload_speed_reg>" size=4></TD>
-    <TD><input type="text" class="requires_m_n" name="m_n_upload_speed_prem" value="<TMPL_VAR m_n_upload_speed_prem>" size=4></TD>
-    <TD align=left>
-      Kbytes/sec
-      <TMPL_UNLESS m_n><span class="requires_m_n_label"><small>(<TMPL_VAR lang_nginx_mod_required>)</small> [<a href="http://www.sibsoft.net/xfilesharing/mods/advanced_download.html" onClick="return OpenWin(this.href,320,240)" class="url2">?</a>]</span></TMPL_UNLESS>
-    </TD>
-</TR>
 <TR align=center>
     <TD align=right><b><TMPL_VAR lang_connections_limitation></TD>
     <TD><input type="text" class="requires_m_n" name="m_n_limit_conn_anon" value="<TMPL_VAR m_n_limit_conn_anon>" size=4></TD>
@@ -836,6 +827,13 @@ http://www.site.com/<select name="link_format">
     <TD><input type="checkbox" name="mod_webdav_reg" value="1"<TMPL_IF mod_webdav_reg> checked</TMPL_IF><TMPL_UNLESS enp_4> disabled</TMPL_UNLESS>></TD>
     <TD><input type="checkbox" name="mod_webdav_prem" value="1"<TMPL_IF mod_webdav_prem> checked</TMPL_IF><TMPL_UNLESS enp_4> disabled</TMPL_UNLESS>></TD>
     <TD align=left><TMPL_UNLESS enp_4>[<a href="http://sibsoft.net/xfilesharing/mods/cloud.html" onClick="return OpenWin(this.href,320,240)" class="url2">?</a>]</TMPL_UNLESS></TD>
+</TR>
+<TR align=center>
+    <TD align=right><b>Allow creating VIP files </b></TD>
+    <TD>-</TD>
+    <TD><input type="checkbox" name="allow_vip_files_reg" value="1"<TMPL_IF allow_vip_files_reg> checked</TMPL_IF>></TD>
+    <TD><input type="checkbox" name="allow_vip_files_prem" value="1"<TMPL_IF allow_vip_files_prem> checked</TMPL_IF>></TD>
+    <TD align=left></TD>
 </TR>
 <TR align=center>
     <TD align=right><b><TMPL_VAR lang_show_mp3_embed_code></b></TD>

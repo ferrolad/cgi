@@ -89,7 +89,6 @@ sub Stats
           !$file->{finished} )
       {
          print STDERR "Finished! ip=$ip2 usr_id=$usr_id file_id=$file_id\n";
-         $money=0 if $file->{status} eq 'ADBLOCK';
 
          XUtils::TrackDL($ses, $file_rec,
             adblock_detected => $file->{status} eq 'ADBLOCK',
@@ -203,6 +202,8 @@ sub UpdateServer
 sub TorrentAdd
 {
    &Send("No sid") if !$f->{sid};
+   $f->{sid} = unpack("H*", $ses->decode32($f->{sid})) if length($f->{sid}) == 32; # base32 infohashes support
+
    print"Content-type:text/html\n\n";
    print("OK"),exit if $db->SelectOne("SELECT sid FROM Torrents WHERE sid=?",$f->{sid});
    print("ERROR:This type of users is not allowed to upload torrents"),exit unless $c->{torrent_dl};
@@ -254,7 +255,7 @@ sub TorrentDone
    {
       my @files = split(/\n/, $torrent->{files});
       my $tmpl = $ses->CreateTemplate("confirm_email_user.html");
-      $ses->SendMail( $f->{link_rcpt}, $c->{email_from}, "$c->{site_name}: File send notification", $tmpl->output() );
+      $ses->SendMail( $torrent->{link_rcpt}, $c->{email_from}, "$c->{site_name}: File send notification", $tmpl->output() );
    }
 
    &Send('OK');
@@ -329,21 +330,12 @@ sub SaveFile
          exit;
       }
    }
-   
-   
-   $filename=~s/%(\d\d)/chr(hex($1))/egs;
-   $filename=~s/%/_/gs;
-   $filename=~s/\s{2,}/ /gs;
-   $filename=~s/[\#\"]+/_/gs;
+
    $filename=~s/[^\w\d\.-]/_/g if $c->{sanitize_filename};
    $filename=~s/\.(\w+)$/"$c->{add_filename_postfix}\.$1"/e if $c->{add_filename_postfix};
-   $descr=~s/</&lt;/gs;
-   $descr=~s/>/&gt;/gs;
-   $descr=~s/\"/&quote;/gs;
-   $descr=~s/\(/&#40;/gs;
-   $descr=~s/\)/&#41;/gs;
 
    my $usr_id = $user ? $user->{usr_id} : 0;
+   $usr_id = $session->{view_as} if $user->{usr_adm} && $session->{view_as};
    my $fld_id = $f->{fld_path} ? &CheckFolder($f->{fld_path}, $usr_id) : $f->{fld_id};
 
    if($f->{fld_path} && $f->{check_login} && $user)

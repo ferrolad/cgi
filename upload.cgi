@@ -15,21 +15,32 @@ use File::Temp;
 use File::Basename;
 use URI;
 use JSON;
+use List::Util qw(max);
 use Log;
 
 Log->new(filename => 'upload.log');
 $|++;
 
 my ($upload_type) = $ENV{QUERY_STRING}=~/upload_type=([a-z]+)/;
-my $nginx = 1 if $ENV{HTTP_X_DL_KEY} eq $c->{dl_key};
 
-print("Access-Control-Allow-Origin: *\n") if !$nginx;
+print("Access-Control-Allow-Origin: *\n");
 print("Content-type: text/plain\n\nOK"), exit if $ENV{REQUEST_METHOD} eq 'OPTIONS';
 
 my $temp_dir = File::Temp::tempdir(DIR => $c->{temp_dir}, CLEANUP => 1);
+
+my ($utype) = $ENV{QUERY_STRING}=~/utype=([a-z]+)/;
+$c->{m_n_upload_speed} = $c->{"m_n_upload_speed_$utype"}||$c->{m_n_upload_speed_anon};
+
+$MultipartBuffer::INITIAL_FILLUNIT = max(16 * 1024, $c->{m_n_upload_speed} * 2**10 * 0.1);
 $CGITempFile::TMPDIRECTORY = $temp_dir;
 
-my $cg = CGI->new();
+sub throttleHook
+{
+   my ($fname, $buf, $offset) = @_;
+   select(undef, undef, undef, length($buf) / ($c->{m_n_upload_speed} * 2**10)) if $c->{m_n_upload_speed};
+}
+
+my $cg = CGI->new(\&throttleHook);
 my $f;
 $f->{$_}=$cg->param($_) for $cg->param();
 
@@ -37,7 +48,7 @@ print("Content-type:text/html\n\nXFS"),exit if $ENV{QUERY_STRING}=~/mode=test/;
 
 &kill_session() if $f->{kill};
 
-my $utype = $cg->param('utype');
+$utype||=$cg->param('utype');
 $utype||='anon';
 $c->{$_}=$c->{"$_\_$utype"} for qw(enabled max_upload_files max_upload_filesize max_rs_leech remote_url leech remote_upload_speed);
 
@@ -65,7 +76,6 @@ if($c->{max_upload_filesize} && $ENV{CONTENT_LENGTH} > 1048576*$c->{max_upload_f
 print "Content-type: application/json\n\n";
 my @file_inputs;
 @file_inputs = &URLUpload() if $upload_type eq 'url';
-@file_inputs = &NginxUpload() if $upload_type eq 'file' && $nginx && $f->{'file_0.name'};
 @file_inputs = &FileUpload() if !@file_inputs;
 
 my @results = ProcessFiles(@file_inputs);
@@ -95,8 +105,8 @@ sub ProcessFiles
 
 # --------------------
         $file = &XUpload::ProcessFile($file, { %$f,
-		file_upload_method => $upload_type eq 'file' ? 'web' : $upload_type
-	}) unless $file->{file_status};
+      file_upload_method => $upload_type eq 'file' ? 'web' : $upload_type
+   }) unless $file->{file_status};
 # --------------------
 
         $file->{file_status}||='OK';
@@ -261,7 +271,10 @@ sub URLUpload
            return { file_error => 'Remote upload failed: ' . _secure_str($resp->status_line) };
         }
 
-        return { file_tmp => $tempfile, file_name_orig => &computeName($resp), file_size => -s $tempfile };
+        my $filename = &computeName($resp);
+        $filename=~s/%(\d\d)/chr(hex($1))/egs;
+
+        return { file_tmp => $tempfile, file_name_orig => $filename, file_size => -s $tempfile };
     }
 
     my @file_inputs;
@@ -310,8 +323,7 @@ sub make_lwp_hook
 
       if($c->{remote_upload_speed})
       {
-         require Time::HiRes;
-         Time::HiRes::sleep(length($buffer) / ($c->{remote_upload_speed} * 2**10));
+         select(undef, undef, undef, length($buffer) / ($c->{remote_upload_speed} * 2**10)) if $c->{remote_upload_speed};
       }
    
       if(time>$old_time)
@@ -372,24 +384,6 @@ sub FileUpload
     return @file_inputs;
 }
 
-sub NginxUpload
-{
-   my @file_inputs;
-
-   for(my $i = 0; $f->{"file\_$i.path"}; $i++)
-   {
-      my $xfile = {};
-      $xfile->{file_tmp} = "$c->{temp_dir}/$1" if basename($f->{"file_$i.path"}) =~ /^([0-9]+)$/;
-      next if !$xfile->{file_tmp};
-
-      $xfile->{file_name_orig} = $f->{"file_$i.name"};
-      $xfile->{file_size} = $f->{"file_$i.size"};
-      push @file_inputs, $xfile;
-   }
-
-   return @file_inputs;
-}
-
 sub parseTorrent
 {
     require BitTorrent;
@@ -413,23 +407,13 @@ sub TorrentUpload
     require TorrentClient;
 
     my $ua = LWP::UserAgent->new('XFS-FSAgent');
-    my $tt = TorrentClient->new();
+    my $tt = TorrentClient->new(fs_key => $c->{fs_key});
 
     my $hash;
     $hash = parseTorrent($cg->tmpFileName($f->{file_0})) if $f->{file_0};
     $hash = lc($1) if $f->{magnet} =~ /btih:([0-9a-zA-Z]+)/;
 
-    my $res = $ua->post("$c->{site_cgi}/fs.cgi", {
-        op => 'add_torrent',
-        sid => $hash,
-        sess_id => $f->{sess_id},
-        fs_key => $c->{fs_key},
-        fld_id => $f->{fld_id}||0,
-        link_rcpt => $f->{link_rcpt}||'',
-        link_pass => $f->{link_pass}||'',
-    });
-
-    &Send("<b>Error while adding torrent:</b><br>" . $res->decoded_content) if $res->decoded_content !~ /^OK/i;
+    my $res;
 
     if($f->{file_0})
     {
@@ -439,15 +423,32 @@ sub TorrentUpload
 
     if($f->{magnet})
     {
-        $res = $tt->startdl(magnet => $f->{magnet}, fs_key => $c->{fs_key});
+       $res = $tt->startdl(magnet => $f->{magnet}, fs_key => $c->{fs_key});
     }
 
     if($res =~ /^OK/)
     {
-        print "Location: $c->{site_url}/?op=my_files\n";
-        print "Status: 302\n";
-        &XUpload::Send("OK");
+       my $res = $ua->post("$c->{site_cgi}/fs.cgi", {
+           op => 'add_torrent',
+           sid => $hash,
+           sess_id => $f->{sess_id},
+           fs_key => $c->{fs_key},
+           fld_id => $f->{fld_id}||0,
+           link_rcpt => $f->{link_rcpt}||'',
+           link_pass => $f->{link_pass}||'',
+       });
+   
+       &Send("<b>Error while adding torrent:</b><br>" . $res->decoded_content) if $res->decoded_content !~ /^OK/i;
+       print "Location: $c->{site_url}/?op=my_files\n";
+       print "Status: 302\n";
     }
+    else
+    {
+       print "Location: $c->{site_url}/?op=upload_result&st=Torrent%20engine%20is%20not%20running&fn=undef\n";
+       print "Status: 302\n";
+    }
+
+    &XUpload::Send("OK");
 }
 
 #########################
@@ -463,7 +464,6 @@ sub xmessage {
 }
 
 sub GetIP {
-    return $ENV{HTTP_X_REAL_IP} if $ENV{HTTP_X_REAL_IP} && $nginx;
     return $ENV{REMOTE_ADDR};
 }
 

@@ -2,6 +2,7 @@ package Plugins::CDN::xfspro;
 use vars qw($ses $db $c);
 use strict;
 use HCE_MD5;
+use URI::Escape qw(uri_escape);
 
 sub options
 {
@@ -50,10 +51,20 @@ sub runTests
    my $ua = LWP::UserAgent->new(timeout => 15,agent=>'Opera/9.51 (Windows NT 5.1; U; en)');
 
    my @tests;
-   my $fs_key = $db->SelectOne("SELECT srv_key FROM Servers WHERE srv_id=?",$f->{srv_id}) if $f->{srv_id};
+   my $server = $db->SelectRow("SELECT * FROM Servers WHERE srv_id=?",$f->{srv_id}) if $f->{srv_id};
+   my $fs_key = $server->{srv_key} if $server;
 
    # max disk usage
    push @tests, 'max disk usage: ERROR' if !$f->{srv_disk_max} || $f->{srv_disk_max}<=0;
+
+   if($f->{proto} eq 'https:' && $f->{srv_cgi_url} !~ /^https:/)
+   {
+      my $domain = $ses->getDomain($c->{site_cgi});
+      push @tests, join("<br>\n",
+         "ERROR: Using plain HTTP server on HTTPS site is prohibited by modern browser's security policies.",
+         "Please install a valid SSL certificate on $domain, then replace all occurences of 'http' with 'https' in URLs above.",
+         "Note: using a self-signed certificate will break uploads. <a href='https://support.sibsoft.net/knowledge_base.php?article_id=91'>Learn more</a>");
+   }
 
    # api.cgi multiple tests
    my $res = $ses->api($f->{srv_cgi_url}, { %{$f}, op => 'test', fs_key=>$fs_key, site_cgi=>$c->{site_cgi} } );
@@ -62,6 +73,7 @@ sub runTests
       push @tests, 'api.cgi: OK';
       $res=~s/^OK:(.*?)://;
       $f->{srv_ip} = $1;
+      $f->{srv_ip}||=$server->{srv_ip} if $server;
       push @tests, split(/\|/,$res);
    }
    else
@@ -100,13 +112,15 @@ sub UnixSymlink
 
    my $orig = 1 if $file->{file_size_encoded} && !$opts{encoded};
 
+   $fname =~ s/\///g;
+
    my $res = $ses->api($file->{srv_cgi_url},
                         {
 	                        op           => 'gen_link',
 	                        file_id      => $file->{file_real_id}||$file->{file_id},
 	                        file_code    => $file->{file_real},
 	                        file_code1   => $file->{file_code},
-	                        file_name    => $fname,
+	                        file_name    => $ses->UnsecureStr($fname),
 	                        fs_key       => $file->{srv_key},
 	                        ip           => $ip,
                            orig         => $orig,
@@ -117,7 +131,12 @@ sub UnixSymlink
            $ses->AdminLog("Error when creating symlink:($file->{srv_cgi_url})($file->{file_id})($file->{file_real})\n($res)");
            return $ses->message("Error happened when generating Download Link.<br>Please try again or Contact administrator.<br>($res)");
    }
-   return "$file->{srv_htdocs_url}/$ddcode/$fname";
+
+   $fname = $ses->UnsecureStr($fname);
+   $fname =~ s/&/%26/g;
+   $fname =~ s/\?/%3F/g;
+
+   return "$file->{srv_htdocs_url}/$ddcode/" . $ses->SecureStr($fname);
 }
 
 =item NginxLink()

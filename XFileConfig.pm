@@ -344,7 +344,7 @@ $c=
 
  smscoin_id => '',
 
- external_links => 'https://sibsoft.net|SibSoft~https://xfilesharing.com|XFilesharing Pro Demo~https://sibsoft.net/xfilesharing.html|File sharing script',
+ external_links => 'https://sibsoft.net|SibSoft~https://xfilesharing.com|XFilesharing Pro Demo~https://sibsoft.net/xfilesharing.html|File hosting script~https://sibsoft.net/xvideosharing.html|Video sharing script',
 
  # Language list to show on site
  languages_list => ['english','russian','german','french','arabic','turkish','polish','thai','spanish','japan','hungary','indonesia','dutch','hebrew'],

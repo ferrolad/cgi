@@ -7,6 +7,7 @@
    <td>Referer</td>
    <td>Premium Price</td>
 </tr>
+<TMPL_IF list>
 <TMPL_LOOP list>
 <tr>
    <td align="center"><b><TMPL_VAR id></b></td>
@@ -16,4 +17,8 @@
    <td align="center">$<TMPL_VAR amount></td>
 </tr>
 </TMPL_LOOP>
+<TMPL_ELSE>
+<tr>
+   <td colspan="5" align="center">No records found</td>
+</TMPL_IF>
 </table>

@@ -153,10 +153,10 @@ if($f->{remove_install})
    print"Can't delete <u>install.cgi</u>, remove it manually<br><br>" if -e 'install.cgi';
    unlink('install.sql');
    print"Can't delete <u>install.sql</u>, remove it manually<br><br>" if -e 'install.sql';
-   unlink('upgrade_12_13.cgi');
-   print"Can't delete <u>upgrade_12_13.cgi</u>, remove it manually<br><br>" if -e 'upgrade_12_13.cgi';
-   unlink('upgrade_12_13.sql');
-   print"Can't delete <u>upgrade_12_13.sql</u>, remove it manually<br><br>" if -e 'upgrade_12_13.sql';
+   unlink('upgrade_25_251.cgi');
+   print"Can't delete <u>upgrade_25_251.cgi</u>, remove it manually<br><br>" if -e 'upgrade_25_251.cgi';
+   unlink('upgrade_25_251.sql');
+   print"Can't delete <u>upgrade_25_251.sql</u>, remove it manually<br><br>" if -e 'upgrade_25_251.sql';
    print qq[<br><input type='button' value='Go to Login page' onClick="window.location='$c->{site_url}/?op=login&redirect=$c->{site_url}';">];
 
    my $subdir = $1 if $ENV{REQUEST_URI} =~ /^(.*)\/cgi-bin\/install.cgi/;

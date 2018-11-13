@@ -58,8 +58,7 @@ if ( $^O =~ /win32/i ) {
 } else {
     ### Find sendmail:
     $Sender   = "sendmail";
-    $SENDMAIL = "/usr/lib/sendmail";
-    ( -x $SENDMAIL ) or ( $SENDMAIL = "/usr/sbin/sendmail" );
+    $SENDMAIL = "/usr/sbin/sendmail";
     ( -x $SENDMAIL ) or ( $SENDMAIL = "sendmail" );
     unless (-x $SENDMAIL) {
         require File::Spec;

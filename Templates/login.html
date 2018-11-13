@@ -2,11 +2,13 @@
 
 <div class="rrd">
 
+<script type="text/javascript" src="<TMPL_VAR site_url>/js/bootstrap-confirm.js"></script>
+<script type="text/javascript" src="<TMPL_VAR site_url>/js/dialogs.js"></script>
+
 <h2 style="margin:0;"><TMPL_VAR lang_user_login></h2>
 
 <form method="POST" action="<TMPL_VAR site_url>/" name="FL">
 <input type="hidden" name="op" value="login">
-<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="rand" value="<TMPL_VAR rand>">
 <input type="hidden" name="redirect" value="<TMPL_VAR redirect>">
 <table style="width: 500px">

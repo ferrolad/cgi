@@ -1,5 +1,5 @@
-         <link href="<TMPL_VAR site_url>/css/jquery-ui.css" rel="stylesheet"/>
-         <script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>
+		   <script type="text/javascript" src="<TMPL_VAR site_url>/js/bootstrap-confirm.js"></script>
+		   <script type="text/javascript" src="<TMPL_VAR site_url>/js/dialogs.js"></script>
 
          <table class="extend_premium" style="width: 400px">
          <tr>
@@ -9,7 +9,7 @@
                <div class="days"><TMPL_VAR days> days</div>
                <div class="price"><TMPL_VAR currency_symbol><TMPL_VAR amount></div>
                <TMPL_LOOP payment_types>
-               <a href="<TMPL_VAR site_url>/?op=payments&amount=<TMPL_VAR amount>&type=<TMPL_VAR name>&r=<TMPL_VAR rand>&token=<TMPL_VAR token_payments>" class="ask_email"><div class="paysys"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" alt="<TMPL_VAR name>"></div></a>
+               <a href="<TMPL_VAR site_url>/?op=payments&amount=<TMPL_VAR amount>&type=<TMPL_VAR name>&r=<TMPL_VAR rand>&token=<TMPL_VAR token_payments>" <TMPL_IF ask_email> onclick="return Dialogs.askEmail(this)"</TMPL_IF>><div class="paysys"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" alt="<TMPL_VAR name>"></div></a>
                </TMPL_LOOP>
             </div>
             </td>
@@ -35,4 +35,3 @@
          </tr>
          </table>
          </TMPL_IF>
-         <TMPL_INCLUDE ask_email.html>

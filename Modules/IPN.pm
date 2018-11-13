@@ -27,6 +27,17 @@ sub acceptResellersMoney
    $self->finalize($transaction);
 }
 
+sub acceptVIPFilePayment
+{
+   my ($self, $transaction, %opts) = @_;
+   print STDERR "Granting user $transaction->{usr_id} with an access to file $transaction->{file_id}\n";
+   $self->{db}->Exec("INSERT IGNORE INTO PremiumPackages SET usr_id=?, type=?, quantity=1",
+      $transaction->{usr_id},
+      $transaction->{target});
+   $self->chargeAffs($transaction);
+   $self->finalize($transaction);
+}
+
 sub increasePremiumTraffic
 {
    my ($self, $transaction, %opts) = @_;
@@ -70,12 +81,14 @@ sub chargeAff
                    usr_id_to=?,
                    type=?,
                    amount=?,
+                   transaction_id=?,
                    created=NOW()",
-                   $opts{usr_id_from},
+                   $opts{usr_id_from}||0,
                    $user->{usr_id},
                    $opts{stats},
                    $amount,
-                   ) if $opts{usr_id_from};
+                   $opts{transaction_id}||'',
+                   );
    $self->{db}->Exec("INSERT INTO Stats
       SET paid_to_users=?, day=CURDATE()
       ON DUPLICATE KEY UPDATE
@@ -107,9 +120,16 @@ sub chargeAffs
          $transaction->{usr_id},
          $transaction->{id});
    my $is_rebill = $prev_transaction && $prev_transaction->{elapsed} <= 31 ? 1 : 0;
+
+   my $transaction_age = $self->{db}->SelectOne("SELECT TIMESTAMPDIFF(DAY, created, NOW())
+      FROM Transactions
+      WHERE id=?",
+      $transaction->{id});
+
+   $self->setTransactionOpts($transaction, rebill => $is_rebill);
+   $is_rebill = 1 if $transaction_age > 3; # Must be exactly here in order to keep initial transaction in 'sales' section of detailed stats
    my $stats = $is_rebill ? 'rebills' : 'sales';
    print STDERR "is_rebill=$is_rebill stats=$stats\n";
-   $self->setTransactionOpts($transaction, rebill => $is_rebill);
 
    # ------ Charging uploader
    my $aff = $self->{db}->SelectRow("SELECT * FROM Users WHERE usr_id=?", $transaction->{aff_id});
@@ -125,7 +145,7 @@ sub chargeAffs
    my $settings = $self->{db}->SelectRow("SELECT * FROM PaymentSettings WHERE name=?", $transaction->{plugin});
    $transaction->{amount} *= (1 - $settings->{commission} / 100) if $settings && $settings->{commission};
 
-   my $profit_uploader = $self->chargeAff($aff, $transaction->{amount} * $sale_aff_percent / 100, stats => $stats)
+   my $profit_uploader = $self->chargeAff($aff, $transaction->{amount} * $sale_aff_percent / 100, stats => $stats, transaction_id => $transaction->{id})
       if $aff && $sale_aff_percent;
 
    # ------ Charging webmaster
@@ -134,18 +154,18 @@ sub chargeAffs
    $self->setTransactionOpts($transaction, domain => $domain) if $webmaster;
    my $m_x_rate = $c->{m_x_rate};
    $m_x_rate = $webmaster->{usr_m_x_percent} if $webmaster && $webmaster->{usr_m_x_percent};
-   my $profit_webmaster = $self->chargeAff($webmaster, $transaction->{amount} * $m_x_rate / 100, stats => 'site')
+   my $profit_webmaster = $self->chargeAff($webmaster, $transaction->{amount} * $m_x_rate / 100, stats => 'site', transaction_id => $transaction->{id})
       if $webmaster && $m_x_rate;
 
    # ------ Charging referrals
    my $aff1 = $self->{db}->SelectRow("SELECT * FROM Users WHERE usr_id=?", $aff->{usr_aff_id}) if $aff;
    my $aff2 = $self->{db}->SelectRow("SELECT * FROM Users WHERE usr_id=?", $webmaster->{usr_aff_id}) if $webmaster;
 
-        my $profit_aff1 = $profit_uploader * $c->{referral_aff_percent} / 100;
-        my $profit_aff2 = $profit_webmaster * $c->{referral_aff_percent} / 100;
+   my $profit_aff1 = $profit_uploader * $c->{referral_aff_percent} / 100;
+   my $profit_aff2 = $profit_webmaster * $c->{referral_aff_percent} / 100;
 
-        $self->chargeAff($aff1, $profit_aff1, stats => 'refs', usr_id_from => $aff->{usr_id}) if $aff1 && $profit_aff1;
-        $self->chargeAff($aff2, $profit_aff2, stats => 'refs', usr_id_from => $webmaster->{usr_id}) if $aff2 && $profit_aff2;
+   $self->chargeAff($aff1, $profit_aff1, stats => 'refs', usr_id_from => $aff->{usr_id}, transaction_id => $transaction->{id}) if $aff1 && $profit_aff1;
+   $self->chargeAff($aff2, $profit_aff2, stats => 'refs', usr_id_from => $webmaster->{usr_id}, transaction_id => $transaction->{id}) if $aff2 && $profit_aff2;
 }
 
 sub registerStats
@@ -191,17 +211,19 @@ sub createTransaction
                       ip=INET_ATON(?),
                       created=NOW(),
                       aff_id=?,
+                      file_id=?,
                       ref_url=?,
                       email=?,
                       verified=?,
                       target=?,
-		      plugin=?",
+                      plugin=?",
                    $id,
                    $opts{usr_id},
                    $opts{amount},
                    $opts{days}||0,
                    $self->{ses}->getIP||'0.0.0.0',
                    $opts{aff_id}||0,
+                   $opts{file_id}||0,
                    $opts{referer}||'',
                    $opts{email}||'',
                    $opts{verified}||0,

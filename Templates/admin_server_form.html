@@ -2,6 +2,7 @@
 <input type="hidden" name="op" value="admin_server_add">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="srv_id" value="<TMPL_VAR srv_id>">
+<input type="hidden" name="proto" id="proto">
 <Table class="tbl1" cellpadding=3 cellspacing=1>
 <TR class="hdr"><TD colspan=2><TMPL_IF srv_id><TMPL_VAR lang_edit><TMPL_ELSE><TMPL_VAR lang_add></TMPL_IF> <TMPL_VAR lang_file_server></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_server_name></b></TD><TD><input type="text" name="srv_name" value="<TMPL_VAR srv_name>" size=16></TD></TR>
@@ -48,6 +49,7 @@
 </Form>
 
 <Script>
+$('#proto').val(document.location.protocol);
 function checkForm(f1)
 {
     if(f1.srv_name.value.length<2){alert("Enter server name at least 2 chars");return false;}

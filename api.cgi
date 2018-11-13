@@ -206,22 +206,32 @@ sub GetFilesList
    &SendJSON(ls("$c->{upload_dir}/*")); # List directories
 }
 
+sub CountFileStats
+{
+   use File::Find;
+   my ($path) = @_;
+
+   my ($count, $size);
+   my $counter = sub
+   {
+      return if ! -f $_ || $_ !~ /^\w{12}$/;
+      $count += 1;
+      $size += -s $_;
+   };
+
+   find($counter, $path);
+   return($count, $size);
+}
+
 sub GetFileStats
 {
-   opendir(DIR, "$c->{upload_dir}") || &Send("Error:cant open upload_dir");
-   my ($files,$size)=(0,0);
-   while( defined(my $fn=readdir(DIR)) )
-   {
-      next if $fn=~/^\.{1,2}$/ || !-d "$c->{upload_dir}/$fn";
-      opendir(DIR2, "$c->{upload_dir}/$fn")||next;
-      foreach my $fn2 (readdir(DIR2))
-      {
-         next if $fn2 =~ /^\.{1,2}$/;
-         $files++;
-         $size += -s "$c->{upload_dir}/$fn/$fn2";
-      }
-      closedir(DIR2);
-   }
+   my ($files, $size) = CountFileStats($c->{upload_dir});
+
+   my $orig_dir = "$1/orig" if $c->{upload_dir} =~ /^(.*)\/uploads/;
+   $size += ((CountFileStats($orig_dir))[1]) if -d $orig_dir;
+   $files||=0;
+   $size||=0;
+
    &Send("OK:$files:$size");
 }
 
@@ -296,14 +306,6 @@ sub Test
    push @tests, rmdir("$c->{htdocs_dir}/test") ? 'htdocs dir rmdir: OK' : "htdocs dir rmdir: ERROR($!)";
    # XFSConfig.pm
    push @tests, open(F,'XFSConfig.pm') ? 'config read: OK' : "config read: ERROR($!)";
-
-   if($f->{torrent_test})
-   {
-      push @tests, -e "$c->{cgi_dir}/Torrents/bitflu.pl" ? 'bitflu: OK' : 'bitflu: ERROR';
-      eval { require Digest::SHA };
-      push @tests, !$@ ? 'Digest::SHA: OK' : 'Digest::SHA: ERROR';
-   }
-
    push @tests, open(F,'>>XFSConfig.pm') ? 'config write: OK' : "config write: ERROR($!)";
 
    my $site_cgi = $f->{site_cgi};
@@ -392,14 +394,15 @@ sub TorrentDelete
 {
    require TorrentClient;
    print "Content-type: text/html\n\n";
-   print TorrentClient->new()->del_torrent(fs_key => $c->{fs_key}, hash => $f->{sid});
+   print TorrentClient->new(fs_key => $c->{fs_key})->del_torrent(fs_key => $c->{fs_key}, info_hash => $f->{sid});
    exit;
 }
 
 sub TorrentKill
 {
-   system("kill -9 `cat Torrents/torrent.pid`");
-   print"Content-type:text/html\n\nOK";
+   require TorrentClient;
+   print "Content-type: text/html\n\n";
+   print TorrentClient->new(fs_key => $c->{fs_key})->shutdown(fs_key => $c->{fs_key});
    exit;
 }
 
@@ -407,7 +410,7 @@ sub TorrentStatus
 {
    require TorrentClient;
    print"Content-type:text/html\n\n";
-   print eval { TorrentClient->new->get_status() } ? 'ON' : '';
+   print TorrentClient->new(fs_key => $c->{fs_key})->get_status() ? 'ON' : '';
    exit;
 }
 

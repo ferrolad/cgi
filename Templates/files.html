@@ -4,6 +4,7 @@
 						<th><TMPL_VAR s_file_name><TMPL_VAR lang_fname_descr><TMPL_VAR s2_file_name></th>
 						<th><TMPL_VAR s_file_size><TMPL_VAR lang_file_size><TMPL_VAR s2_file_size></th>
 						<th><TMPL_VAR s_file_created><TMPL_VAR lang_file_upload><TMPL_VAR s2_file_created></th>
+						<TMPL_IF allow_vip_files><th><TMPL_VAR s_file_price>Price<TMPL_VAR s2_file_price></th></TMPL_IF>
 						<th><TMPL_VAR s_file_downloads><img src="<TMPL_VAR site_url>/images/icon_th_download.png"><TMPL_VAR s_file_downloads></th>
 						<th><img src="<TMPL_VAR site_url>/images/icon_th_comments.png"></th>
 						<th class="diamond"><img src="<TMPL_VAR site_url>/images/icon_th_premium.png"></th>
@@ -23,6 +24,7 @@
 						<TMPL_IF trashed_at>
 						<td colspan="4"><TMPL_VAR time_left> left</td>
 						<TMPL_ELSE>
+						<TMPL_IF allow_vip_files><td class="tdinfo"><TMPL_IF file_vip><TMPL_VAR currency_symbol><TMPL_VAR file_price><TMPL_ELSE>-</TMPL_IF></td></TMPL_IF>
 						<td class="tdinfo"><TMPL_VAR file_downloads></td>
 						<td class="tdinfo"><TMPL_VAR file_comments></td>
 						<td class="icontd"><input type="checkbox" name="file_premium_only"<TMPL_IF file_premium_only> checked</TMPL_IF> onClick="setFileFlag([<TMPL_VAR file_id>], 'file_premium_only', this.checked);"></td>
@@ -52,7 +54,7 @@
 					<TMPL_ELSE>
 					<!-- Start Copy/Move Panel -->
 					<tr class="actionpanel">
-						<td colspan="10">
+						<td colspan="11">
 							<label for="to_folder"><TMPL_VAR lang_select_folder></label>
 							<select name="to_folder">
 								<option>--</option>
@@ -75,7 +77,7 @@
 					
 					<!-- Start Action Buttons -->
 					<tr class="actionpanel">
-						<td colspan="10" style="max-width: 640px; white-space: normal">
+						<td colspan="11" style="max-width: 640px; white-space: normal">
 							<input name="del_selected" value="<TMPL_VAR lang_delete_selected>" type="submit" onClick="return confirm('<TMPL_VAR lang_delete_confirm>')">
 							<input name="set_file_public" value="<TMPL_VAR lang_publish>" type="button" class="flag">
 							<input name="unset_file_public" value="<TMPL_VAR lang_unpublish>" type="button" class="flag">
@@ -128,4 +130,22 @@
 						console.log(postdata);
 						loadDialog("Export...", '?op=my_files_export&fld_id=<TMPL_VAR current_fld_id>', postdata)
 					});
+				   function loadDialog(title, url, postdata)
+				   {
+				   	var dialog = $("<div>");
+				   	$(dialog).attr('title', title);
+				   
+				   	$.ajax({ url: url,
+				   		method: postdata ? 'POST' : 'GET',
+				   		success: function(res)
+				   		{
+				   			var w = $(window).width();
+				   			var h = $(window).height();
+				   
+				   			$(dialog).html(res);
+				   			$(dialog).dialog({ modal: true, width: 'auto', height: 'auto' })
+				   		},
+				   		data: postdata
+				   	});
+				   }
 					</script>

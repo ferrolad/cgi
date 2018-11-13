@@ -98,12 +98,12 @@
 <TR><TD>
 <TMPL_VAR lang_file_order>: 
 <select name="order" ng-model="transfer.order">
-	<option value="popular_enc">Hot first</option>
-	<option value="popular_desc">Cold first</option>
 	<option value="size_desc"><TMPL_VAR lang_biggest_first></option>
 	<option value="size_enc"><TMPL_VAR lang_smallest_first></option>
 	<option value="id_desc"><TMPL_VAR lang_new_first></option>
 	<option value="id_enc"><TMPL_VAR lang_old_first></option>
+	<option value="popular_desc">Hot first</option>
+	<option value="popular_enc">Cold first</option>
 </select>
 </TD></TR>
 <TR><TD>
@@ -141,7 +141,7 @@
 function confirmServerDeletion(redirect_url, srv_name)
 {
    console.log(redirect_url);
-   var password = prompt("WARNING: you're going to delete the server \"s1\" along with all of it's files.\nPlease enter your admin password in order to confirm:");
+   var password = prompt("WARNING: you're going to delete the server \"" + srv_name + "\" along with all of it's files.\nPlease enter your admin password in order to confirm:");
 
    if(password)
    {
@@ -157,7 +157,7 @@ var app = angular.module('TransferApp', ['ui.bootstrap']);
 
 app.controller('TransferCtrl', function($scope, $location, $parse) {
    $scope.transfer = {};
-   $scope.transfer.order = 'popular_enc';
+   $scope.transfer.order = 'size_desc';
    $scope.transfer.src = $scope.transfer.dst = '3';
 
    $scope.dialog = {};

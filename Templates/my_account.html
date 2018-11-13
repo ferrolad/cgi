@@ -41,7 +41,7 @@
 <TR><TD><TMPL_VAR lang_username></TD><TD><input type="text" name="usr_login" size="24" value="<TMPL_VAR usr_login>" style="width:97%;"></TD></TR>
 </TMPL_IF>
 <TR><TD><TMPL_VAR lang_email></TD><TD><input type="text" name="usr_email" size="24" value="<TMPL_VAR usr_email>"<TMPL_IF usr_security_lock> disabled</TMPL_IF>></TD></TR>
-<TMPL_IF usr_phone><TR><TD>Phone</TD><TD>+<TMPL_VAR usr_phone> <a href="#" onclick="openChangePhoneDialog();return(false);">Change</a></TD></TR></TMPL_IF>
+<TMPL_IF phone_required><TR><TD>Phone</TD><TD>+<input type="text" name="usr_phone" size="23" value="<TMPL_VAR usr_phone>"<TMPL_IF usr_security_lock> disabled</TMPL_IF>></TD></TR></TMPL_IF>
 <TMPL_IF show_password_input>
 <TMPL_IF usr_password>
 <TR><TD style="width:35%"><TMPL_VAR lang_current_password></TD><TD><input type="password" name="password_old" size="24"<TMPL_IF usr_security_lock> disabled</TMPL_IF>></TD></TR>
@@ -71,16 +71,10 @@
 </TD></TR>
 
 <TMPL_IF two_factor_optional>
-<TR><TD align=right><b>2-Factor Authentication</b></TD><TD nowrap>
-<TMPL_IF usr_2fa>
-<span><b>ON</b></span> <a href="#" onclick="openDisable2FADialog();return(false);"><TMPL_VAR lang_disable></a>
-<TMPL_ELSE>
-<span><b>OFF</b></span> <a href="#" onclick="<TMPL_IF usr_phone>enable2FA();<TMPL_ELSE>openEnable2FADialog();</TMPL_IF>return(false);"><TMPL_VAR lang_enable></a>
-</TMPL_IF>
-<TMPL_IF usr_phone>
-(SMS will be sent to +<TMPL_VAR usr_phone>)
-</TMPL_IF>
-</TD></TR>
+<TR>
+   <TD align=right><b>2-Factor Authentication</b></TD>
+   <TD nowrap><input type="checkbox" name="usr_2fa" value="1"<TMPL_IF usr_2fa> checked</TMPL_IF>><TMPL_IF usr_phone>(SMS will be sent to +<TMPL_VAR usr_phone>)</TMPL_IF></TD>
+</TR>
 </TMPL_IF>
 
 <TMPL_IF premium><TR><TD colspan=2><input type="checkbox" name="usr_direct_downloads" id="cdl" value="1"<TMPL_IF usr_direct_downloads> checked</TMPL_IF>> <label for="cdl"><b><TMPL_VAR lang_direct_downloads></b></label> <small>(<TMPL_VAR lang_premium_only>)</small></TD></TR></TMPL_IF>
@@ -152,7 +146,7 @@ Site URL:<input type="text" name="site_add" size=24> <input type="submit" name="
 </TMPL_IF>
 
 <TMPL_IF mod_sec_session_list>
-<Table style="width: 800px">
+<Table style="width: 800px" id="active_sessions">
 <TR class="hdr"><TD colspan=<TMPL_IF mod_sec_session_list_editable>5<TMPL_ELSE>4</TMPL_IF>>Active sessions</TD></TR>
 <TR class="hdr">
    <TD>IP</TD>
@@ -194,126 +188,3 @@ Site URL:<input type="text" name="site_add" size=24> <input type="submit" name="
 <style>
 .active td { font-weight: bold }
 </style>
-
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
-
-<div id="changePhone" class="modal fade" role="dialog" ng-app="ChangePhoneApp" ng-controller="ChangePhoneCtrl">
-  <div class="modal-dialog">
-
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title"><span class="glyphicon glyphicon-phone"></span> {{ title }}</h4>
-      </div>
-      <div class="modal-body" ng-if="screen == 1">
-         <p>Enter your phone number: <input type="text" placeholder="e.g. +1-xxx-xxx-xx-xx" class="bootstrap-compat" ng-model="userdata.phone"></p>
-      </div>
-      <div class="modal-body" ng-if="screen == 2">
-         <p>Enter confirmation code (*): <input type="text" class="bootstrap-compat" ng-model="userdata.code" size="6" maxlength="6"></p>
-      </div>
-      <div class="modal-body" ng-if="screen == 3">
-         <table style="margin-top: 0">
-            <tr><td>Enter old phone confirmation code (*):</td><td><input type="text" class="bootstrap-compat" ng-model="userdata.code_old" size="6" maxlength="6"></td>
-            <tr><td>Enter your new phone:</td><td><input type="text" class="bootstrap-compat" ng-model="userdata.phone_new" placeholder="e.g. +1-xxx-xxx-xx-xx"></td>
-         </table>
-      </div>
-      <div class="modal-body" ng-if="screen == 4">
-         <p>Enter new phone confirmation code (*): <input type="text" class="bootstrap-compat" ng-model="userdata.code_new" size="6" maxlength="6"></p>
-      </div>
-      <div class="modal-footer">
-         <img ng-if="spinner" ng-src="images/spinner.gif?r=4" style="width: 16px; height: 16px; margin-top: 10px" class="pull-left">
-        <span class="alert alert-success pull-left" role="alert" ng-if="msg" style="margin-top: -5px; padding: 10px"><strong>Note:</strong> {{ msg }}</span>
-        <span class="alert alert-danger pull-left" role="alert" ng-if="error" style="margin-top: -5px; padding: 10px"><strong>Error:</strong> {{ error }}</span>
-        <button type="button" class="btn btn-primary" ng-click="next()" ng-if="screen % 2">Next&gt;&gt;</button>
-        <button type="button" class="btn btn-default" ng-click="prev()" ng-if="screen == 4">&lt;&lt;Prev</button>
-        <button type="button" class="btn btn-primary" ng-click="confirm()" ng-if="(screen+1) % 2">Confirm</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<script>
-var app = angular.module('ChangePhoneApp', []);
-var scope;
-
-function enable2FA() { scope.httpRequest('two_factor_enable', {}, function () { document.location.reload() }) }
-function openEnable2FADialog() { openDialog(1, "Enable 2-Factor Authentication"); scope.subop = 'two_factor_enable'; }
-function openDisable2FADialog() { openDialog(2, "Disable 2-Factor Authentication"); scope.sendToken('', 'two_factor_disable'); scope.subop = 'two_factor_disable'; }
-function openChangePhoneDialog() { openDialog(3, "Change phone number"); scope.sendToken('', 'old_phone_confirm'); scope.subop = 'change_phone'; }
-
-function openDialog(screen_no, title)
-{
-   scope.screen = screen_no;
-   scope.title = title;
-   scope.msg = scope.error = '';
-   if(!scope.$$phase && !scope.$root.$$phase) scope.$apply();
-   $('#changePhone').modal('show');
-}
-
-app.controller('ChangePhoneCtrl', function($scope, $http, $httpParamSerializer) {
-   scope = $scope;
-   $scope.userdata = {};
-
-   $scope.httpRequest = function(subop, data, onsuccess)
-   {
-      scope.msg = scope.error = '';
-      $scope.spinner = true;
-
-      var postData = { op: 'my_account', token: '<TMPL_VAR token>' };
-      postData[subop] = 1;
-      for(var key in data) postData[key] = data[key];
-
-      $http.post("<TMPL_VAR site_url>", $httpParamSerializer(postData),
-      { headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
-      .then(function(response) {
-         $scope.spinner = false;
-
-         if(response.data.status == "OK")
-            onsuccess(response);
-         else
-            $scope.error = response.data.msg;
-      });
-   }
-
-   $scope.sendToken = function(phone, purpose) {
-      $scope.httpRequest('send_token', { 'phone': phone, 'purpose': purpose }, function(response) {
-         $scope.msg = "Security token was sent to +" + response.data.phone;
-      });
-   };
-
-   $scope.prev = function() {
-      $scope.screen--;
-   };
-
-   $scope.next = function() {
-      if($scope.screen == 1)
-      {
-         $scope.screen++;
-         $scope.sendToken($scope.userdata.phone, 'two_factor_enable');
-      }
-      else if($scope.screen == 3)
-      {
-         $scope.screen++;
-         $scope.sendToken($scope.userdata.phone_new, 'new_phone_confirm');
-      }
-   };
-
-   $scope.confirm = function() {
-      if($scope.screen == 2)
-      {
-         $scope.httpRequest(scope.subop, { code: $scope.userdata.code }, function() {
-            document.location.reload();
-         });
-      }
-      else if($scope.screen == 4)
-      {
-         $scope.httpRequest(scope.subop, { code_old: $scope.userdata.code_old, code_new: $scope.userdata.code_new }, function() {
-            document.location.reload();
-         });
-      }
-   };
-});
-</script>
