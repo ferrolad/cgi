@@ -1,6 +1,6 @@
 <h2><TMPL_VAR lang_adm_file_mgmt></h2>
 <a href="?op=admin_downloads"><TMPL_VAR lang_last_downloads></a> &nbsp; 
-<a href="?op=admin_anti_hack">Anti-Hack center</a>
+<a href="?op=admin_anti_hack"><TMPL_VAR lang_anti_hack></a>
 <br><br>
 
 <Form style="margin:0;" method="POST" id="search">
@@ -12,9 +12,9 @@
 <input type="hidden" name="del_info" value="">
 <Table class="tbl1" style="width: 800px">
 <tr><td><TMPL_VAR lang_search></td><td><input type="text" name="key" value="<TMPL_VAR key>" size=24></td></tr>
-<tr><td>From user</td><td><input type="text" name="usr_login" value="<TMPL_VAR usr_login>" size=24></td></tr>
-<tr><td>Size</td><td>more than <input type="text" name="size_more" value="<TMPL_VAR size_more>" size=4>Mb <TMPL_VAR lang_less_than> <input type="text" name="size_less" value="<TMPL_VAR size_less>" size=4>Mb<br>
-<tr><td>Downloads</td><td>more than <input type="text" name="down_more" value="<TMPL_VAR down_more>" size=4> <TMPL_VAR lang_less_than> <input type="text" name="down_less" value="<TMPL_VAR down_less>" size=4><br>
+<tr><td><TMPL_VAR lang_username></td><td><input type="text" name="usr_login" value="<TMPL_VAR usr_login>" size=24></td></tr>
+<tr><td><TMPL_VAR lang_file_size></td><td>&gt;=<TMPL_VAR lang_more_than> <input type="text" name="size_more" value="<TMPL_VAR size_more>" size=4>Mb &lt;= <input type="text" name="size_less" value="<TMPL_VAR size_less>" size=4>Mb<br></td></tr>
+<tr><td><TMPL_VAR lang_downloads></td><td>&gt;= <input type="text" name="down_more" value="<TMPL_VAR down_more>" size=4> &lt;= <input type="text" name="down_less" value="<TMPL_VAR down_less>" size=4><br></td></tr>
 <tr><td><TMPL_VAR lang_files_per_page></td><td>
 <input type="radio" name="per_page" id="rs1" value="<TMPL_VAR items_per_page>"<TMPL_UNLESS per_page> checked</TMPL_UNLESS>><label for="rs1"><TMPL_VAR items_per_page></label>
 <input type="radio" name="per_page" id="rs2" value="50"<TMPL_VAR per_50>><label for="rs2">50</label> 
@@ -23,7 +23,7 @@
 </td></tr>
 <tr><td colspan=2 align=center>
     <textarea name="mass_search" id="mass_search" wrap="off" style="width:99%;display:none;font-size:11px;" rows=10></textarea>
-    <small><a href="#" id="btn1">Mass Search</a></small>
+    <small><a href="#" id="btn1"><TMPL_VAR lang_mass_search></a></small>
 </td></tr>
 <tr><td colspan=2 align=center><input type="submit" value="<TMPL_VAR lang_show_files>"></td></tr>
 </Table>
@@ -39,10 +39,11 @@
 <TD title="Sort by User"><TMPL_VAR s_usr_login><TMPL_VAR lang_uploaded_by><TMPL_VAR s2_usr_login></TD>
 <TD title="Sort by Number of Downloads"><TMPL_VAR s_file_downloads>DL<TMPL_VAR s2_file_downloads></TD>
 <TD title="Sort by Traffic Generated"><TMPL_VAR s_traffic><TMPL_VAR lang_traffic><TMPL_VAR s2_traffic></TD>
-<TD><TMPL_VAR s_file_money>Money<TMPL_VAR s2_file_money></TD>
+<TD><TMPL_VAR s_file_money><TMPL_VAR lang_money><TMPL_VAR s2_file_money></TD>
 <TD title="Sort by Creation Date"><TMPL_VAR s_file_created><TMPL_VAR lang_uploaded_on><TMPL_VAR s2_file_created></TD>
 <TD title="Sort by Last Download Date"><TMPL_VAR s_file_last_download><TMPL_VAR lang_last_download><TMPL_VAR s2_file_last_download></TD>
 <TD>IP</TD>
+<TD>Src</TD>
 <TD title="Server ID">#</TD>
 <TD colspan=2>&nbsp;</TD>
 </TR>
@@ -58,18 +59,19 @@
 <TD nowrap><small><TMPL_VAR file_created></small></TD>
 <TD nowrap><small><TMPL_VAR file_last_download></small></TD>
 <TD align=center><a href="?op=admin_files&ip=<TMPL_VAR file_ip>"><small><TMPL_VAR file_ip><TMPL_IF file_country> / <TMPL_VAR file_country></TMPL_IF></small></a></TD>
+<TD align=center><small><TMPL_VAR file_upload_method></small></TD>
 <TD><TMPL_VAR srv_id></TD>
 <TD><a href="?op=admin_file_edit&file_id=<TMPL_VAR file_id>"><img src="<TMPL_VAR site_url>/images/icon_edit.png" border=0></a></TD>
 <TD><a href="?op=admin_files&del_code=<TMPL_VAR file_code>&token=<TMPL_VAR token>" onClick="var x=prompt('<TMPL_VAR lang_delete_file> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined'||x==null)return false;this.href+='&del_info='+x;"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
 </TR>
 </TMPL_LOOP>
 <TR class="hdr">
-    <TD colspan=13 style="text-align:left;">
+    <TD colspan=14 style="text-align:left;">
     <input type="submit" name="del_selected" value="<TMPL_VAR lang_delete_selected>" class="" onClick="var x=prompt('<TMPL_VAR lang_delete_confirm> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined'||x==null)return false;this.form.del_info.value=x;"> &nbsp;
-    <input type="button" name="transfer_to" value="Transfer to..." class="btn2 lmargin10" onclick="$(this).hide();$('#trans_id').show();">
+    <input type="button" name="transfer_to" value="<TMPL_VAR lang_transfer>..." class="btn2 lmargin10" onclick="$(this).hide();$('#trans_id').show();">
     <span id="trans_id" style="display:none" class="lmargin10">
         <select name="srv_id2">
-        <option value="">Transfer files to</option>
+        <option value=""><TMPL_VAR lang_transfer_files_to></option>
             <TMPL_LOOP servers>
             <option value="<TMPL_VAR srv_id>"><TMPL_VAR srv_id> - <TMPL_VAR srv_name></option>
         </TMPL_LOOP>
@@ -77,13 +79,13 @@
         <input type="submit" name="transfer_files" value="Transfer" class="btn2">
     </span>
     &nbsp;
-    <input type="button" name="special" value="Special..." class="btn2 lmargin10" onclick="$(this).hide();$('#btn_special').show();">
+    <input type="button" name="special" value="<TMPL_VAR lang_special>..." class="btn2 lmargin10" onclick="$(this).hide();$('#btn_special').show();">
     <span id="btn_special" class="inv" style="display: none;">
 	    <TMPL_IF m_v>
-        <input type="submit" name="reencode_selected" value="Re-encode" class="btn2 lmargin10"> &nbsp;
+        <input type="submit" name="reencode_selected" value="<TMPL_VAR lang_reencode>" class="btn2 lmargin10"> &nbsp;
         </TMPL_IF>
 	    <TMPL_IF m_i>
-        <input type="submit" name="rethumb_selected" value="Regen thumbnail" class="btn2 lmargin10">
+        <input type="submit" name="rethumb_selected" value="<TMPL_VAR lang_regen_thumb>" class="btn2 lmargin10">
         </TMPL_IF>
     </span>
 

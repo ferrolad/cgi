@@ -29,6 +29,7 @@ var lang_published='<TMPL_VAR lang_public>';
 
 <div id="div_file">
 <form name="file" enctype="multipart/form-data" action="<TMPL_VAR srv_cgi_url>/upload.cgi?upload_id=&box=1" method="post">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="upload_type" value="file">
 <input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
 <input type="hidden" name="srv_tmp_url" value="<TMPL_VAR srv_tmp_url>">

@@ -1,3 +1,9 @@
+-- MySQL dump 10.13  Distrib 5.1.73, for redhat-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: xfs25
+-- ------------------------------------------------------
+-- Server version	5.1.73
+
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -13,6 +19,9 @@
 -- Table structure for table `APIKeys`
 --
 
+DROP TABLE IF EXISTS `APIKeys`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `APIKeys` (
   `key_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `key_code` varchar(16) NOT NULL,
@@ -25,10 +34,15 @@ CREATE TABLE `APIKeys` (
   UNIQUE KEY `domain` (`domain`),
   UNIQUE KEY `key_code` (`key_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `APIStats`
 --
 
+DROP TABLE IF EXISTS `APIStats`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `APIStats` (
   `key_id` mediumint(8) unsigned NOT NULL,
   `day` date NOT NULL,
@@ -38,10 +52,15 @@ CREATE TABLE `APIStats` (
   `bandwidth_out` bigint(20) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`key_id`,`day`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Bans`
 --
 
+DROP TABLE IF EXISTS `Bans`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Bans` (
   `usr_id` mediumint(8) unsigned NOT NULL,
   `ip` int(20) unsigned NOT NULL,
@@ -49,10 +68,15 @@ CREATE TABLE `Bans` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY `usr_id` (`usr_id`,`ip`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `BtTracker`
 --
 
+DROP TABLE IF EXISTS `BtTracker`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `BtTracker` (
   `sid` varchar(100) NOT NULL,
   `peer_id` varchar(20) NOT NULL,
@@ -64,10 +88,15 @@ CREATE TABLE `BtTracker` (
   `bytes_left` bigint(20) unsigned NOT NULL DEFAULT '0',
   UNIQUE KEY `sid` (`sid`,`peer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Comments`
 --
 
+DROP TABLE IF EXISTS `Comments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Comments` (
   `cmt_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -84,10 +113,15 @@ CREATE TABLE `Comments` (
   KEY `date` (`created`),
   KEY `user` (`usr_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `DelReasons`
 --
 
+DROP TABLE IF EXISTS `DelReasons`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `DelReasons` (
   `file_code` varchar(12) NOT NULL DEFAULT '',
   `file_name` varchar(100) NOT NULL DEFAULT '',
@@ -95,10 +129,15 @@ CREATE TABLE `DelReasons` (
   `last_access` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`file_code`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Files`
 --
 
+DROP TABLE IF EXISTS `Files`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Files` (
   `file_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -137,10 +176,15 @@ CREATE TABLE `Files` (
   KEY `folder` (`file_fld_id`),
   KEY `size` (`file_size`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `FilesDeleted`
 --
 
+DROP TABLE IF EXISTS `FilesDeleted`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `FilesDeleted` (
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `file_code` varchar(12) NOT NULL DEFAULT '',
@@ -150,10 +194,15 @@ CREATE TABLE `FilesDeleted` (
   `hide` tinyint(3) unsigned NOT NULL DEFAULT '0',
   KEY `user` (`usr_id`,`deleted`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Folders`
 --
 
+DROP TABLE IF EXISTS `Folders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Folders` (
   `fld_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -164,10 +213,15 @@ CREATE TABLE `Folders` (
   PRIMARY KEY (`fld_id`),
   KEY `user` (`usr_id`,`fld_parent_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `IP2Files`
 --
 
+DROP TABLE IF EXISTS `IP2Files`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `IP2Files` (
   `file_id` int(10) unsigned NOT NULL DEFAULT '0',
   `ip` int(20) unsigned NOT NULL DEFAULT '0',
@@ -185,10 +239,15 @@ CREATE TABLE `IP2Files` (
   KEY `ip` (`ip`,`created`),
   KEY `date` (`created`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `IP2RS`
 --
 
+DROP TABLE IF EXISTS `IP2RS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `IP2RS` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -196,10 +255,15 @@ CREATE TABLE `IP2RS` (
   `ip` int(10) unsigned NOT NULL DEFAULT '0',
   KEY `created` (`created`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `IPNLogs`
 --
 
+DROP TABLE IF EXISTS `IPNLogs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `IPNLogs` (
   `ipn_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -207,10 +271,15 @@ CREATE TABLE `IPNLogs` (
   `info` text NOT NULL,
   PRIMARY KEY (`ipn_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `LoginProtect`
 --
 
+DROP TABLE IF EXISTS `LoginProtect`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `LoginProtect` (
   `usr_id` mediumint(8) unsigned NOT NULL,
   `login` varchar(32) NOT NULL,
@@ -219,20 +288,30 @@ CREATE TABLE `LoginProtect` (
   KEY `usr_id` (`usr_id`),
   KEY `ip` (`ip`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Misc`
 --
 
+DROP TABLE IF EXISTS `Misc`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Misc` (
   `name` varchar(32) NOT NULL DEFAULT '',
   `value` varchar(255) NOT NULL DEFAULT '',
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `News`
 --
 
+DROP TABLE IF EXISTS `News`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `News` (
   `news_id` mediumint(9) unsigned NOT NULL AUTO_INCREMENT,
   `news_title` varchar(100) NOT NULL DEFAULT '',
@@ -241,10 +320,66 @@ CREATE TABLE `News` (
   `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`news_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PackageFiles`
+--
+
+DROP TABLE IF EXISTS `PackageFiles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `PackageFiles` (
+  `package_id` varchar(32) DEFAULT NULL,
+  `file_path` varchar(255) DEFAULT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `file_path` (`file_path`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Packages`
+--
+
+DROP TABLE IF EXISTS `Packages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `Packages` (
+  `package_id` varchar(32) NOT NULL,
+  `package_name` varchar(128) NOT NULL,
+  `vendor` varchar(64) NOT NULL,
+  `installed_version` varchar(16) NOT NULL,
+  `latest_version` varchar(16) NOT NULL,
+  `price` decimal(7,2) NOT NULL DEFAULT '0.00',
+  `docs_url` varchar(128) NOT NULL DEFAULT '',
+  `license_features` varchar(128) NOT NULL DEFAULT '',
+  `last_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `PaymentSettings`
+--
+
+DROP TABLE IF EXISTS `PaymentSettings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `PaymentSettings` (
+  `name` varchar(32) NOT NULL,
+  `position` int(11) NOT NULL DEFAULT '0',
+  `commission` int(11) NOT NULL DEFAULT '0',
+  `commission_mode` enum('TAKE_FROM_AFFILIATE','TAKE_FROM_BUYER') NOT NULL DEFAULT 'TAKE_FROM_AFFILIATE',
+  PRIMARY KEY (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Payments`
 --
 
+DROP TABLE IF EXISTS `Payments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Payments` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -254,14 +389,20 @@ CREATE TABLE `Payments` (
   `pay_type` varchar(16) NOT NULL DEFAULT '',
   `info` varchar(255) NOT NULL DEFAULT '',
   `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `seen_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`),
   KEY `user` (`usr_id`),
   KEY `stat` (`status`,`created`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `PaymentsLog`
 --
 
+DROP TABLE IF EXISTS `PaymentsLog`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `PaymentsLog` (
   `usr_id_from` mediumint(8) unsigned NOT NULL,
   `usr_id_to` mediumint(8) unsigned NOT NULL,
@@ -269,10 +410,15 @@ CREATE TABLE `PaymentsLog` (
   `type` varchar(16) DEFAULT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `PremiumKeys`
 --
 
+DROP TABLE IF EXISTS `PremiumKeys`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `PremiumKeys` (
   `key_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -286,10 +432,15 @@ CREATE TABLE `PremiumKeys` (
   KEY `user` (`usr_id`,`key_created`),
   KEY `created` (`key_created`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `PremiumPackages`
 --
 
+DROP TABLE IF EXISTS `PremiumPackages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `PremiumPackages` (
   `usr_id` mediumint(8) unsigned DEFAULT NULL,
   `type` varchar(16) DEFAULT NULL,
@@ -298,10 +449,15 @@ CREATE TABLE `PremiumPackages` (
   `expires_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   KEY `usr_id` (`usr_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `QueueTransfer`
 --
 
+DROP TABLE IF EXISTS `QueueTransfer`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `QueueTransfer` (
   `file_real` varchar(12) NOT NULL DEFAULT '',
   `file_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -318,10 +474,15 @@ CREATE TABLE `QueueTransfer` (
   PRIMARY KEY (`file_real`),
   KEY `srv2` (`srv_id2`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Reports`
 --
 
+DROP TABLE IF EXISTS `Reports`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Reports` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `file_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -336,14 +497,38 @@ CREATE TABLE `Reports` (
   `ban_size` bigint(20) unsigned DEFAULT '0',
   `ban_md5` varchar(64) DEFAULT '',
   `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `seen_at` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`),
   KEY `status` (`status`),
   KEY `ban` (`ban_size`,`ban_md5`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `SecurityTokens`
+--
+
+DROP TABLE IF EXISTS `SecurityTokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `SecurityTokens` (
+  `usr_id` mediumint(8) unsigned NOT NULL,
+  `purpose` varchar(32) NOT NULL,
+  `ip` int(20) unsigned NOT NULL DEFAULT '0',
+  `value` varchar(16) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`usr_id`,`purpose`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Servers`
 --
 
+DROP TABLE IF EXISTS `Servers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Servers` (
   `srv_id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `srv_name` varchar(64) NOT NULL DEFAULT '',
@@ -366,31 +551,48 @@ CREATE TABLE `Servers` (
   PRIMARY KEY (`srv_id`),
   UNIQUE KEY `fs_key` (`srv_key`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Sessions`
 --
 
+DROP TABLE IF EXISTS `Sessions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Sessions` (
   `session_id` char(16) NOT NULL DEFAULT '',
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `last_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `api_key_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `last_useragent` varchar(256) DEFAULT NULL,
+  `last_ip` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`session_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `SrvData`
 --
 
+DROP TABLE IF EXISTS `SrvData`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `SrvData` (
   `srv_id` smallint(5) unsigned NOT NULL DEFAULT '0',
   `name` varchar(24) NOT NULL DEFAULT '',
   `value` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`srv_id`,`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Stats`
 --
 
+DROP TABLE IF EXISTS `Stats`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Stats` (
   `day` date NOT NULL DEFAULT '0000-00-00',
   `uploads` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -401,10 +603,15 @@ CREATE TABLE `Stats` (
   `paid_to_users` decimal(9,4) NOT NULL DEFAULT '0.0000',
   PRIMARY KEY (`day`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Stats2`
 --
 
+DROP TABLE IF EXISTS `Stats2`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Stats2` (
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `day` date NOT NULL DEFAULT '0000-00-00',
@@ -418,10 +625,15 @@ CREATE TABLE `Stats2` (
   `profit_site` decimal(9,5) unsigned NOT NULL DEFAULT '0.00000',
   PRIMARY KEY (`usr_id`,`day`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Torrents`
 --
 
+DROP TABLE IF EXISTS `Torrents`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Torrents` (
   `sid` varchar(100) NOT NULL DEFAULT '',
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -438,10 +650,15 @@ CREATE TABLE `Torrents` (
   KEY `user` (`usr_id`),
   KEY `status` (`status`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Transactions`
 --
 
+DROP TABLE IF EXISTS `Transactions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Transactions` (
   `id` varchar(10) NOT NULL DEFAULT '',
   `usr_id` mediumint(9) unsigned NOT NULL DEFAULT '0',
@@ -461,20 +678,30 @@ CREATE TABLE `Transactions` (
   PRIMARY KEY (`id`),
   KEY `user` (`usr_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `UserData`
 --
 
+DROP TABLE IF EXISTS `UserData`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `UserData` (
   `usr_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(24) NOT NULL DEFAULT '',
   `value` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`usr_id`,`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Users`
 --
 
+DROP TABLE IF EXISTS `Users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Users` (
   `usr_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `usr_login` varchar(32) NOT NULL DEFAULT '',
@@ -486,14 +713,12 @@ CREATE TABLE `Users` (
   `usr_profit_mode` enum('PPD','PPS','MIX') NOT NULL DEFAULT 'PPD',
   `usr_premium_expire` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `usr_direct_downloads` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `usr_rapid_login` varchar(32) NOT NULL DEFAULT '',
-  `usr_rapid_pass` varchar(32) NOT NULL DEFAULT '',
   `usr_aff_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `usr_created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `usr_lastlogin` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `usr_plan_changed` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `usr_lastip` int(20) unsigned NOT NULL DEFAULT '0',
-  `usr_pay_email` varchar(64) NOT NULL DEFAULT '',
+  `usr_pay_email` text NOT NULL,
   `usr_pay_type` varchar(16) NOT NULL DEFAULT '',
   `usr_disk_space` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `usr_bw_limit` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -514,14 +739,22 @@ CREATE TABLE `Users` (
   `usr_rebills_percent` smallint(3) NOT NULL DEFAULT '0',
   `usr_m_x_percent` smallint(3) NOT NULL DEFAULT '0',
   `usr_premium_traffic` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `usr_phone` varchar(20) NOT NULL DEFAULT '',
+  `usr_restricted_ips` text,
+  `usr_2fa` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`usr_id`),
   KEY `login` (`usr_login`),
   KEY `aff_id` (`usr_aff_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 --
 -- Table structure for table `Websites`
 --
 
+DROP TABLE IF EXISTS `Websites`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Websites` (
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `domain` varchar(64) NOT NULL DEFAULT '',
@@ -529,10 +762,15 @@ CREATE TABLE `Websites` (
   PRIMARY KEY (`domain`),
   KEY `user` (`usr_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2017-04-26 13:46:10

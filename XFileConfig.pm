@@ -335,7 +335,7 @@ $c=
  alertpay_email => '',
 
  # User registration coupons
- coupons => 'free1=1',
+ coupons => '',
 
  tla_xml_key => '',
 
@@ -344,7 +344,7 @@ $c=
 
  smscoin_id => '',
 
- external_links => 'http://sibsoft.net|SibSoft~http://xfilesharing.com|XFilesharing demo~http://sibsoft.net/xfilesharing.html|File sharing script',
+ external_links => 'https://sibsoft.net|SibSoft~https://xfilesharing.com|XFilesharing Pro Demo~https://sibsoft.net/xfilesharing.html|File sharing script',
 
  # Language list to show on site
  languages_list => ['english','russian','german','french','arabic','turkish','polish','thai','spanish','japan','hungary','indonesia','dutch','hebrew'],
@@ -401,7 +401,7 @@ $c=
 
  moneybookers_email => '',
 
- daopay_app_id => '12345',
+ daopay_app_id => '',
 
  cashu_merchant_id => '',
 
@@ -555,9 +555,9 @@ $c=
 
  paypal_trial_days => '',
 
- happy_hours => '4,5,6',
+ happy_hours => '',
 
- no_anon_payments => '1',
+ no_anon_payments => '0',
 
  maintenance_upload => '', 
  maintenance_upload_msg => '', 
@@ -567,7 +567,7 @@ $c=
  maintenance_full_msg => '',
  
  upload_disabled_countries => '', 
- download_disabled_countries => 'VN', 
+ download_disabled_countries => '', 
 
  torrent_autorestart => '1',
 
@@ -707,7 +707,7 @@ $c=
 
  ### NEW 2.4 ####
  adfly_uid => '',
- currency_symbol => '',
+ currency_symbol => '$',
  file_public_default => '1',
  agree_tos_default => '1',
  mask_dl_link => '',
@@ -719,7 +719,7 @@ $c=
  ftp_mod_prem_only => '',
  m_e_preserve_orig => '',
  m_e_copy_when_possible => '',
- captcha_attempts_h => '',
+ captcha_attempts_h => '3',
  traffic_plans => '1.75=1.74,2.15=2.07,3.37=3.49',
  m_n_upload_speed_anon => '',
  m_n_limit_conn_anon => '',
@@ -736,6 +736,8 @@ $c=
  ftp_upload_reg => '',
  ftp_upload_prem => '',
 
+ # NEW 2.4.1
+ no_adblock_earnings => '',
 };
 
 1;

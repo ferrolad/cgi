@@ -115,12 +115,16 @@ sub chargeAffs
    my $aff = $self->{db}->SelectRow("SELECT * FROM Users WHERE usr_id=?", $transaction->{aff_id});
    my $sale_aff_percent = $c->{sale_aff_percent};
    if($self->{ses}->iPlg('p') && $aff)
-	{
+   {
       $sale_aff_percent = $c->{"m_y_".lc($aff->{usr_profit_mode})."_$stats"};
       $sale_aff_percent = $aff->{"usr_$stats\_percent"} if $aff->{"usr_$stats\_percent"};
       $sale_aff_percent = 0 if $c->{m_y_manual_approve} && !$aff->{usr_aff_enabled};
       print STDERR "Profit mode=$aff->{usr_profit_mode}, stats = $stats, aff percent = $sale_aff_percent";
    }
+
+   my $settings = $self->{db}->SelectRow("SELECT * FROM PaymentSettings WHERE name=?", $transaction->{plugin});
+   $transaction->{amount} *= (1 - $settings->{commission} / 100) if $settings && $settings->{commission};
+
    my $profit_uploader = $self->chargeAff($aff, $transaction->{amount} * $sale_aff_percent / 100, stats => $stats)
       if $aff && $sale_aff_percent;
 
@@ -190,17 +194,19 @@ sub createTransaction
                       ref_url=?,
                       email=?,
                       verified=?,
-                      target=?",
+                      target=?,
+		      plugin=?",
                    $id,
                    $opts{usr_id},
                    $opts{amount},
                    $opts{days}||0,
-                   $ENV{REMOTE_ADDR}||'0.0.0.0',
+                   $self->{ses}->getIP||'0.0.0.0',
                    $opts{aff_id}||0,
                    $opts{referer}||'',
                    $opts{email}||'',
                    $opts{verified}||0,
                    $opts{target}||'',
+                   $opts{type}||'',
                    );
    return ( $self->{db}->SelectRow("SELECT * FROM Transactions WHERE id=?", $id) );
 }

@@ -92,12 +92,13 @@ elsif($transaction->{target} eq 'reseller')
 else
 {
 	my $days = $ipn->upgradePremium($transaction);
+	my $expire = $db->SelectOne("SELECT usr_premium_expire FROM Users WHERE usr_id=?", $user->{usr_id});
 	
 	# Send email to user
 	my $t = $ses->CreateTemplate("payment_notification.html");
 	$t->param('amount' => $transaction->{amount},
 	                'days'   => $days,
-	                'expire' => $user->{usr_premium_expire},
+	                'expire' => $expire,
 	                'login'  => $transaction->{login},
 	                'password' => $transaction->{password},
 	         );
@@ -108,7 +109,7 @@ else
 	my $t = $ses->CreateTemplate("payment_notification_admin.html");
 	$t->param('amount' => $transaction->{amount},
 	                'days'   => $days,
-	                'expire' => $user->{usr_premium_expire},
+	                'expire' => $expire,
 	                'usr_id' => $user->{usr_id},
 	                'usr_login' => $user->{usr_login},
 	         );

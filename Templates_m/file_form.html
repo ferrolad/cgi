@@ -1,6 +1,7 @@
 <Form method="POST">
 <input type="hidden" name="op" value="<TMPL_VAR op>">
 <input type="hidden" name="file_id" value="<TMPL_VAR file_id>">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <Table class="tbl1" cellpadding=3 cellspacing=1>
 <TR class="hdr"><TD colspan=2><TMPL_VAR lang_edit> <TMPL_VAR lang_fname_descr></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_file_name></b></TD><TD><input type="text" name="file_name" value="<TMPL_VAR file_name>"></TD></TR>
@@ -21,7 +22,7 @@
 <Form method="POST">
 <input type="hidden" name="op" value="<TMPL_VAR op>">
 <input type="hidden" name="file_id" value="<TMPL_VAR file_id>">
-
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <Table class="tbl1" cellpadding=3 cellspacing=1>
 <TR class="hdr"><TD colspan=2>RAR archive management</TD></TR>
 

@@ -1,15 +1,25 @@
 <h2><TMPL_VAR lang_adm_user_mgmt></h2>
 <a href="?op=admin_users_add"><TMPL_VAR lang_add_new_users></a> &nbsp; 
 <a href="?op=admin_mass_email"><TMPL_VAR lang_send_mass_email></a> &nbsp; 
-<a href="?op=admin_bans_list">Banned users / IPs</a><br><br>
+<a href="?op=admin_bans_list"><TMPL_VAR lang_banned_users_ips></a><br><br>
 <form style="margin:0;">
 <input type="hidden" name="op" value="admin_users">
-<TMPL_VAR lang_search>:<input type="text" name="key" value="<TMPL_VAR key>" size=16><br>
-With money &gt;= <TMPL_VAR currency_symbol><input type="text" name="money" value="<TMPL_VAR money>" size=4><br>
-<input type="checkbox" name="premium_only" id="prem" value=1<TMPL_IF premium_only> checked</TMPL_IF>><label for="prem"><TMPL_VAR lang_premium_only></label><br>
+<TMPL_VAR lang_search>:<input type="text" name="key" value="<TMPL_VAR key>" size=16>
+Status:
+<select name="status">
+<option>--</option>
+<option value="adm"<TMPL_IF search_status_adm> selected</TMPL_IF>>Admin</option>
+<option value="aff_enabled"<TMPL_IF search_status_aff_enabled> selected</TMPL_IF>>Affiliate</option>
+<option value="dmca_agent"<TMPL_IF search_status_dmca_agent> selected</TMPL_IF>>DMCA agent</option>
+<option value="mod"<TMPL_IF search_status_mod> selected</TMPL_IF>>Moderator</option>
+<option value="free"<TMPL_IF search_status_free> selected</TMPL_IF>>Free</option>
+<option value="premium"<TMPL_IF search_status_premium> selected</TMPL_IF>>Premium</option>
+<option value="reseller"<TMPL_IF search_status_reseller> selected</TMPL_IF>>Reseller</option>
+<option value="pending"<TMPL_IF search_status_pending> selected</TMPL_IF>>Pending</option>
+<option value="banned"<TMPL_IF search_status_banned> selected</TMPL_IF>>Banned</option>
+</select>
 <input type="submit" value="<TMPL_VAR lang_search>">
 </form>
-<br>
 
 <TMPL_IF msg><p class="ok"><TMPL_VAR msg></p></TMPL_IF>
 
@@ -20,10 +30,10 @@ With money &gt;= <TMPL_VAR currency_symbol><input type="text" name="money" value
 <TR class="hdr">
 <TD></TD>
 <TD title="Sort by Username"><TMPL_VAR s_usr_login><TMPL_VAR lang_username><TMPL_VAR s2_usr_login></TD>
-<TD title="Sort by E-mail"><TMPL_VAR s_usr_email>Email<TMPL_VAR s2_usr_email></TD>
+<TD title="Sort by E-mail"><TMPL_VAR s_usr_email><TMPL_VAR lang_email><TMPL_VAR s2_usr_email></TD>
 <TD title="Sort by Number of Files"><TMPL_VAR s_files><TMPL_VAR lang_files_hdr><TMPL_VAR s2_files></TD>
 <TD title="Sort by Disk Usage"><TMPL_VAR s_disk_used><TMPL_VAR lang_disk_used><TMPL_VAR s2_disk_used></TD>
-<TD><TMPL_VAR s_usr_money>Money<TMPL_VAR s2_usr_money></TD>
+<TD><TMPL_VAR s_usr_money><TMPL_VAR lang_money><TMPL_VAR s2_usr_money></TD>
 <TD title="Sort by Last Visit"><TMPL_VAR s_last_visit><TMPL_VAR lang_last_visit><TMPL_VAR s2_last_visit></TD>
 <TD title="Sort by Creation date"><TMPL_VAR s_usr_created><TMPL_VAR lang_created><TMPL_VAR s2_usr_created></TD>
 <TD>IP</TD>
@@ -35,7 +45,7 @@ With money &gt;= <TMPL_VAR currency_symbol><input type="text" name="money" value
 <TD align=left><a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a><TMPL_IF premium><img src="<TMPL_VAR site_url>/images/star.gif" title="Premium"></TMPL_IF></TD>
 <TD align=left><small><TMPL_VAR usr_email></small></TD>
 <TMPL_IF status_PENDING>
-<TD colspan=4><a href="?op=admin_users&resend_activation=<TMPL_VAR usr_id>">Re-send activation email</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href="?op=admin_users&activate=<TMPL_VAR usr_id>">Activate</a></TD>
+<TD colspan=4><a href="?op=admin_users&resend_activation=<TMPL_VAR usr_id>">Re-send activation email</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href="?op=admin_users&activate=<TMPL_VAR usr_id>&token=<TMPL_VAR token>">Activate</a></TD>
 <TMPL_ELSE>
 <TD align=center><a href="?op=admin_files&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR files></a></TD>
 <TD align=center><TMPL_VAR disk_used></TD>
@@ -49,8 +59,8 @@ With money &gt;= <TMPL_VAR currency_symbol><input type="text" name="money" value
 </TR>
 </TMPL_LOOP>
 <TR class="hdr"><TD colspan=12 style="text-align:left;">
-    <input type="submit" name="del_users" value="Delete selected users" class="" onClick="return confirm('Delete users with all their files?')"> &nbsp; 
-    <input type="submit" name="mass_email" value="Send email to selected users" class="">
+    <input type="submit" name="del_users" value="<TMPL_VAR lang_delete_selected_users>" class="" onClick="return confirm('Delete users with all their files?')"> &nbsp; 
+    <input type="submit" name="mass_email" value="<TMPL_VAR lang_send_mail_selected>" class="">
 </TD></TR>
 </Table>
 </Form>
@@ -68,13 +78,13 @@ With money &gt;= <TMPL_VAR currency_symbol><input type="text" name="money" value
 <Form method="POST">
 <input type="hidden" name="op" value="admin_users">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
-Delete PENDING users created more than <input type="text" name="del_pending" size=2> days ago
+<TMPL_VAR lang_delete_pending> <input type="text" name="del_pending" size=2> <TMPL_VAR lang_days_ago>
 <input type="submit" name="submit_del_pending" value="<TMPL_VAR lang_submit>">
 </Form>
 
 <Form method="POST">
 <input type="hidden" name="op" value="admin_users">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
-Delete users not logged more than <input type="text" name="del_inactive" size=2> days
+<TMPL_VAR lang_delete_inactive> <input type="text" name="del_inactive" size=2> <TMPL_VAR lang_days>
 <input type="submit" name="submit_del_inactive" value="<TMPL_VAR lang_submit>">
 </Form>

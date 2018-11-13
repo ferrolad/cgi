@@ -31,13 +31,16 @@ $f->{$_}=$q->param($_) for $q->param;
 
 &CompileChunks if $f->{op} eq 'compile';## && $ENV{HTTP_USER_AGENT} eq 'XFS-FSUploader';
 
+&Send( "OK:0:ERROR: unknown main server IP") if $c->{allowed_ip} && $ENV{REMOTE_ADDR} ne $c->{allowed_ip};
 &Send( "OK:0:ERROR: fs_key is wrong or not empty") if $f->{fs_key} ne $c->{fs_key};
+&Send( "OK:0:ERROR: you have to set fs_key first") if !$c->{fs_key} && $f->{op} !~ /^(test|update_conf)$/;
 
 #die"Error2" unless $ENV{HTTP_USER_AGENT} eq 'XFS-FSServer';
 
 my $sub={
          gen_link       => \&GenerateLink,
          expire_sym     => \&ExpireSymlinks,
+         expire_temp    => \&ExpireTempFiles,
          del_files      => \&DeleteFiles,
          test           => \&Test,
          update_conf    => \&UpdateConfig,
@@ -80,7 +83,7 @@ sub GenerateLink
 
    my $file_path = $f->{orig} ? "$orig_dir/$dx/$file_code" : "$c->{upload_dir}/$dx/$file_code";
 
-   &Send("ERROR:no_file") unless -f $file_path;
+   &Send("ERROR:no_file $file_path") unless -f $file_path;
    my $x1 = int(rand(10));
    my $rand = &randchar(14);
    unless(-d "$c->{htdocs_dir}/$x1")
@@ -115,28 +118,44 @@ sub ExpireSymlinks
    for my $i (0..9)
    {
       next unless -d "$c->{htdocs_dir}/$i";
-      opendir(DIR, "$c->{htdocs_dir}/$i") || next;
-      my $time = time;
-      while( defined(my $fn=readdir(DIR)) )
-      {
-         next if $fn =~ /^\.{1,2}$/;
-         my $file = "$c->{htdocs_dir}/$i/$fn";
-         my $ftime = (lstat($file))[9];
-         next if ($time - $ftime) < 3600*$hours;
-         if(-f $file)
-         {
-            unlink($file);
-         }
-         else
-         {
-            rmtree($file);
-         }
-         print"\n";
-      }
-      closedir(DIR);
+      &TmpWatch("$c->{htdocs_dir}/$i", 3600);
    }
    print"OK";
    exit;
+}
+
+sub ExpireTempFiles
+{
+   &TmpWatch($c->{temp_dir}, 3600);
+   &TmpWatch($c->{htdocs_tmp_dir}, 3600);
+   print "Content-type: text/html\n\nOK\n";
+   exit();
+}
+
+sub TmpWatch
+{
+   my ($dir, $keep_recent) = @_;
+   die("Refusing to remove all files in $dir") if $dir !~ /\/(temp|tmp|files)(\/|$)/;
+
+   opendir(DIR, $dir) || die("No such dir: $dir");
+   my $time = time;
+   while( defined(my $fn=readdir(DIR)) )
+   {
+      next if $fn =~ /^\.{1,2}$/;
+      my $file = "$dir/$fn";
+      my $ftime = (lstat($file))[9];
+      next if ($time - $ftime) < $keep_recent;
+      if(-f $file)
+      {
+         unlink($file);
+      }
+      else
+      {
+         rmtree($file);
+      }
+      print"\n";
+   }
+   closedir(DIR);
 }
 
 sub DeleteFiles
@@ -168,7 +187,7 @@ sub DeleteFiles
 sub CheckFiles
 {
    my @files = @{ JSON::decode_json($f->{files}) };
-   $_->{dx} = sprintf("%05d",$_->{file_real_id}||$_->{file_id}/$c->{files_per_folder}) for @files;
+   $_->{dx} = sprintf("%05d",($_->{file_real_id}||$_->{file_id})/$c->{files_per_folder}) for @files;
    my @nofiles = grep { ! -f "$c->{upload_dir}/$_->{dx}/$_->{file_real}" } @files;
    &SendJSON( \@nofiles );
 }
@@ -278,22 +297,6 @@ sub Test
    # XFSConfig.pm
    push @tests, open(F,'XFSConfig.pm') ? 'config read: OK' : "config read: ERROR($!)";
 
-   if($f->{video_test})
-   {
-      my $x = `mplayer`;
-      push @tests, $x=~/options/is ? 'mplayer: OK' : 'mplayer: ERROR';
-
-      my $x = `$c->{ffmpeg} 2>&1`;
-      push @tests, $x=~/version/is ? 'ffmpeg: OK' : 'ffmpeg: ERROR';
-
-      if($c->{mp4box_path})
-      {
-          my $mp4 = $c->{mp4box_path}||'MP4Box';
-          my $x = `$mp4`;
-          push @tests, $x=~/option/is ? 'MP4Box: OK' : 'MP4Box: ERROR';
-      }
-   }
-
    if($f->{torrent_test})
    {
       push @tests, -e "$c->{cgi_dir}/Torrents/bitflu.pl" ? 'bitflu: OK' : 'bitflu: ERROR';
@@ -327,6 +330,8 @@ sub UpdateConfig
       /^(.+?):(.*)$/;
       $cc->{$1}=$2;
    }
+
+   $cc->{allowed_ip} = $ENV{REMOTE_ADDR} if !$c->{allowed_ip};
 
    eval { PerlConfig::Write("$c->{cgi_dir}/XFSConfig.pm", $cc, fields => [ keys %{$cc} ]) };
    &Send($@) if $@;
@@ -573,20 +578,22 @@ sub rarProcess
   push @baggage_opts, "$file_path";
   push @baggage_opts, @{ JSON::decode_json($f->{files}) } if $f->{files};
 
+  if($f->{op} eq 'rar_file_del')
+  {
+     withSupressOutput(sub { system($prog, 'd', @baggage_opts) });
+     &Send(&XUpload::rarGetInfo($file_path, file_name_orig => $f->{file_name}));
+  }
+   
   my $glob = "*.part*.$ext" if $f->{op} eq 'rar_split' && $prog eq 'rar';
   $glob = "*.part.$ext.*" if $f->{op} eq 'rar_split' && $prog eq '7za';
   &withTempDirectory(glob => $glob,
                      onfinish => 'ProcessFile',
                      sub {
-	                     system($prog, 'd', @baggage_opts), return
-                            if $f->{op} eq 'rar_file_del';
 	                     system($prog, 'e', @baggage_opts);
 	                     system($prog, 'a', "-v$f->{part_size}", "$f->{file_name}.part.$ext", '.')
                             if $f->{op} eq 'rar_split';
                      });
 
-  &Send(&XUpload::rarGetInfo($file_path, file_name_orig => $f->{file_name}))
-    if $f->{op} eq 'rar_file_del';
   &Send("OK");
 }
 

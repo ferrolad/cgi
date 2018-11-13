@@ -6,6 +6,7 @@
 <Form method="POST">
 <input type="hidden" name="op" value="forgot_pass">
 <input type="hidden" name="rand" value="<TMPL_VAR rand>">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <b><TMPL_VAR lang_enter_login_email>:</b><br><input type="text" name="usr_login" value="<TMPL_VAR usr_login>"><br>
 <TMPL_IF msg><font class="err"><TMPL_VAR msg></font><br><br></TMPL_IF><input type="submit" value=" Reset my password ">
 <TMPL_IF captcha_on>

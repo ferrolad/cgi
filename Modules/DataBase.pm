@@ -63,7 +63,8 @@ sub UnInitDB{
 sub Exec
 {
   my $self=shift;
-  $self->{dbh}->do(shift,undef,@_) || die"Can't exec:\n".$self->{dbh}->errstr;
+  my ($pkg, $fn, $ln) = caller();
+  $self->{dbh}->do(shift,undef,@_) || die"Can't exec at $fn:$ln:\n".$self->{dbh}->errstr;
   $self->{'exec'}++;
 }
 
@@ -80,7 +81,8 @@ sub SelectRow
 {
   my $self=shift;
   my $res = $self->{dbh}->selectrow_hashref(shift,undef,@_);
-  die"Can't execute select:\n".$self->{dbh}->errstr if $self->{dbh}->err;
+  my ($pkg, $fn, $ln) = caller();
+  die"Can't execute select at $fn:$ln:\n".$self->{dbh}->errstr if $self->{dbh}->err;
   $self->{'select'}++;
   return $res;
 }

@@ -44,6 +44,7 @@ if(document.body.addEventListener) {
 
 <div id="div_file" class="upload_block">
 	<form id="uploadfile" action="<TMPL_VAR srv_cgi_url>/upload.cgi?upload_type=file" method="POST">
+		<input type="hidden" name="token" value="<TMPL_VAR token>">
 		<input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
 		<input type="hidden" name="utype" value="<TMPL_VAR utype>">
 		<div class="browsebtn">
@@ -87,6 +88,7 @@ if(document.body.addEventListener) {
 <input type="hidden" name="sess_id" value="<TMPL_VAR sess_id>">
 <input type="hidden" name="upload_type" value="url">
 <input type="hidden" name="srv_tmp_url" value="<TMPL_VAR srv_tmp_url>">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <TMPL_LOOP site_logins>
 <input type="hidden" name="<TMPL_VAR name>" value="<TMPL_VAR value>">
 </TMPL_LOOP>
@@ -118,7 +120,7 @@ if(document.body.addEventListener) {
 </form>
 <TMPL_ELSE>
 
-<b><TMPL_IF my_login><a href="?op=payments"><TMPL_VAR lang_upgrade_account></a><TMPL_ELSE><a href="?op=registration"><TMPL_VAR lang_register_on_site></a></TMPL_IF><br><TMPL_VAR lang_to_use> <TMPL_VAR lang_url_upload></b>
+<b><TMPL_IF my_login><a href="?op=payments"><TMPL_VAR lang_upgrade_account></a><TMPL_ELSE><a href="<TMPL_VAR site_url>/register.html"><TMPL_VAR lang_register_on_site></a></TMPL_IF><br><TMPL_VAR lang_to_use> <TMPL_VAR lang_url_upload></b>
 
 </TMPL_IF>
 <br>

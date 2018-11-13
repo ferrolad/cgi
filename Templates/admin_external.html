@@ -5,14 +5,15 @@
 <form action="" method="POST">
 <input type="hidden" name="op" value="admin_external">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
-External domain: <input type="text" name="domain"> <input type="submit" name="generate_key" value="Generate key">
-<a href="#" onclick="return showHelp()">[?]</a>
+<TMPL_VAR lang_external_domain>: <input type="text" name="domain" placeholder="<TMPL_VAR lang_eg> myfriendsite.com"> <input type="submit" name="generate_key" value="<TMPL_VAR lang_generate_key>">
+<br><br>
+<i><TMPL_VAR lang_admin_external_description></i>
 <table class="tbl1" width="640">
 <tr class="hdr">
-   <td>Domain</td>
-   <td>API Key</td>
-   <td>Stats</td>
-   <td>Permissions</td>
+   <td><TMPL_VAR lang_domain></td>
+   <td><TMPL_VAR lang_api_key></td>
+   <td><TMPL_VAR lang_stats></td>
+   <td><TMPL_VAR lang_permissions></td>
    <td></td>
 </tr>
 <TMPL_IF list>
@@ -21,7 +22,7 @@ External domain: <input type="text" name="domain"> <input type="submit" name="ge
    <td><TMPL_VAR domain></td>
    <td><TMPL_VAR key_id><TMPL_VAR key_code></td>
    <td align="center">
-      <a name="stats" href="?op=admin_external&stats=<TMPL_VAR key_id>"><TMPL_VAR requests_last_month> reqs / last month</a>
+      <a name="stats" href="?op=admin_external&stats=<TMPL_VAR key_id>&token=<TMPL_VAR token>"><TMPL_VAR requests_last_month> <TMPL_VAR lang_reqs_last_month></a>
    </td>
    <td>
       <input type="checkbox" class="perms" id="perm_download_<TMPL_VAR key_id>" name="perm_download" <TMPL_IF perm_download>checked</TMPL_IF>><label for="perm_download_<TMPL_VAR key_id>"> Download</label><br>

@@ -97,7 +97,7 @@ sub ProcessFile
 
    if($c->{m_v} && $file->{file_name_orig}=~/\.(avi|divx|xvid|mpg|mpeg|vob|mov|3gp|flv|mp4|wmv|mkv)$/i)
    {
-      my $info = &saferun("mplayer", $file->{file_tmp}, "-identify", "-frames", "0", "-quiet", "-ao", "null", "-vo", "null");
+      my $info = &saferun("./mplayer", $file->{file_tmp}, "-identify", "-frames", "0", "-quiet", "-ao", "null", "-vo", "null");
       my @fields = qw(ID_LENGTH ID_VIDEO_WIDTH ID_VIDEO_HEIGHT ID_VIDEO_BITRATE ID_AUDIO_BITRATE ID_AUDIO_RATE ID_VIDEO_CODEC ID_AUDIO_CODEC ID_VIDEO_FPS);
       do{($f->{$_})=$info=~/$_=([\w\.]{2,})/is} for @fields;
       $f->{ID_LENGTH} = int $f->{ID_LENGTH};
@@ -155,6 +155,8 @@ sub ProcessFile
                        file_ip      => $f->{ip},
                        fld_id       => $f->{to_folder}||'', # Upload form
                        fld_path     => $f->{fld_path}||'',
+                       check_login  => $f->{check_login}||'',
+                       check_pass   => $f->{check_pass}||'',
                        compile      => $f->{compile}||'', # Desktop uploader
                        usr_login    => $file->{usr_login}||$f->{usr_login}||'',
                        uploader_id  => $f->{uploader_id}||0,
@@ -324,7 +326,7 @@ sub SaveFile
    if($c->{m_v} && $file->{file_spec}=~/^V/)
    {
       $file->{type}='video';
-      &saferun("mplayer", "$c->{upload_dir}/$dx/$file->{file_code}", "-ss", "00:05", "-vo", "jpeg:outdir=$c->{temp_dir}:quality=65", "-nosound", "-frames", "1", "-slave", "-really-quiet", "-nojoystick", "-nolirc", "-nocache", "-noautosub");
+      &saferun("./mplayer", "$c->{upload_dir}/$dx/$file->{file_code}", "-ss", "00:05", "-vo", "jpeg:outdir=$c->{temp_dir}:quality=65", "-nosound", "-frames", "1", "-slave", "-really-quiet", "-nojoystick", "-nolirc", "-nocache", "-noautosub");
       if(-e "$c->{temp_dir}/00000001.jpg")
       {
        move("$c->{temp_dir}/00000001.jpg","$idir/$dx/$file->{file_code}.jpg");
@@ -333,7 +335,7 @@ sub SaveFile
       {
         symlink("$idir/default.jpg","$idir/$dx/$file->{file_code}.jpg");
       }
-      &saferun("mplayer", "$c->{upload_dir}/$dx/$file->{file_code}", "-ss", "00:05", "-vf", "scale=200:-3", "-vo", "jpeg:outdir=$c->{temp_dir}:quality=65", "-nosound", "-frames", "1", "-slave", "-really-quiet", "-nojoystick", "-nolirc", "-nocache", "-noautosub");
+      &saferun("./mplayer", "$c->{upload_dir}/$dx/$file->{file_code}", "-ss", "00:05", "-vf", "scale=200:-3", "-vo", "jpeg:outdir=$c->{temp_dir}:quality=65", "-nosound", "-frames", "1", "-slave", "-really-quiet", "-nojoystick", "-nolirc", "-nocache", "-noautosub");
       if(-e "$c->{temp_dir}/00000001.jpg")
       {
        move("$c->{temp_dir}/00000001.jpg","$idir/$dx/$file->{file_code}_t.jpg");

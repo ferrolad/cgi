@@ -10,6 +10,7 @@
 <form method="post">
 <input type="hidden" name="op" value="payments">
 <input type="hidden" name="reseller" value="1">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 Add money to reseller balance: $<input type="text" name="amount" value="50.00" size=6>
 <select name="type">
 <TMPL_LOOP payment_types>

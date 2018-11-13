@@ -5,7 +5,7 @@
 <div class="cmt_hdr">
 <b><TMPL_VAR cmt_name></b>
 <TMPL_IF email> &nbsp; <a href="mailto:<TMPL_VAR email>">@</a></TMPL_IF>
-<TMPL_IF adm> &nbsp; <a name="delete" href="<TMPL_VAR site_url>/?op=cmt_del&amp;cmt_id=<TMPL_VAR cmt_id>">[X]</a> <TMPL_VAR ip></TMPL_IF>
+<TMPL_IF adm> &nbsp; <a name="delete" href="<TMPL_VAR site_url>/?op=admin_comments&del_selected=1&cmt_id=<TMPL_VAR cmt_id>&token=<TMPL_VAR token_admin_comments>">[X]</a> <TMPL_VAR ip></TMPL_IF>
  &nbsp; <TMPL_VAR date>
 </div>
 <p name="cmt_body"><TMPL_VAR cmt_text></p>
@@ -15,8 +15,9 @@
 
 <div id="cmt_form">
 <Form method="POST" action="<TMPL_VAR site_url>/">
-<input type="hidden" name="op" value="comment_add">
-<input type="hidden" name="token" value="<TMPL_VAR token>">
+<input type="hidden" name="op" value="comments">
+<input type="hidden" name="add" value="1">
+<input type="hidden" name="token" value="<TMPL_VAR token_comments>">
 <h2><TMPL_VAR lang_leave_reply></h2>
 <input type="hidden" name="cmt_type" value="<TMPL_VAR cmt_type>">
 <input type="hidden" name="cmt_ext_id" value="<TMPL_VAR cmt_ext_id>">

@@ -12,8 +12,19 @@
 <TMPL_VAR lang_uploaded> <TMPL_VAR created> <TMPL_VAR lang_days_ago>
 <br>
 <TMPL_VAR file_downloads> <TMPL_VAR lang_downloads>
-<TMPL_IF add_to_account><div id="am<TMPL_VAR file_id>"><a href="#" class="url2" onClick="return jah('<TMPL_VAR site_url>/?op=my_files&add_my_acc=<TMPL_VAR file_code>','am<TMPL_VAR file_id>');">+ <TMPL_VAR lang_add_to_my_account></a></div></TMPL_IF>
+<TMPL_IF add_to_account><div id="am<TMPL_VAR file_id>"><a href="#" class="url2" onClick="return addMyAcc(this, '<TMPL_VAR file_code>');">+ <TMPL_VAR lang_add_to_my_account></a></div></TMPL_IF>
 
 </TD>
 <TMPL_IF tr></TR><TR align=center></TMPL_IF>
 </TMPL_LOOP>
+
+<script>
+function addMyAcc(element, file_code) {
+   $.ajax({
+      url: '<TMPL_VAR site_url>/?op=my_files&add_my_acc=' + file_code + '&token=<TMPL_VAR token_my_files>',
+      success: function() {
+         $(element).replaceWith("Added");
+      }
+   });
+}
+</script>

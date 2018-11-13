@@ -1,15 +1,15 @@
 <Form style="margin:0;" method="POST">
 <input type="hidden" name="op" value="admin_comments">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
-<h2>Comments</h2>
+<h2><TMPL_VAR lang_admin_comments></h2>
 <input type="text" name="key" value="<TMPL_VAR key>"><input type="submit" value="<TMPL_VAR lang_search>">
 <br><br>
 <Table class="tbl1" name="comments" cellspacing=1 cellpadding=2 width=800>
 <TR class="hdr">
 <TD width="1%"><input type="checkbox" name="cmt_id" class="selall" value="0"></TD>
-<TD>Topic</TD>
-<TD>Text</TD>
-<TD>User</TD>
+<TD><TMPL_VAR lang_topic></TD>
+<TD><TMPL_VAR lang_text></TD>
+<TD><TMPL_VAR lang_username></TD>
 <TD>IP</TD>
 <TD colspan="2"></TD>
 </TR>

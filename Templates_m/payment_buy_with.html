@@ -5,7 +5,7 @@
 <div data-role="collapsible" data-collapsed-icon="arrow-d" data-expanded-icon="arrow-u">
 <h1><TMPL_VAR amount> <TMPL_VAR currency_code> / <TMPL_VAR days> <TMPL_VAR lang_days></h1>
 <TMPL_LOOP payment_types>
-<a href="<TMPL_VAR site_url>/?op=payments&amp;amount=<TMPL_VAR amount>&amp;type=<TMPL_VAR name>&amp;r=<TMPL_VAR rand>" class="ask_email"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" border=0 alt="<TMPL_VAR title>"></a><br>
+<a href="<TMPL_VAR site_url>/?op=payments&amp;amount=<TMPL_VAR amount>&amp;type=<TMPL_VAR name>&amp;r=<TMPL_VAR rand>&amp;token=<TMPL_VAR token>" class="ask_email"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" border=0 alt="<TMPL_VAR title>"></a><br>
 </TMPL_LOOP>
 </div>
 </TMPL_LOOP>

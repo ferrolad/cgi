@@ -1,3 +1,27 @@
+<style>
+.fileName {
+  position: relative;
+  width: 90%;
+}
+.fileName a {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.fileName:after {
+  content: attr(data-filetype);
+  position: absolute;
+  left: 90%;
+  top: 0;
+}
+.fileName:hover {
+  width:auto
+}
+.fileName:hover:after {
+  display: none;  
+}
+
+</style>
 <TMPL_VAR paging>
 
 <Form style="margin:0;" method="POST" action="<TMPL_VAR site_url>/" name="F1">
@@ -35,13 +59,13 @@
 
 <br>
 
-<Table class="tbl1" cellpadding=3 cellspacing=1 id="xfiles" width="99%">
+<Table class="tbl1" cellpadding=3 cellspacing=1 id="xfiles" width="96%">
 <TMPL_IF files>
 <table width="99%">
 <TR><TD>
 <ul data-role="listview" data-inset="true">
 <TMPL_LOOP files>
-    <li data-icon="gear">
+    <li data-icon="gear" class='fileName'>
         <a class="file_row" href="<TMPL_VAR download_link>" onclick="return filePopup('<TMPL_VAR file_id>', '<TMPL_VAR file_code>', '<TMPL_VAR file_name>', '<TMPL_VAR download_link>');">
             <TMPL_VAR file_name>
             <br>

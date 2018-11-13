@@ -14,7 +14,7 @@
 
 <br>
 
-<TMPL_IF restartall><input type="button" value="Restart all stucked" onclick="window.location='?op=admin_transfer_list&restart_all=1&ids=<TMPL_VAR restartall>'"></a><br><br></TMPL_IF>
+<TMPL_IF restartall><input type="button" value="Restart all stucked" onclick="window.location='?op=admin_transfer_list&restart_all=1&ids=<TMPL_VAR restartall>&token=<TMPL_VAR token>'"></a><br><br></TMPL_IF>
 
 <form method="POST" action="">
 <input type="hidden" name="op" value="admin_transfer_list">

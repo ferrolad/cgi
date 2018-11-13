@@ -1,4 +1,10 @@
 #!/usr/bin/perl -X
-use index_m;
+use strict;
+use XFileConfig;
+use Engine::Core;
+use CGI::Carp qw(fatalsToBrowser);
+use Log;
 
-index_m::run();
+Log->new(filename => 'index.log');
+
+Engine::Core::run();

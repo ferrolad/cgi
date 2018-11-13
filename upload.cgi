@@ -39,7 +39,7 @@ print("Content-type:text/html\n\nXFS"),exit if $ENV{QUERY_STRING}=~/mode=test/;
 
 my $utype = $cg->param('utype');
 $utype||='anon';
-$c->{$_}=$c->{"$_\_$utype"} for qw(enabled max_upload_files max_upload_filesize max_rs_leech remote_url leech);
+$c->{$_}=$c->{"$_\_$utype"} for qw(enabled max_upload_files max_upload_filesize max_rs_leech remote_url leech remote_upload_speed);
 
 print STDERR "Starting upload. Size: $ENV{'CONTENT_LENGTH'} Upload type: $upload_type\n";
 my ($sid) = ($ENV{QUERY_STRING}=~/upload_id=(\d+)/); # get the random id for temp files
@@ -94,7 +94,9 @@ sub ProcessFiles
         if $file->{file_error};
 
 # --------------------
-        $file = &XUpload::ProcessFile($file, { %$f, file_upload_method => $upload_type }) unless $file->{file_status};
+        $file = &XUpload::ProcessFile($file, { %$f,
+		file_upload_method => $upload_type eq 'file' ? 'web' : $upload_type
+	}) unless $file->{file_status};
 # --------------------
 
         $file->{file_status}||='OK';
@@ -153,6 +155,7 @@ sub URLUpload
     my $ua = LWP::UserAgent->new(timeout => 90,
             requests_redirectable => ['GET', 'HEAD','POST'],
             agent   => 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6 (.NET CLR 3.5.30729)',
+            protocols_allowed => ['http', 'https', 'ftp'],
             cookie_jar => HTTP::Cookies->new( hide_cookie2 => 1, ignore_discard => 1 ) );
 
     $Plugin::browser = $ua;
@@ -204,6 +207,20 @@ sub URLUpload
         return { file_tmp => $Plugin::tmpfile, file_name_orig => $ret->{filename}, file_size => $ret->{filesize} };
     }
 
+    sub ZeveraGetLink
+    {
+        my ($url) = @_;
+        my ($login, $pass) = split(':', &randomize($c->{"zevera_logins"}), 2);
+
+        my $ua = LWP::UserAgent->new(agent => 'XFileSharingPro', requests_redirectable => []);
+        my $check = $ua->get("http://api.zevera.com/jDownloader.ashx?cmd=checklink&login=$login&pass=$pass&olink=$url")->decoded_content;
+        return if $check ne 'Alive';
+
+        return $ua
+            ->get("http://api.zevera.com/jDownloader.ashx?cmd=generatedownloaddirect&login=$login&pass=$pass&olink=$url")
+            ->header("Location");
+    }
+
     sub APILeech
     {
         my ($domain, $url) = @_;
@@ -225,7 +242,8 @@ sub URLUpload
     sub DirectDownload
     {
         my ($url) = @_;
-        return if $url !~ /^(http|https|ftp):\/\//;
+        $url = "http://$url" if($url !~ /^(\w+):\/\//);
+
         my $tempfile = "$c->{temp_dir}/".join('', map int rand(10), 1..10);
         open FILE, ">$tempfile"|| die"Can't open dest file:$!";
         my $req = HTTP::Request->new(GET => $url);
@@ -234,8 +252,13 @@ sub URLUpload
 
         if($c->{max_rs_leech})
         {
-	        return { file_error => 'No leech traffic left' } if leech_traffic_left() < $resp->content_length;
-	        register_leeched_traffic($resp->content_length);
+           return { file_error => 'No leech traffic left' } if leech_traffic_left() < $resp->content_length;
+           register_leeched_traffic($resp->content_length);
+        }
+        
+        if($resp->is_error)
+        {
+           return { file_error => 'Remote upload failed: ' . _secure_str($resp->status_line) };
         }
 
         return { file_tmp => $tempfile, file_name_orig => &computeName($resp), file_size => -s $tempfile };
@@ -246,19 +269,23 @@ sub URLUpload
     {
         my $domain = $1 if $url =~ /^https?:\/\/([^\/:]+)/; 
         my ($plugin) = grep { $_->check_link($url) } @{ $ses->getPlugins() };
-        my $input;
 
         if($plugin && $c->{leech})
         {
-	        push @file_inputs, &Leech($plugin, $url);
+           push @file_inputs, &Leech($plugin, $url);
         }
         elsif($external_keys->{$domain} && $c->{leech})
         {
             push @file_inputs, &APILeech($domain, $url);
         }
+        elsif($c->{"zevera_logins"} && (my $direct_link = &ZeveraGetLink($url)))
+        {
+            print STDERR "Zevera URL: $direct_link\n";
+            push @file_inputs, &DirectDownload($direct_link);
+        }
         elsif($c->{remote_url})
         {
-	        push @file_inputs, &DirectDownload($url);
+           push @file_inputs, &DirectDownload($url);
         }
         else
         {
@@ -271,42 +298,47 @@ sub URLUpload
 
 sub make_lwp_hook
 {
-    my ($sid) = @_;
-    my ($total_size, $current_bytes, $old_time, $base_old, $fname2);
-    my $files_uploaded = 0;
+   my ($sid) = @_;
+   my ($total_size, $current_bytes, $old_time, $base_old, $fname2);
+   my $files_uploaded = 0;
 
-    # hook_url
-	sub hook_url
-    {
-	    my ($buffer,$res) = @_;
-	    print FILE $buffer;
-	    $current_bytes+=length($buffer);
-	
-	    if(time>$old_time)
-        {
-	        $total_size += $res->content_length if $base_old ne $res->base;
-	        $base_old = $res->base;
-	        $fname2 = $res->base;
-	        $old_time = time;
+   sub hook_url
+   {
+      my ($buffer,$res) = @_;
+      print FILE $buffer;
+      $current_bytes+=length($buffer);
 
-	        print "# Keep-Alive\n" if $f->{keepalive};
+      if($c->{remote_upload_speed})
+      {
+         require Time::HiRes;
+         Time::HiRes::sleep(length($buffer) / ($c->{remote_upload_speed} * 2**10));
+      }
+   
+      if(time>$old_time)
+      {
+         $total_size += $res->content_length if $base_old ne $res->base;
+         $base_old = $res->base;
+         $fname2 = $res->base;
+         $old_time = time;
 
-	        open(F,">$c->{htdocs_tmp_dir}/$sid.json");
-		print F "update_stat(";
-	        print F JSON::encode_json(
-	            {
-	                pid => $$,
-	                state => "uploading",
-	                total => "$total_size",
-	                loaded => "$current_bytes",
-	                files_done => "$files_uploaded"
-	            });
-		print F ")";
-	        close F;
-	    }
-	};
+         print "# Keep-Alive\n" if $f->{keepalive};
 
-    return \&hook_url;
+         open(F,">$c->{htdocs_tmp_dir}/$sid.json");
+         print F "update_stat(";
+         print F JSON::encode_json(
+            {
+               pid => $$,
+               state => "uploading",
+               total => "$total_size",
+               loaded => "$current_bytes",
+               files_done => "$files_uploaded"
+            });
+         print F ")";
+         close F;
+      }
+   };
+
+   return \&hook_url;
 }
 
 sub FileUpload
@@ -401,8 +433,8 @@ sub TorrentUpload
 
     if($f->{file_0})
     {
-	    my $file_tmp = $cg->tmpFileName($f->{file_0});
-	    $res = $tt->startdl(metainfo => [ $file_tmp ], fs_key => $c->{fs_key});
+       my $file_tmp = $cg->tmpFileName($f->{file_0});
+       $res = $tt->startdl(metainfo => [ $file_tmp ], fs_key => $c->{fs_key});
     }
 
     if($f->{magnet})
@@ -433,4 +465,18 @@ sub xmessage {
 sub GetIP {
     return $ENV{HTTP_X_REAL_IP} if $ENV{HTTP_X_REAL_IP} && $nginx;
     return $ENV{REMOTE_ADDR};
+}
+
+sub _secure_str
+{
+   my ($str)=@_;
+   $str=~s/</&lt;/gs;
+   $str=~s/>/&gt;/gs;
+   $str=~s/\"/&#x22;/gs;
+   $str=~s/\'/&#x27;/gs;
+   $str=~s/\(/&#40;/gs;
+   $str=~s/\)/&#41;/gs;
+   $str=~s/\0//gs;
+   $str=~s/\\/\\\\/gs;
+   return $str;
 }

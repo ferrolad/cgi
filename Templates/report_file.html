@@ -11,7 +11,8 @@ function CheckForm(f)
 </Script>
 
 <Form method="post" action="<TMPL_VAR site_url>/" onSubmit="return CheckForm(this);">
-<input type="hidden" name="op" value="report_file_send">
+<input type="hidden" name="op" value="report_file">
+<input type="hidden" name="send" value="1">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="rand" value="<TMPL_VAR rand>">
 <input type="hidden" name="id" value="<TMPL_VAR id>">

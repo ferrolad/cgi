@@ -64,7 +64,7 @@
 <script>
 function addMyAcc(element, file_code) {
    $.ajax({
-      url: '<TMPL_VAR site_url>/?op=my_files&add_my_acc=' + file_code,
+      url: '<TMPL_VAR site_url>/?op=my_files&add_my_acc=' + file_code + '&token=<TMPL_VAR token_my_files>',
       success: function() {
          $(element).replaceWith("Added");
       }

@@ -1,6 +1,7 @@
 <h3><TMPL_VAR lang_my_reports></h3>
 
 <Form>
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="op" value="my_reports">
 From <input type="text" name="date1" value="<TMPL_VAR date1>" size=9> to <input type="text" name="date2" value="<TMPL_VAR date2>" size=9>
 <input type="submit" value="Show">

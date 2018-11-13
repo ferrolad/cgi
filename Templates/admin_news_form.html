@@ -1,14 +1,20 @@
-<Form method="POST">
+<Form method="POST" onSubmit="saveEditorContent('news_text');">
 <input type="hidden" name="op" value="admin_news_edit">
 <input type="hidden" name="news_id" value="<TMPL_VAR news_id>">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <Table class="tbl1" cellpadding=2 cellspacing=1 style="width: 600px">
-<TR class="hdr"><TD colspan=2><TMPL_IF news_id><TMPL_VAR lang_edit><TMPL_ELSE><TMPL_VAR lang_add></TMPL_IF> <TMPL_VAR lang_news></TD></TR>
+<TR class="hdr"><TD colspan=2><TMPL_VAR lang_add_news></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_title></b></TD><TD><input type="text" name="news_title" value="<TMPL_VAR news_title>" size=80></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_published></b></TD><TD><input type="text" name="created" value="<TMPL_VAR created>" size=20></TD></TR>
-<TR><TD colspan=2>
-<textarea name="news_text" style="width:98%;height:360px;"><TMPL_VAR news_text></textarea>
+<TR><TD colspan=2 class="editor">
+<textarea id="news_text" name="news_text" style="width:100%;height:360px;"><TMPL_VAR news_text></textarea>
 </TD></TR>
 </Table>
 <input type="submit" name="save" value=" <TMPL_VAR lang_submit> ">
 </Form>
+
+<TMPL_INCLUDE nic_edit.html>
+
+<script>
+nicedit.panelInstance('news_text');
+</script>

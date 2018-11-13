@@ -1,5 +1,5 @@
 <Form method="POST" onSubmit="return checkForm(this)">
-<input type="hidden" name="op" value="admin_server_save">
+<input type="hidden" name="op" value="admin_server_add">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="srv_id" value="<TMPL_VAR srv_id>">
 <Table class="tbl1" cellpadding=3 cellspacing=1>
@@ -21,11 +21,11 @@
 <option value="OFF"<TMPL_VAR s_OFF>>OFF</option>
 </Select>
 </TD></TR>
-<TR><TD align=right><b>Created</b></TD><TD><TMPL_VAR srv_created></TD></TR>
+<TR><TD align=right><b><TMPL_VAR lang_created></b></TD><TD><TMPL_VAR srv_created></TD></TR>
 <TMPL_IF srv_key><TR><TD align=right><b>fs_key</b></TD><TD><input type="text" name="srv_key" value="<TMPL_VAR srv_key>" size=8></TD></TR></TMPL_IF>
 <TMPL_IF m_g><TR><TD align=right><b>GeoIP countries</b></TD><TD><input type="text" name="srv_countries" value="<TMPL_VAR srv_countries>" size=32><br><small>e.g. US,CA,DE,FR</small></TD></TR></TMPL_IF>
 
-<TMPL_IF ftp_mod>
+<TMPL_IF m_3>
 <TR>
     <TD align=right><b>FTP upload</b></TD>
     <TD><input type="checkbox" name="srv_ftp" value="1" id="srv_ftp"<TMPL_IF srv_ftp> checked</TMPL_IF>></TD>

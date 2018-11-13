@@ -10,8 +10,9 @@ sub generate
 {
    my ($self) = @_;
    return if $c->{captcha_mode} !~ /^(4|solvemedia)$/i;
+   my $https = $c->{site_url} =~ /^https/;
    return "<center>" . WWW::SolveMedia->new( @auth_data )->get_html(undef,
-                                undef,
+                                $https,
                                 {
                                   theme => lc($c->{solvemedia_theme}),
                                   size => lc($c->{solvemedia_size}),

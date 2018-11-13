@@ -1,3 +1,4 @@
+
 <style>
 #pay_modes input {border:1px solid #c6c6c6;font-weight:bold;color:#555;background:#f6f6f6;margin-right:8px;font-family:Tahoma;padding:2px 5px;border-radius:2px;}
 #pay_modes input.active {border:1px solid #a3a3a3;background:#e3e3e3;}
@@ -8,7 +9,9 @@
 .pb_info {padding:2px 7px;}
 </style>
 
-<div style="width:680px;border: 1px dashed #f0f0f0;text-align:left;">
+
+<div style="border: 1px dashed #f0f0f0;text-align:left;">
+
 
 <h2>File: <font style="color:darkred"><TMPL_VAR file_name></font> [<font style="color:#114"><TMPL_VAR fsize></font>]</h2>
 <br>
@@ -16,9 +19,9 @@
 <div id="pay_modes">
 <b>Payment methods:</b> 
 <TMPL_LOOP payment_types>
-<input type="button" value="<TMPL_VAR title>" onClick="changePayMode(this,'<TMPL_VAR name>')">
+<input type="submit" value="<TMPL_VAR title>" onClick="changePayMode(this,'<TMPL_VAR name>')">
 </TMPL_LOOP>
-<TMPL_IF free_download><input type="button" value="Free" onClick="changePayMode(this,'free')"></TMPL_IF>
+<TMPL_IF free_download><input type="submit" value="Free" onClick="changePayMode(this,'free')"></TMPL_IF>
 </div>
 
 
@@ -51,6 +54,7 @@
 <input type="hidden" name="fname" value="<TMPL_VAR file_name>">
 <input type="hidden" name="referer" value="<TMPL_VAR referer>">
 <input type="submit" name="method_free" value="<TMPL_VAR lang_free_download>">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 </Form>
 </center>
 </div>

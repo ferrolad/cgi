@@ -4,6 +4,7 @@
 <h3 style="margin:0;"><TMPL_VAR lang_user_registration></h3>
 
 <Form method="POST" onSubmit="return CheckForm(this)">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="op" value="register_save">
 <input type="hidden" name="rand" value="<TMPL_VAR rand>">
 <input type="hidden" name="next" value="<TMPL_VAR next>">

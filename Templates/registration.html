@@ -4,12 +4,15 @@
 <h2 style="margin:0;"><TMPL_VAR lang_user_registration></h2>
 
 <Form method="POST" onSubmit="return CheckForm(this)">
-<input type="hidden" name="op" value="register_save">
+<input type="hidden" name="op" value="register">
+<input type="hidden" name="save" value="1">
 <input type="hidden" name="rand" value="<TMPL_VAR rand>">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="next" value="<TMPL_VAR next>">
 <Table>
 <TR><TD align=right><b><TMPL_VAR lang_username></b></TD><TD><input type="text" name="usr_login" value="<TMPL_VAR usr_login>"></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_email></b></TD><TD><input type="text" name="usr_email" value="<TMPL_VAR usr_email>"></TD></TR>
+<TMPL_IF mod_sec_require_phone_number><TR><TD align=right><b>Phone number</b></TD><TD><input type="text" name="usr_phone" value="<TMPL_VAR usr_phone>" pattern="^[0-9\+-]+$" title="Phone number"></TD></TR></TMPL_IF>
 <TR><TD align=right><b><TMPL_VAR lang_password></b></TD><TD><input type="password" name="usr_password" value="<TMPL_VAR usr_password>"></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_retype_password></b></TD><TD><input type="password" name="usr_password2" value="<TMPL_VAR usr_password2>"></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_payment_info></b><br><small>(<TMPL_VAR lang_optional>)</small></TD><TD nowrap>

@@ -1,3 +1,6 @@
+<script type="text/javascript" src="<TMPL_VAR site_url>/js/bootstrap-confirm.min.js"></script>
+<script type="text/javascript" src="<TMPL_VAR site_url>/js/dialogs.js"></script>
+
 <div style="width: 980px">
 <TMPL_IF torrents>
 <Table class="tbl1" style="width: 600px" id="torrents">
@@ -9,7 +12,7 @@
     <TD align=right><TMPL_VAR down_speed>/s</TD>
     <TD align=right><TMPL_VAR up_speed>/s</TD>
     <TD><TMPL_VAR working></TD>
-    <TD><a href="?op=my_files;del_torrent=<TMPL_VAR sid>" onClick="return confirm('<TMPL_VAR lang_delete_file>')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
+    <TD><a href="?op=my_files;del_torrent=<TMPL_VAR sid>;token=<TMPL_VAR token>" onClick="return confirm('<TMPL_VAR lang_delete_file>')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
 </TR>
 </TMPL_LOOP>
 </Table>
@@ -18,7 +21,7 @@
 <script>
 	setInterval(function() {
 		$.ajax({
-			url: '?op=my_files&torrents=1',
+			url: '?op=my_files&torrents=1&token=<TMPL_VAR token>',
 			success: function(data) {
 				$('#torrents').html(data);
 			}
@@ -85,26 +88,30 @@
 				<!-- END PAGING --> 
 			</div> 
 			<!--END FILES BLOCK -->
-		</div"> <!-- end container -->
+		</div> <!-- end container -->
 	</form>
 	<script>
 	setPagination('.files .paging',
 	{
 		op: 'my_files', 
 		total: '<TMPL_VAR files_total>',
-		load: 'files',
+		load_files_list: 'true',
+		token: '<TMPL_VAR token>',
 		target: '#files_list',
 		perpage: '<TMPL_VAR per_page>',
 		fld_id: '<TMPL_VAR folder_id>',
+		page: '<TMPL_VAR page>',
 	});
 	setPagination('.folders .paging',
 	{
 		op: 'my_files', 
 		total: '<TMPL_VAR folders_total>',
-		load: 'folders',
+		load_folders_list: 'true',
+		token: '<TMPL_VAR token>',
 		target: '#folders_list',
 		perpage: '<TMPL_VAR per_page>',
 		fld_id: '<TMPL_VAR folder_id>',
+		page: <TMPL_VAR page>,
 	});
 	</script>
 	<script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>

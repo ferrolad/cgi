@@ -32,7 +32,7 @@
 						<td colspan="2"><a href="<TMPL_VAR site_url>/?op=my_files&untrash_selected=1&file_id=<TMPL_VAR file_id>&token=<TMPL_VAR token>"><img src="<TMPL_VAR site_url>/images/icon_untrash.png" name="untrash" alt="Untrash"></a></td>
 						<TMPL_ELSE>
 						<td class="icontd"><a href="?op=file_edit&amp;file_code=<TMPL_VAR file_code>"><img src="<TMPL_VAR site_url>/images/icon_edit.png"></a></td>
-						<td class="icontd"><a href="?op=my_files&amp;del_code=<TMPL_VAR file_code>&token=<TMPL_VAR token>" onClick="return confirm('<TMPL_VAR lang_delete_file>')"><img src="<TMPL_VAR site_url>/images/icon_delete.png"></a></td>
+						<td class="icontd"><a href="?op=my_files&amp;del_code=<TMPL_VAR file_code>&token=<TMPL_VAR token>" onClick="return Dialogs.confirm('<TMPL_VAR lang_delete_file>', this);"><img src="<TMPL_VAR site_url>/images/icon_delete.png"></a></td>
 						</TMPL_IF>
 					</tr>
 					</TMPL_LOOP>
@@ -53,7 +53,7 @@
 					<!-- Start Copy/Move Panel -->
 					<tr class="actionpanel">
 						<td colspan="10">
-							<label for="to_folder">Select folder</label>
+							<label for="to_folder"><TMPL_VAR lang_select_folder></label>
 							<select name="to_folder">
 								<option>--</option>
 								<option value="0"> / </option>
@@ -63,8 +63,8 @@
 							</select>
 							
 							<div class="copymove">
-								<input name="to_folder_copy" value="Copy files" type="submit">
-								<input name="to_folder_move" value="Move files" type="submit">
+								<input name="to_folder_copy" value="<TMPL_VAR lang_copy_files>" type="submit">
+								<input name="to_folder_move" value="<TMPL_VAR lang_move_files>" type="submit">
 							</div>
 							
 						</td>
@@ -81,6 +81,7 @@
 							<input name="unset_file_public" value="<TMPL_VAR lang_unpublish>" type="button" class="flag">
 							<input name="set_file_premium_only" value="Set premium only" type="button" class="flag">
 							<input name="unset_file_premium_only" value="Unset premium only" type="button" class="flag">
+							<input name="zip" value="Zip selected" type="submit">
 							<input id="export" value="Export..." type="button">
 						</td>
 					</tr>
@@ -98,6 +99,7 @@
 					           set_flag: name,
 					           value: value,
 					           file_id: file_ids,
+					           token: '<TMPL_VAR token>',
 					       },
 					       success: function() {
 					           $(document.F1).find('input[name=file_id]').each(function(i, e) {

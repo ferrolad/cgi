@@ -23,14 +23,15 @@
    <td align="center"><a href="?op=admin_files&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></td>
    <td align="center"><TMPL_VAR name> (<TMPL_VAR email>, <TMPL_VAR ip>)</td>
    <td align="center"><TMPL_VAR created></td>
-   <td><a href="<TMPL_VAR site_url>/?op=admin_reports&view=<TMPL_VAR id>"><TMPL_VAR reason></a></td>
+   <td><a href="<TMPL_VAR site_url>/?op=admin_reports&view=<TMPL_VAR id>&token=<TMPL_VAR token>"><TMPL_VAR reason></a></td>
 </tr>
 </TMPL_LOOP>
 <tr class="actionpanel">
 	<td colspan="10">
-		<input name="del_selected" value="Delete selected" type="submit" onclick="return confirm('Delete selected files?')">
-		<input name="ban_selected" value="Ban selected" type="submit" onclick="return confirm('Delete and ban selected files?')">
-		<input name="decline_selected" value="Decline selected" type="submit">
+		<input name="del_selected" value="<TMPL_VAR lang_delete_selected>" type="submit" onclick="return confirm('Delete selected files?')">
+		<input name="ban_selected" value="<TMPL_VAR lang_ban_selected>" type="submit" onclick="return confirm('Delete and ban selected files?')">
+		<input name="decline_selected" value="<TMPL_VAR lang_decline_selected>" type="submit">
+		<input name="regenerate_link" value="Regenerate link(s)" type="submit">
 	</td>
 </tr>
 </Table>

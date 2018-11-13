@@ -7,6 +7,7 @@ $CGI::Simple::POST_MAX=-1;
 use DataBase;
 use Session;
 use JSON;
+use XUtils;
 use Log;
 
 Log->new(filename => 'fs.log');
@@ -28,8 +29,8 @@ if($f->{op} eq 'test')
 }
 
 my $server = $db->SelectRow("SELECT * FROM Servers WHERE srv_key=?", $f->{fs_key} );
-&Send("333") unless $server;
-#&Send("444") unless $server->{srv_ip} eq $ENV{REMOTE_ADDR};
+&Send("No such file server") unless $server;
+&Send("Wrong file server IP") unless $server->{srv_ip} eq $ses->getIP;
 
 &Stats if $f->{op} eq 'stats' && $c->{m_n_100_complete_percent};
 
@@ -43,11 +44,8 @@ sub Stats
 
    for(split(/\n/,$f->{data}))
    {
-      #&logg($_);
       my ($file_id,$usr_id,$ip,$bandwidth) = split(/\|/,$_);
-      #next if $status eq '503';
       next unless $ip;
-      #$ip = unpack('N',pack('C4', split('\.',$ip) ));
 
       my $file_rec=$db->SelectRow("SELECT *, u.usr_profit_mode
                                    FROM Files f
@@ -64,7 +62,7 @@ sub Stats
       if(!$file && $c->{m_y_embed_earnings})
       {
          logg("No IP2File record(ip=$ip)(file_id=$file_id)");
-         $db->Exec("INSERT INTO IP2Files SET ip=?,
+         $db->Exec("INSERT IGNORE INTO IP2Files SET ip=?,
                                usr_id=?,
                                owner_id=?,
                                file_id=?",
@@ -76,102 +74,32 @@ sub Stats
       }
 
       $file->{size} += $bandwidth;
-      $bandwidth_sum+=$bandwidth;
 
       $db->Exec("UPDATE IP2Files
                  SET size=?
                  WHERE ip=? AND usr_id=? AND file_id=?",$file->{size},$ip,$usr_id,$file_id);
 
       my $ip2 = join '.', unpack('C4',pack('N', $ip ));
-      logg("DL $file->{size} of $file_rec->{file_size} (ip=$ip2) (fin=$file->{finished})");
+      print STDERR "DL $file->{size} of $file_rec->{file_size} (ip=$ip2) (fin=$file->{finished})\n";
 
       ### If correctly finished download
       my $m_n_100_complete_percent = $c->{m_n_100_complete_percent} || 100;
 
       if( $file->{size} >= $file_rec->{file_size} * $m_n_100_complete_percent / 100 && 
-          ###$file_rec->{file_ip} ne $ip && 
           !$file->{finished} )
       {
-         my ($size_id,$money);
-         my @ss = split(/\|/,$c->{tier_sizes});
-         for(0..5){$size_id=$_ if defined $ss[$_] && $file_rec->{file_size}>=$ss[$_]*1024*1024;}
-         require Geo::IP;
-         my $gi = Geo::IP->new("$c->{cgi_path}/GeoIP.dat");
-         my $country = $gi->country_code_by_addr($ip2);
-         if(defined $size_id)
-         {
-           my $tier_money = $c->{tier4_money};
-           if   ($country=~/^($c->{tier1_countries})$/i){ $tier_money = $c->{tier1_money}; }
-           elsif($country=~/^($c->{tier2_countries})$/i){ $tier_money = $c->{tier2_money}; }
-           elsif($country=~/^($c->{tier3_countries})$/i){ $tier_money = $c->{tier3_money}; }
-           $money = (split(/\|/,$tier_money))[$size_id];
-         }
-         $money = $money / 1000;
-         $money=0 if $file_rec->{file_ip}==$ip;
-         $money=0 if $file->{usr_id}==$file->{owner_id};
+         print STDERR "Finished! ip=$ip2 usr_id=$usr_id file_id=$file_id\n";
          $money=0 if $file->{status} eq 'ADBLOCK';
 
-         my $owner = $db->SelectRow("SELECT * FROM Users WHERE usr_id=?", $file_rec->{usr_id}) if $file_rec->{usr_id};
-         if($owner && $ses->iPlg('p'))
-         {
-            $file_rec->{usr_profit_mode} = lc $file_rec->{usr_profit_mode};
-            my $perc = $c->{"m_y_$file_rec->{usr_profit_mode}_dl"};
-            $perc = 0 if $c->{m_y_manual_approve} && !$owner->{usr_aff_enabled};
-            logg("perc=$perc");
-            $money = $money*$perc/100;
-         }
-         $money=0 if $c->{max_money_last24} && 
-                     $db->SelectOne("SELECT SUM(money) FROM IP2Files WHERE ip=? AND created>NOW()-INTERVAL 24 HOUR",$ip) >= $c->{max_money_last24};
-         $money=sprintf("%.05f",$money);
-
-        logg("Finished! ip=$ip2 usr_id=$usr_id file_id=$file_id Owner=$file_rec->{usr_id} Country=$country Money=$money");
-
-        $db->Exec("UPDATE IP2Files
-                   SET finished=1, money=?
-                   WHERE ip=? AND usr_id=? AND file_id=?",$money,$ip,$usr_id,$file_id);
-
-        $db->Exec("UPDATE LOW_PRIORITY Files 
-                   SET file_downloads=file_downloads+1, 
-                     file_money=file_money+?, 
-                     file_last_download=NOW() 
-                   WHERE file_id=?",$money,$file->{file_id});
-
-        $db->Exec("UPDATE Users SET usr_money=usr_money+? WHERE usr_id=?",$money,$file_rec->{usr_id}) if $file_rec->{usr_id} && $money;
-
-        $db->Exec("INSERT INTO Stats2
-                   SET usr_id=?, day=CURDATE(),
-                     downloads=1, profit_dl=$money
-                   ON DUPLICATE KEY UPDATE
-                     downloads=downloads+1, profit_dl=profit_dl+$money
-                  ",$file_rec->{usr_id}) if $file_rec->{usr_id};
-
-        $db->Exec("INSERT INTO Stats
-              SET downloads=1, day=CURDATE()
-              ON DUPLICATE KEY UPDATE
-              downloads=downloads+1");
-
-        if($file_rec->{usr_id} && $c->{referral_aff_percent} && $money)
-        {
-           my $aff_id = $db->SelectOne("SELECT usr_aff_id FROM Users WHERE usr_id=?",$file_rec->{usr_id});
-           my $money2 = sprintf("%.05f",$money*$c->{referral_aff_percent}/100);
-           $db->Exec("UPDATE Users SET usr_money=usr_money+? WHERE usr_id=?", $money2, $aff_id) if $aff_id && $money2;
-
-           if($aff_id)
-           {
-	           $db->Exec("INSERT INTO Stats2
-	                      SET usr_id=?, day=CURDATE(), profit_refs=$money2
-	                      ON DUPLICATE KEY UPDATE profit_refs=profit_refs+$money2",$aff_id);
-           }
-        }
-
+         XUtils::TrackDL($ses, $file_rec,
+            adblock_detected => $file->{status} eq 'ADBLOCK',
+            referer => $file->{referer}||'',
+            ip => $ip2,
+            usr_id => $usr_id);
       }
    }
 
-   $db->Exec("INSERT INTO Stats
-              SET day=CURDATE(), bandwidth=?
-              ON DUPLICATE KEY 
-              UPDATE bandwidth=bandwidth+?",$bandwidth_sum,$bandwidth_sum) if $bandwidth_sum;
-   print"OK";
+   print "OK";
    exit;
 }
 
@@ -193,6 +121,7 @@ $user ||= &GetUser($torrent->{usr_id}) if $torrent;
 $user ||= &GetUser($session->{usr_id}) if $session && $session->{usr_id};
 $user ||= &GetUser($f->{usr_id}) if $f->{usr_id};
 $user ||= &GetUser($db->SelectOne("SELECT usr_id FROM Users WHERE usr_login=?", $f->{usr_login})) if $f->{usr_login};
+$user ||= XUtils::CheckLoginPass($ses, $f->{check_login}, $f->{check_pass}) || die("Invalid login / pass") if $f->{check_login};
 
 sub GetUser
 {
@@ -293,7 +222,7 @@ sub TorrentAdd
 
 sub TorrentStats
 {
-   my $torrents = JSON::decode_json($f->{data});
+   my $torrents = JSON::decode_json($ses->UnsecureStr($f->{data}));
    for(@$torrents)
    {
       $db->Exec("UPDATE Torrents SET progress=?, name=?, files=? WHERE sid=? AND status='WORKING'",
@@ -377,7 +306,8 @@ sub SaveFile
       }
       if($c->{fnames_not_allowed})
       {
-          $filename=~s/$c->{fnames_not_allowed}/_/gi;
+          my @segments = split(/\|+/, $1) if $c->{fnames_not_allowed} =~ /\((.*)\)/;
+          $filename =~ s/\Q$_\E/_/gi for @segments;
       }
       if($f->{rslee})
       {
@@ -415,6 +345,17 @@ sub SaveFile
 
    my $usr_id = $user ? $user->{usr_id} : 0;
    my $fld_id = $f->{fld_path} ? &CheckFolder($f->{fld_path}, $usr_id) : $f->{fld_id};
+
+   if($f->{fld_path} && $f->{check_login} && $user)
+   {
+      # Handle WebDAV file rewriting
+      my $existing_file = $db->SelectRow("SELECT * FROM Files WHERE usr_id=? AND file_fld_id=? AND file_name=?", $user->{usr_id}, $fld_id||0, $filename);
+      if($existing_file)
+      {
+         print STDERR "Rewrite file: user=$user->{usr_login}, path=$f->{fld_path}, filename=$filename\n";
+         $ses->DeleteFile($existing_file);
+      }
+   }
    
    my $md5 = $f->{file_md5}||'';
    my $code = &randchar(12);
@@ -495,9 +436,9 @@ sub SaveFile
 
    if($session && $session->{api_key_id})
    {
-	   $db->Exec("INSERT INTO APIStats SET key_id=?, day=CURDATE(),
-	      uploads=1, bandwidth_in=?
-	      ON DUPLICATE KEY UPDATE uploads=uploads+1, bandwidth_in=bandwidth_in+?",
+      $db->Exec("INSERT INTO APIStats SET key_id=?, day=CURDATE(),
+         uploads=1, bandwidth_in=?
+         ON DUPLICATE KEY UPDATE uploads=uploads+1, bandwidth_in=bandwidth_in+?",
          $session->{api_key_id}, $size, $size);
    }
    

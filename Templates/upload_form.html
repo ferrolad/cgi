@@ -12,7 +12,7 @@
 					<li id="select_url"><TMPL_VAR lang_url_upload></li>
 					<li id="select_copy"><TMPL_VAR lang_copy_files></li>
 					<TMPL_IF mmtt><li id="select_torrent"><TMPL_VAR lang_form_torrent></li></TMPL_IF>
-					<TMPL_IF ftp_mod><li id="select_ftp">FTP upload</li></TMPL_IF>
+					<TMPL_IF ftp_upload><li id="select_ftp">FTP upload</li></TMPL_IF>
 				</ul>
 				<div class="uploadtab box visible" id="file_upload">
 					<div class="tabcontent">
@@ -115,7 +115,7 @@
 						</div>
 					</div>
 					<TMPL_ELSE>
-					<b><TMPL_IF my_login><a href="?op=payments"><TMPL_VAR lang_upgrade_account></a><TMPL_ELSE><a href="?op=registration"><TMPL_VAR lang_register_on_site></a></TMPL_IF><br><TMPL_VAR lang_to_use> <TMPL_VAR lang_url_upload></b>
+					<b><TMPL_IF my_login><a href="?op=payments"><TMPL_VAR lang_upgrade_account></a><TMPL_ELSE><a href="<TMPL_VAR site_url>/register.html"><TMPL_VAR lang_register_on_site></a></TMPL_IF><br><TMPL_VAR lang_to_use> <TMPL_VAR lang_url_upload></b>
 					</TMPL_IF>
 					<div class="clear"></div>
 				 </div> <!-- End Remote URL Upload Tab -->
@@ -125,6 +125,7 @@
 							<form method="post" action="<TMPL_VAR site>" onsubmit="if(!this.tos.checked){ alert('You must agree with TOS'); return(false); }">
 								<input type="hidden" name="op" value="my_files">
 								<input type="hidden" name="add_my_acc" value="1">
+								<input type="hidden" name="token" value="<TMPL_VAR token_my_files>">
 								<textarea name="url_mass" style="width:545px; height:160px;"></textarea>
 								<div class="clear"></div>
 								<!--Start TOS n Load-->
@@ -175,15 +176,15 @@
 						<TMPL_IF tt_msg>
 							<b><TMPL_VAR tt_msg></b>
 						<TMPL_ELSE>
-							<b><TMPL_IF my_login><a href="?op=payments"><TMPL_VAR lang_upgrade_account></a><TMPL_ELSE><a href="?op=registration"><TMPL_VAR lang_register_on_site></a></TMPL_IF><br><TMPL_VAR lang_to_use> <TMPL_VAR lang_form_torrent></b>
+							<b><TMPL_IF my_login><a href="?op=payments"><TMPL_VAR lang_upgrade_account></a><TMPL_ELSE><a href="<TMPL_VAR site_url>/register.html"><TMPL_VAR lang_register_on_site></a></TMPL_IF><br><TMPL_VAR lang_to_use> <TMPL_VAR lang_form_torrent></b>
 						</TMPL_IF>
 						</TMPL_IF>
 					</div>
 					<div class="clear"></div>
 				 </div> <!-- End Torrent Leech Tab -->
 				 </TMPL_IF>
-				<TMPL_IF ftp_mod>
-				<div class="box"> <!-- Start FTP Upload Tab -->
+				<TMPL_IF ftp_upload>
+				<div class="box" id="ftp_upload"> <!-- Start FTP Upload Tab -->
 					<div class="tabcontent">
 					   <TMPL_IF ftp_upload_user>
 						<div class="ftpupload">
@@ -191,17 +192,17 @@
 								<input type="hidden" name="utype" value="<TMPL_VAR utype>">
 								<input type="hidden" name="torr_on" value="1">
 								<div class="uploadfile">
-								<table style="width: 400px">
-								<tr class="hdr"><td colspan="2"><b>Connection info</b></td></tr>
-								<tr><td>FTP Host:</td><td>ftp.<TMPL_VAR domain></td></tr>
-								<tr><td>FTP Login:</td><td><TMPL_VAR my_login></td></tr>
-								<tr><td>FTP Password:</td><td>*****</td></tr>
+								<table id="ftp_connection_info" style="width: 400px">
+									<tr class="hdr"><td colspan="2"><b>Connection info</b></td></tr>
+									<tr><td>FTP Host:</td><td>ftp.<TMPL_VAR domain></td></tr>
+									<tr><td>FTP Login:</td><td><TMPL_VAR my_login></td></tr>
+									<tr><td>FTP Password:</td><td>*****</td></tr>
 								</table>
 								<br>
 								</div>
 						</div>
 	             <TMPL_ELSE>
-	               <b><TMPL_IF my_login><a href="?op=payments"><TMPL_VAR lang_upgrade_account></a><TMPL_ELSE><a href="?op=registration"><TMPL_VAR lang_register_on_site></a></TMPL_IF><br><TMPL_VAR lang_to_use> FTP upload</b>
+	               <b><TMPL_IF my_login><a href="?op=payments"><TMPL_VAR lang_upgrade_account></a><TMPL_ELSE><a href="<TMPL_VAR site_url>/register.html"><TMPL_VAR lang_register_on_site></a></TMPL_IF><br><TMPL_VAR lang_to_use> FTP upload</b>
 	             </TMPL_IF>
 					</div>
 					<div class="clear"></div>

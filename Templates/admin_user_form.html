@@ -6,6 +6,7 @@
 <TR class="hdr"><TD colspan=2>User edit</TD></TR>
 <TR><TD align=right><b>Username</b></TD><TD><input type="text" name="usr_login" value="<TMPL_VAR usr_login>" size=24></TD></TR>
 <TR><TD align=right><b>E-mail</b></TD><TD><input type="text" name="usr_email" value="<TMPL_VAR usr_email>" size=32></TD></TR>
+<TMPL_IF enp_5><TR><TD align=right><b>Phone</b></TD><TD>+<input type="text" name="usr_phone" value="<TMPL_VAR usr_phone>" size=12></TD></TR></TMPL_IF>
 <TR><TD align=right><b>User files</b></TD><TD><a href="?op=admin_files&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR files_num></a></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_change_password></b></TD><TD><input type="text" name="usr_password" value="" size=20></TD></TR>
 
@@ -32,6 +33,9 @@
 <TR><TD align=right><b>Affiliate ID</b></TD><TD><input type="text" name="usr_aff_id" value="<TMPL_VAR usr_aff_id>" size=5></TD></TR>
 <TR><TD align=right><b>Approved affiliate</b></TD><TD><input type="checkbox" name="usr_aff_enabled" value="1"<TMPL_IF usr_aff_enabled> checked</TMPL_IF>></TD></TR>
 <TMPL_IF m_d><TR><TD align=right><b>DMCA agent</b></TD><TD><input type="checkbox" name="usr_dmca_agent" value="1"<TMPL_IF usr_dmca_agent> checked</TMPL_IF>></TD></TR></TMPL_IF>
+<TMPL_IF enp_5>
+<TR><TD align=right><b>2-Factor authentication</b></TD><TD><input type="checkbox" name="usr_2fa" value="1"<TMPL_IF usr_2fa> checked</TMPL_IF>></TD></TR>
+</TMPL_IF>
 <TMPL_IF m_y>
 <TR><TD align=right valign=top><b>Profit mode</b></TD><TD>
 <Select name="usr_profit_mode">
@@ -42,7 +46,7 @@
 </TD></TR>
 </TMPL_IF>
 <TMPL_IF m_k_manual><TR><TD align=right><b>Reseller account</b></TD><TD><input type="checkbox" name="usr_reseller" value="1"<TMPL_IF usr_reseller> checked</TMPL_IF>></TD></TR></TMPL_IF>
-<TR><TD colspan="2" align="center"><a name="login_as" href="<TMPL_VAR site_url>/?login_as=<TMPL_VAR usr_id>">Login</a></TD></TR>
+<TR><TD colspan="2" align="center"><a name="login_as" href="<TMPL_VAR site_url>/?op=admin_user_edit&login_as=<TMPL_VAR usr_id>&token=<TMPL_VAR token>">Login</a></TD></TR>
 <TR><TD align=left colspan=2><b>Notes:</b><br><textarea name="usr_notes" cols=32 rows=7 style="width:98%"><TMPL_VAR usr_notes></textarea></TD></TR>
 </Table>
 <input type="submit" name="save" value=" Save user details ">

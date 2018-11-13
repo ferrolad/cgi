@@ -3,7 +3,7 @@
 <TMPL_VAR lang_you_collected> <b><TMPL_VAR currency_symbol><span name="balance"><TMPL_VAR usr_money></span></b>
 
 <Form method="POST">
-<input type="hidden" name="op" value="request_money">
+<input type="hidden" name="op" value="my_request_money">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 
 <TMPL_IF enabled_prem>
@@ -29,8 +29,8 @@
 <TMPL_IF payments>
 <br><br>
 <Table class="tbl1" cellpadding=2 cellspacing=1>
-<TR class="hdr"><TD colspan=4>Payments history</TD></TR>
-<TR class="hdr"><TD>Date</TD><TD>Amount</TD><TD>Status</TD></TR>
+<TR class="hdr"><TD colspan=4><TMPL_VAR lang_payments_history></TD></TR>
+<TR class="hdr"><TD><TMPL_VAR lang_date></TD><TD><TMPL_VAR lang_amount></TD><TD><TMPL_VAR lang_status></TD></TR>
 <TMPL_LOOP payments>
 <TR align=center><TD><TMPL_VAR created2></TD><TD><TMPL_VAR currency_symbol><TMPL_VAR amount></TD><TD><TMPL_VAR status></TD></TR>
 </TMPL_LOOP>

@@ -3,7 +3,7 @@
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="settings_save" value="1">
 
-<Table name="user_info">
+<Table name="user_info" style="width: 800px">
 <TR><TD style="width:35%"><TMPL_VAR lang_username></TD><TD><b><TMPL_VAR my_login></b></TD></TR>
 
 <TMPL_IF premium>
@@ -12,14 +12,17 @@
 
 <TMPL_IF m_k><TR><TD><TMPL_VAR lang_apply_prem_key></TD><TD><b><input type="text" name="premium_key" value="" size=24 class="myForm">&nbsp;<input type="submit" name="premium_key_apply" value="<TMPL_VAR lang_apply>" class=""></b></TD></TR></TMPL_IF>
 
-<TR><TD><TMPL_VAR lang_acc_balance></TD><TD><b><TMPL_VAR currency_symbol><TMPL_VAR usr_money></b>&nbsp;<TMPL_UNLESS usr_reseller><input type="button" class="" name="request_payout" value="<TMPL_VAR lang_request_payout>" onClick="document.location='?op=request_money'"></TMPL_UNLESS>
+<TR><TD><TMPL_VAR lang_acc_balance></TD><TD><b><TMPL_VAR currency_symbol><TMPL_VAR usr_money></b>&nbsp;<TMPL_UNLESS usr_reseller><input type="button" class="" name="request_payout" value="<TMPL_VAR lang_request_payout>" onClick="document.location='<TMPL_VAR site_url>/request_money.html'"></TMPL_UNLESS>
         <TMPL_IF rsl> <input type="button" class="" value="<TMPL_VAR lang_my_reseller>" onClick="document.location='?op=my_reseller'"></TMPL_IF>
     </TD>
 </TR>
 
 <TR><TD><TMPL_VAR lang_used_disk_space></TD><TD><b><TMPL_VAR total_size><TMPL_IF disk_space> <TMPL_VAR lang_of> <TMPL_VAR disk_space></TMPL_IF> GB</b></TD></TR>
+<TMPL_IF usr_premium_traffic>
+<TR><TD>Premium traffic remaining</TD><TD><b><TMPL_VAR usr_premium_traffic_mb> MB</b></TD></TR>
+<TMPL_ELSE>
 <TR><TD><TMPL_VAR lang_traffic_available></TD><TD><b><TMPL_IF traffic_left><TMPL_VAR traffic_left> Mb<TMPL_ELSE>Unlimited</TMPL_IF></b></TD></TR>
-<TMPL_IF usr_premium_traffic><TR><TD>Premium traffic remaining</TD><TD><b><TMPL_VAR usr_premium_traffic_mb> MB</b></TD></TR></TMPL_IF>
+</TMPL_IF>
 <TR><TD><TMPL_VAR lang_my_public_link></TD><TD colspan=2><a href="<TMPL_VAR site_url>/users/<TMPL_VAR usr_login>" target=_blank><TMPL_VAR site_url>/users/<TMPL_VAR usr_login></a></TD></TR>
 <TR><TD><TMPL_VAR lang_my_affiliate_link></TD><TD colspan=2><a href="<TMPL_VAR site_url>/free<TMPL_VAR usr_id>.html"><TMPL_VAR site_url>/free<TMPL_VAR usr_id>.html</a></TD></TR>
 <TR><TD><TMPL_VAR lang_my_referrals></TD><TD><a href="?op=my_referrals"><TMPL_VAR referrals></a></TD></TR>
@@ -32,22 +35,23 @@
 
 <TMPL_IF msg><font class="ok"><TMPL_VAR msg></font><br><br></TMPL_IF>
 
-<Table class="tbl1" cellpadding=2 cellspacing=1 width=420>
+<Table class="tbl1" cellpadding=2 cellspacing=1 style="width: 800px">
 <TR class="hdr"><TD colspan=2><TMPL_VAR lang_my_settigns></TD></TR>
 <TMPL_IF login_change>
 <TR><TD><TMPL_VAR lang_username></TD><TD><input type="text" name="usr_login" size="24" value="<TMPL_VAR usr_login>" style="width:97%;"></TD></TR>
 </TMPL_IF>
 <TR><TD><TMPL_VAR lang_email></TD><TD><input type="text" name="usr_email" size="24" value="<TMPL_VAR usr_email>"<TMPL_IF usr_security_lock> disabled</TMPL_IF>></TD></TR>
+<TMPL_IF usr_phone><TR><TD>Phone</TD><TD>+<TMPL_VAR usr_phone> <a href="#" onclick="openChangePhoneDialog();return(false);">Change</a></TD></TR></TMPL_IF>
 <TMPL_IF show_password_input>
 <TMPL_IF usr_password>
-<TR><TD style="width:35%">Old password</TD><TD><input type="password" name="password_old" size="24"<TMPL_IF usr_security_lock> disabled</TMPL_IF>></TD></TR>
+<TR><TD style="width:35%"><TMPL_VAR lang_current_password></TD><TD><input type="password" name="password_old" size="24"<TMPL_IF usr_security_lock> disabled</TMPL_IF>></TD></TR>
 </TMPL_IF>
 <TR><TD><TMPL_VAR lang_new_password></TD><TD><input type="password" name="password_new" size="24"<TMPL_IF usr_security_lock> disabled</TMPL_IF>></TD></TR>
 <TR><TD width="1%" nowrap><TMPL_VAR lang_retype_new_pass></TD><TD><input type="password" name="password_new2" size="24"<TMPL_IF usr_security_lock> disabled</TMPL_IF>></TD></TR>
 </TMPL_IF>
 </Table>
 
-<Table class="tbl1" cellpadding=2 cellspacing=1 width=420>
+<Table class="tbl1" cellpadding=2 cellspacing=1 style="width: 800px">
 <TR class="hdr"><TD colspan=2>Configuration</TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_payment_info></b></TD><TD nowrap>
 <input type="text" name="usr_pay_email" value="<TMPL_VAR usr_pay_email>" size=26<TMPL_IF usr_security_lock> disabled</TMPL_IF>>
@@ -60,11 +64,24 @@
 
 <TR><TD align=right><b><TMPL_VAR lang_security_lock></b></TD><TD nowrap>
 <TMPL_IF usr_security_lock>
-<span name="security_lock_status"><b>ON</b></span> <a name="disable_lock" href="?op=my_account&disable_lock=1"><TMPL_VAR lang_disable></a>
+<span name="security_lock_status"><b>ON</b></span> <a name="disable_lock" href="?op=my_account&disable_lock=1&token=<TMPL_VAR token>"><TMPL_VAR lang_disable></a>
 <TMPL_ELSE>
-<span name="security_lock_status"><b>OFF</b></span> <a name="enable_lock" href="?op=my_account&enable_lock=1"><TMPL_VAR lang_enable></a>
+<span name="security_lock_status"><b>OFF</b></span> <a name="enable_lock" href="?op=my_account&enable_lock=1&token=<TMPL_VAR token>"><TMPL_VAR lang_enable></a>
 </TMPL_IF>
 </TD></TR>
+
+<TMPL_IF two_factor_optional>
+<TR><TD align=right><b>2-Factor Authentication</b></TD><TD nowrap>
+<TMPL_IF usr_2fa>
+<span><b>ON</b></span> <a href="#" onclick="openDisable2FADialog();return(false);"><TMPL_VAR lang_disable></a>
+<TMPL_ELSE>
+<span><b>OFF</b></span> <a href="#" onclick="<TMPL_IF usr_phone>enable2FA();<TMPL_ELSE>openEnable2FADialog();</TMPL_IF>return(false);"><TMPL_VAR lang_enable></a>
+</TMPL_IF>
+<TMPL_IF usr_phone>
+(SMS will be sent to +<TMPL_VAR usr_phone>)
+</TMPL_IF>
+</TD></TR>
+</TMPL_IF>
 
 <TMPL_IF premium><TR><TD colspan=2><input type="checkbox" name="usr_direct_downloads" id="cdl" value="1"<TMPL_IF usr_direct_downloads> checked</TMPL_IF>> <label for="cdl"><b><TMPL_VAR lang_direct_downloads></b></label> <small>(<TMPL_VAR lang_premium_only>)</small></TD></TR></TMPL_IF>
 
@@ -73,15 +90,14 @@
 <TR><TD colspan=2 align=center>
 <TMPL_IF twitter_login>
 Twitter authentification received.<br>
-<input type="button" name="disable_twitter_posting" value="Disable Twitter posting" onClick="window.location='?op=my_account&twitter_stop=1'">
+<input type="button" name="disable_twitter_posting" value="Disable Twitter posting" onClick="window.location='?op=my_account&twitter_stop=1&token=<TMPL_VAR token>'">
 <br><input type="checkbox" name="twitter_filename" value="1" id="twi3"<TMPL_IF twitter_filename> checked</TMPL_IF>><label for="twi3">Post filename before URL</label>
 <TMPL_ELSE>
-<input type="button" name="get_twitter_auth" value="Get Twitter authentification" onClick="window.location='?op=my_account&twitter1=1'">
+<input type="button" name="get_twitter_auth" value="Get Twitter authentification" onClick="window.location='?op=my_account&twitter1=1&token=<TMPL_VAR token>'">
 </TMPL_IF>
 <br><small><TMPL_VAR lang_twitter_info></small>
 </TD></TR>
 </TMPL_IF>
-
 
 <TMPL_IF m_x_on>
 <TR class="hdr"><TD colspan=2>Webmaster account</TD></TR>
@@ -94,28 +110,73 @@ Site URL:<input type="text" name="site_add" size=24> <input type="submit" name="
 <TMPL_IF websites>
 <br><br>
 <b>Approved websites:</b><br>
-<table style="text-align:left;padding:4px;width:600px;">
+<table style="text-align:left;padding:4px;width:800px;">
 <TMPL_LOOP websites>
-<tr><td><TMPL_VAR domain></td><td width="10"> <a href="?op=my_account&site_del=<TMPL_VAR domain>" onClick="return confirm('Delete domain?')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></td></tr>
+<tr><td><TMPL_VAR domain></td><td width="10"> <a href="?op=my_account&site_del=<TMPL_VAR domain>&token=<TMPL_VAR token>" onClick="return confirm('Delete domain?')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></td></tr>
 </TMPL_LOOP>
 </table>
 </TMPL_IF>
 </TD></TR>
 </TMPL_IF>
+</table>
+
+<TMPL_IF mod_webdav> 
+<Table class="tbl1" cellpadding=2 cellspacing=1 style="width: 800px">
+<TR class="hdr"><TD colspan=2>Cloud drive access</TD></TR>
+<TR>
+   <TD width="30%"><b>Cloud drive endpoint</b></TD>
+   <TD>
+      <TMPL_VAR site_url>/webdav/
+      <br>
+      <a href="<TMPL_VAR site_url>/pages/cloud_drive.html">How to connect</a>
+   </TD>
+</TR>
+<TR>
+   <TD><b>Username</TD>
+   <TD><TMPL_VAR usr_login></b></TD>
+</TR>
+<TR>
+   <TD><b>Password</b></TD>
+   <TD>******</TD>
+</TR>
+</Table>
+</TMPL_IF>
 
 <TMPL_IF enp_p>
+<Table class="tbl1" cellpadding=2 cellspacing=1 style="width: 800px">
 <TR class="hdr"><TD colspan=2>Profit Mode</TD></TR>
 <TR><TD colspan=2><input type="radio" name="usr_profit_mode" value="PPD" id="pm_ppd"<TMPL_UNLESS m_y_change_ok> disabled</TMPL_UNLESS><TMPL_VAR usr_profit_mode_PPD>> <label for="pm_ppd"><b>PPD</b> <TMPL_IF m_y_ppd_dl><TMPL_VAR m_y_ppd_dl>% of Downloads &nbsp; </TMPL_IF><TMPL_IF m_y_ppd_sales><TMPL_VAR m_y_ppd_sales>% of Sales</TMPL_IF></label></TD></TR>
 <TR><TD colspan=2><input type="radio" name="usr_profit_mode" value="PPS" id="pm_pps"<TMPL_UNLESS m_y_change_ok> disabled</TMPL_UNLESS><TMPL_VAR usr_profit_mode_PPS>> <label for="pm_pps"><b>PPS</b> <TMPL_IF m_y_pps_dl><TMPL_VAR m_y_pps_dl>% of Downloads &nbsp; </TMPL_IF><TMPL_IF m_y_pps_sales><TMPL_VAR m_y_pps_sales>% of Sales</TMPL_IF></label></TD></TR>
 <TR><TD colspan=2><input type="radio" name="usr_profit_mode" value="MIX" id="pm_mix"<TMPL_UNLESS m_y_change_ok> disabled</TMPL_UNLESS><TMPL_VAR usr_profit_mode_MIX>> <label for="pm_mix"><b>MIX</b> <TMPL_IF m_y_mix_dl><TMPL_VAR m_y_mix_dl>% of Downloads &nbsp; </TMPL_IF><TMPL_IF m_y_mix_sales><TMPL_VAR m_y_mix_sales>% of Sales</TMPL_IF></label></TD></TR>
+</Table>
 </TMPL_IF>
 
+<TMPL_IF mod_sec_session_list>
+<Table style="width: 800px">
+<TR class="hdr"><TD colspan=<TMPL_IF mod_sec_session_list_editable>5<TMPL_ELSE>4</TMPL_IF>>Active sessions</TD></TR>
+<TR class="hdr">
+   <TD>IP</TD>
+   <TD>Country</TD>
+   <TD>UserAgent</TD>
+   <TD>Last time</TD>
+   <TMPL_IF mod_sec_session_list_editable><TD></TD></TMPL_IF>
+</TR>
+<TMPL_LOOP sessions>
+<TR class="<TMPL_IF active>active</TMPL_IF>">
+   <TD align="center"><TMPL_VAR last_ip></TD>
+   <TD align="center"><TMPL_VAR country></TD>
+   <TD align="center"><TMPL_VAR browser> <TMPL_VAR browser_version> (<TMPL_VAR os>)</TD>
+   <TD align="center"><TMPL_IF active>Right now<TMPL_ELSE><TMPL_VAR ago></TMPL_IF></TD>
+   <TMPL_IF mod_sec_session_list_editable><TD><a href="?op=my_account&del_session=<TMPL_VAR session_id>&token=<TMPL_VAR token>" onClick="return confirm('Would you really like to terminate that session?')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD></TMPL_IF>
+</TR>
+</TMPL_LOOP>
 </Table>
+</TMPL_IF>
 
 <br><input type="submit" name="save" value="<TMPL_VAR lang_save_settings>"><br><br>
 
 <TMPL_IF leech>
-<Table class="tbl1" cellpadding=2 cellspacing=1 width=420>
+<Table class="tbl1" cellpadding=2 cellspacing=1 style="width: 800px">
 <TR class="hdr"><TD colspan=2><TMPL_VAR lang_remote_premiums></TD></TR>
 <TR><TD colspan=2 align=center>Format: login:password</TD></TR>
 <TMPL_LOOP leeches_list>
@@ -130,4 +191,129 @@ Site URL:<input type="text" name="site_add" size=24> <input type="submit" name="
 </Form>
 
 <br><br>
-<style>table { width: 800px }</style>
+<style>
+.active td { font-weight: bold }
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+
+<div id="changePhone" class="modal fade" role="dialog" ng-app="ChangePhoneApp" ng-controller="ChangePhoneCtrl">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><span class="glyphicon glyphicon-phone"></span> {{ title }}</h4>
+      </div>
+      <div class="modal-body" ng-if="screen == 1">
+         <p>Enter your phone number: <input type="text" placeholder="e.g. +1-xxx-xxx-xx-xx" class="bootstrap-compat" ng-model="userdata.phone"></p>
+      </div>
+      <div class="modal-body" ng-if="screen == 2">
+         <p>Enter confirmation code (*): <input type="text" class="bootstrap-compat" ng-model="userdata.code" size="6" maxlength="6"></p>
+      </div>
+      <div class="modal-body" ng-if="screen == 3">
+         <table style="margin-top: 0">
+            <tr><td>Enter old phone confirmation code (*):</td><td><input type="text" class="bootstrap-compat" ng-model="userdata.code_old" size="6" maxlength="6"></td>
+            <tr><td>Enter your new phone:</td><td><input type="text" class="bootstrap-compat" ng-model="userdata.phone_new" placeholder="e.g. +1-xxx-xxx-xx-xx"></td>
+         </table>
+      </div>
+      <div class="modal-body" ng-if="screen == 4">
+         <p>Enter new phone confirmation code (*): <input type="text" class="bootstrap-compat" ng-model="userdata.code_new" size="6" maxlength="6"></p>
+      </div>
+      <div class="modal-footer">
+         <img ng-if="spinner" ng-src="images/spinner.gif?r=4" style="width: 16px; height: 16px; margin-top: 10px" class="pull-left">
+        <span class="alert alert-success pull-left" role="alert" ng-if="msg" style="margin-top: -5px; padding: 10px"><strong>Note:</strong> {{ msg }}</span>
+        <span class="alert alert-danger pull-left" role="alert" ng-if="error" style="margin-top: -5px; padding: 10px"><strong>Error:</strong> {{ error }}</span>
+        <button type="button" class="btn btn-primary" ng-click="next()" ng-if="screen % 2">Next&gt;&gt;</button>
+        <button type="button" class="btn btn-default" ng-click="prev()" ng-if="screen == 4">&lt;&lt;Prev</button>
+        <button type="button" class="btn btn-primary" ng-click="confirm()" ng-if="(screen+1) % 2">Confirm</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var app = angular.module('ChangePhoneApp', []);
+var scope;
+
+function enable2FA() { scope.httpRequest('two_factor_enable', {}, function () { document.location.reload() }) }
+function openEnable2FADialog() { openDialog(1, "Enable 2-Factor Authentication"); scope.subop = 'two_factor_enable'; }
+function openDisable2FADialog() { openDialog(2, "Disable 2-Factor Authentication"); scope.sendToken('', 'two_factor_disable'); scope.subop = 'two_factor_disable'; }
+function openChangePhoneDialog() { openDialog(3, "Change phone number"); scope.sendToken('', 'old_phone_confirm'); scope.subop = 'change_phone'; }
+
+function openDialog(screen_no, title)
+{
+   scope.screen = screen_no;
+   scope.title = title;
+   scope.msg = scope.error = '';
+   if(!scope.$$phase && !scope.$root.$$phase) scope.$apply();
+   $('#changePhone').modal('show');
+}
+
+app.controller('ChangePhoneCtrl', function($scope, $http, $httpParamSerializer) {
+   scope = $scope;
+   $scope.userdata = {};
+
+   $scope.httpRequest = function(subop, data, onsuccess)
+   {
+      scope.msg = scope.error = '';
+      $scope.spinner = true;
+
+      var postData = { op: 'my_account', token: '<TMPL_VAR token>' };
+      postData[subop] = 1;
+      for(var key in data) postData[key] = data[key];
+
+      $http.post("<TMPL_VAR site_url>", $httpParamSerializer(postData),
+      { headers: {'Content-Type': 'application/x-www-form-urlencoded'} })
+      .then(function(response) {
+         $scope.spinner = false;
+
+         if(response.data.status == "OK")
+            onsuccess(response);
+         else
+            $scope.error = response.data.msg;
+      });
+   }
+
+   $scope.sendToken = function(phone, purpose) {
+      $scope.httpRequest('send_token', { 'phone': phone, 'purpose': purpose }, function(response) {
+         $scope.msg = "Security token was sent to +" + response.data.phone;
+      });
+   };
+
+   $scope.prev = function() {
+      $scope.screen--;
+   };
+
+   $scope.next = function() {
+      if($scope.screen == 1)
+      {
+         $scope.screen++;
+         $scope.sendToken($scope.userdata.phone, 'two_factor_enable');
+      }
+      else if($scope.screen == 3)
+      {
+         $scope.screen++;
+         $scope.sendToken($scope.userdata.phone_new, 'new_phone_confirm');
+      }
+   };
+
+   $scope.confirm = function() {
+      if($scope.screen == 2)
+      {
+         $scope.httpRequest(scope.subop, { code: $scope.userdata.code }, function() {
+            document.location.reload();
+         });
+      }
+      else if($scope.screen == 4)
+      {
+         $scope.httpRequest(scope.subop, { code_old: $scope.userdata.code_old, code_new: $scope.userdata.code_new }, function() {
+            document.location.reload();
+         });
+      }
+   };
+});
+</script>

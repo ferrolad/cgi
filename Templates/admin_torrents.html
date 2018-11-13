@@ -2,18 +2,18 @@
 
 <Table name="engines_running" class="tbl1" style="width: 600px">
 <TR class="hdr">
-    <td>Server</td>
-    <td>Torrent engine</td>
+    <td><TMPL_VAR lang_server></td>
+    <td><TMPL_VAR lang_torrent_engine></td>
     <td></td>
 </TR>
 <TMPL_LOOP servers>
 <TR align=center>
     <TD><b><TMPL_VAR srv_name></b></TD>
     <TMPL_IF active>
-    <TD name="state"><b style="color:green">Working</b></TD>
-    <TD><input type="button" name="stop_engine" value="Stop engine" onClick="window.location='?op=admin_torrents&kill=1&srv_id=<TMPL_VAR srv_id>';" class=""></TD>
+    <TD name="state"><b style="color:green"><TMPL_VAR lang_working></b></TD>
+    <TD><input type="button" name="stop_engine" value="Stop engine" onClick="window.location='?op=admin_torrents&kill=1&srv_id=<TMPL_VAR srv_id>&token=<TMPL_VAR token>';" class=""></TD>
     <TMPL_ELSE>
-    <TD><b style="color:red">Disabled</b></TD>
+    <TD><b style="color:red"><TMPL_VAR lang_disabled></b></TD>
     <TD><input type="button" name="start_engine" value="Start engine" onClick="window.location='<TMPL_VAR srv_cgi_url>/Torrents/start.cgi';" class=""></TD>
     </TMPL_IF>
 </TR>
@@ -23,15 +23,15 @@
 <br><br>
 
 <Table name="torrents_running" class="tbl1" style="width: 600px">
-<TR class="hdr"><TD colspan=8>Torrents running</TD></TR>
+<TR class="hdr"><TD colspan=8><TMPL_VAR lang_torrents_running></TD></TR>
 <TR class="hdr">
-    <td>Torrent</td>
-    <td>Progress</td>
-    <td>Download</td>
-    <td>Upload</td>
-    <td>Working</td>
-    <td>User</td>
-    <td colspan="2">SrvID</td>
+    <td><TMPL_VAR lang_torrent></td>
+    <td><TMPL_VAR lang_progress></td>
+    <td><TMPL_VAR lang_torrent_download></td>
+    <td><TMPL_VAR lang_torrent_upload></td>
+    <td><TMPL_VAR lang_working></td>
+    <td><TMPL_VAR lang_username></td>
+    <td colspan="2"><TMPL_VAR lang_server></td>
 </TR>
 <TMPL_LOOP torrents>
 <TR>
@@ -50,15 +50,15 @@
 <br><br>
 
 <Table name="webseed_peers" class="tbl1" style="width: 600px">
-<TR class="hdr"><TD colspan=8>Webseed</TD></TR>
+<TR class="hdr"><TD colspan=8><TMPL_VAR lang_webseed></TD></TR>
 <TR class="hdr">
-    <td>File</td>
-    <td>Progress</td>
+    <td><TMPL_VAR lang_file_name></td>
+    <td><TMPL_VAR lang_progress></td>
     <td>IP</td>
-    <td>Port</td>
-    <td>Status</td>
-    <td>User</td>
-    <td>SrvID</td>
+    <td><TMPL_VAR lang_port></td>
+    <td><TMPL_VAR lang_status></td>
+    <td><TMPL_VAR lang_username></td>
+    <td><TMPL_VAR lang_server></td>
 </TR>
 <TMPL_LOOP webseed>
 <TR>

@@ -17,6 +17,7 @@ function CheckForm(f)
 <p><TMPL_VAR lang_contact_1> <a href="faq.html">FAQ</a> <TMPL_VAR lang_and_our> <a href="tos.html"><TMPL_VAR lang_terms_of_service></a> <TMPL_VAR lang_contact_2>.</p>
 <br>
 <Form method="post" action="<TMPL_VAR site_url>/" onSubmit="return CheckForm(this);">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="op" value="contact_send">
 <input type="hidden" name="rand" value="<TMPL_VAR rand>">
 <table border=0>

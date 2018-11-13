@@ -1,3 +1,4 @@
+
 <script src="<TMPL_VAR site_url>/js/countdown.js"></script>
 <h3><TMPL_VAR lang_download_file></h3>
 <Form name="F1" method="POST" action="<TMPL_VAR download_link>" onSubmit="if($$('btn_download').disabled)return false;$$('btn_download').value='<TMPL_IF direct_links><TMPL_VAR lang_generating>...<TMPL_ELSE><TMPL_VAR lang_sending_file>...</TMPL_IF>';$$('btn_download').disabled=true;return true;" data-ajax="false">
@@ -5,7 +6,7 @@
 <input type="hidden" name="id" value="<TMPL_VAR file_code>">
 <input type="hidden" name="rand" value="<TMPL_VAR rand>">
 <input type="hidden" name="referer" value="<TMPL_VAR referer>">
-
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="method_free" value="<TMPL_VAR method_free>">
 <input type="hidden" name="method_premium" value="<TMPL_VAR method_premium>">
 

@@ -1,7 +1,7 @@
 					<!-- Start Folder Navigation -->
 					<tr class="curfolder">
 						<td class="foldername" colspan="5"><TMPL_VAR current_folder><a href="#" id="publish_link">
-						<img src="<TMPL_VAR site_url>/images/icon_publink.png">Publish link</a></td>
+						<img src="<TMPL_VAR site_url>/images/icon_publink.png"><TMPL_VAR lang_publish_link></a></td>
 					</tr>
 					<!-- End Folder Navigation -->
 					
@@ -19,7 +19,7 @@
 						<td class="icontd" colspan="2"></td>
 						<TMPL_ELSE>
 						<td class="icontd"><a href="?op=fld_edit&amp;fld_id=<TMPL_VAR fld_id>"><img src="<TMPL_VAR site_url>/images/icon_edit.png"></a></td>
-						<td class="icontd"><a href="?op=my_files&amp;fld_id=<TMPL_VAR folder_id>&amp;del_folder=<TMPL_VAR fld_id>&amp;token=<TMPL_VAR token>"><img src="<TMPL_VAR site_url>/images/icon_delete.png" onClick="return confirm('<TMPL_VAR lang_delete_folder>')"></a></td>
+						<td class="icontd"><a href="?op=my_files&amp;fld_id=<TMPL_VAR folder_id>&amp;del_folder=<TMPL_VAR fld_id>&amp;token=<TMPL_VAR token>" onClick="return Dialogs.confirm('<TMPL_VAR lang_delete_folder>', this);"><img src="<TMPL_VAR site_url>/images/icon_delete.png"></a></td>
 						</TMPL_IF>
 					</tr>
 					<TMPL_ELSE>

@@ -5,6 +5,7 @@
 <h3 style="margin:0;"><TMPL_VAR lang_user_login></h3>
 
 <form method="POST" action="<TMPL_VAR site_url>/" name="FL">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="op" value="login">
 <input type="hidden" name="redirect" value="<TMPL_VAR redirect>">
 <table>

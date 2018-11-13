@@ -20,6 +20,7 @@
 <h3><TMPL_VAR lang_leave_reply></h3>
 <input type="hidden" name="cmt_type" value="<TMPL_VAR cmt_type>">
 <input type="hidden" name="cmt_ext_id" value="<TMPL_VAR cmt_ext_id>">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <TMPL_UNLESS my_login>
 <input type="text" name="name" value="" style="display:none">
 <input type="text" name="cmt_name" value="<TMPL_VAR cmt_name>" size=18><b><TMPL_VAR lang_name></b> <small>(<TMPL_VAR lang_required>)</small><br>

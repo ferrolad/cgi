@@ -1,7 +1,7 @@
          <link href="<TMPL_VAR site_url>/css/jquery-ui.css" rel="stylesheet"/>
          <script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>
 
-         <table class="extend_premium invisible" style="width: 400px">
+         <table class="extend_premium" style="width: 400px">
          <tr>
             <TMPL_LOOP plans>
             <td>
@@ -9,7 +9,7 @@
                <div class="days"><TMPL_VAR days> days</div>
                <div class="price"><TMPL_VAR currency_symbol><TMPL_VAR amount></div>
                <TMPL_LOOP payment_types>
-               <a href="<TMPL_VAR site_url>/?op=payments&amp;amount=<TMPL_VAR amount>&amp;type=<TMPL_VAR name>&amp;r=<TMPL_VAR rand>" class="ask_email"><div class="paysys"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" alt="<TMPL_VAR name>"></div></a>
+               <a href="<TMPL_VAR site_url>/?op=payments&amount=<TMPL_VAR amount>&type=<TMPL_VAR name>&r=<TMPL_VAR rand>&token=<TMPL_VAR token_payments>" class="ask_email"><div class="paysys"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" alt="<TMPL_VAR name>"></div></a>
                </TMPL_LOOP>
             </div>
             </td>
@@ -19,7 +19,7 @@
 
          <TMPL_IF traffic_packages>
          <TMPL_IF plans><h2>Or choose one of our premium traffic packages:</h2></TMPL_IF>
-         <table class="extend_premium invisible" style="width: 400px">
+         <table class="extend_premium" style="width: 400px">
          <tr>
             <TMPL_LOOP traffic_packages>
             <td>
@@ -27,7 +27,7 @@
                <div class="days"><TMPL_VAR value> GB</div>
                <div class="price"><TMPL_VAR currency_symbol><TMPL_VAR amount></div>
                <TMPL_LOOP payment_types>
-               <a href="<TMPL_VAR site_url>/?op=payments&amp;amount=<TMPL_VAR amount>&amp;type=<TMPL_VAR name>&amp;r=<TMPL_VAR rand>&amp;target=premium_traffic"><div class="paysys"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" alt="<TMPL_VAR name>"></div></a>
+               <a href="<TMPL_VAR site_url>/?op=payments&amount=<TMPL_VAR amount>&type=<TMPL_VAR name>&r=<TMPL_VAR rand>&target=premium_traffic&token=<TMPL_VAR token_payments>"><div class="paysys"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" alt="<TMPL_VAR name>"></div></a>
                </TMPL_LOOP>
             </div>
             </td>

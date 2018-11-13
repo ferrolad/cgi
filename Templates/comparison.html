@@ -49,10 +49,12 @@
 								<li><TMPL_IF ads_prem><img src="<TMPL_VAR site_url>/images/icon_no_w.png"><TMPL_ELSE><img src="<TMPL_VAR site_url>/images/icon_yes_w.png"></TMPL_IF></li>
 								<li><TMPL_VAR files_expire_prem></li>
 							</ul>
+							<TMPL_IF monthprice>
 							<div class="monthprice">
 								$<TMPL_VAR monthprice>
 								<span>per month<span>
 							</div>
+							</TMPL_IF>
 						</div>
 						<div class="registered_plan">
 							<div class="plan_name">

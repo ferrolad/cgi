@@ -3,17 +3,17 @@
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="cmt_id" value="<TMPL_VAR cmt_id>">
 <Table class="tbl1" cellpadding=2 cellspacing=1 style="width: 600px">
-<TR class="hdr"><TD colspan=2>Comment edit</TD></TR>
+<TR class="hdr"><TD colspan=2><TMPL_VAR lang_edit></TD></TR>
 <TR>
-   <TD align=right width="30%"><TMPL_IF cmt_type_1><b>Filename</b></TMPL_IF><TMPL_IF cmt_type_2><b>Topic</b></TMPL_IF></TD>
+   <TD align=right width="30%"><TMPL_IF cmt_type_1><b><TMPL_VAR lang_file_name></b></TMPL_IF><TMPL_IF cmt_type_2><b><TMPL_VAR lang_topic></b></TMPL_IF></TD>
    <TD>
       <TMPL_IF cmt_type_1><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a></TMPL_IF>
       <TMPL_IF cmt_type_2><a href="<TMPL_VAR download_link>"><TMPL_VAR news_title></a></TMPL_IF>
    </TD>
 </TR>
-<TR><TD align=right><b>User</b></TD><TD><TMPL_VAR usr_login></TD></TR>
+<TR><TD align=right><b><TMPL_VAR lang_username></b></TD><TD><TMPL_VAR usr_login></TD></TR>
 <TR><TD align=right><b>IP</b></TD><TD><TMPL_VAR ip></TD></TR>
-<TR><TD align=right><b>Date</b></TD><TD><TMPL_VAR created></TD></TR>
-<TR><TD colspan="2"><textarea name="cmt_text" cols="70" rows="5"><TMPL_VAR cmt_text></textarea></TD></TR>
+<TR><TD align=right><b><TMPL_VAR lang_date></b></TD><TD><TMPL_VAR created></TD></TR>
+<TR><TD colspan="2" class="editor"><textarea id="cmt_text" name="cmt_text" cols="70" rows="5"><TMPL_VAR cmt_text></textarea></TD></TR>
 <TR><TD colspan="2" align="center"><input type="submit" name="save" value=" Save comment "></TD></TR>
 </Table>

@@ -2,7 +2,6 @@
 use strict;
 use lib '.';
 use XFileConfig;
-use XUtils;
 
 BEGIN
 {
@@ -16,6 +15,8 @@ BEGIN
        {module=>'DBD::mysql', file=>'DBD/mysql.pm', redhat=>'perl-DBD-MySQL', debian=>'libdbd-mysql-perl'}, 
        {module=>'Digest::SHA', file=>'Digest/SHA.pm', redhat=>'perl-Digest-SHA', debian=>'libdigest-sha-perl'},
        {module=>'LWP', file=>'LWP/UserAgent.pm', redhat=>'perl-libwww-perl', debian=>'libwww-perl'},
+       {module=>'Crypt::SSLeay', file=>'Crypt/SSLeay.pm', redhat=>'perl-Crypt-SSLeay', debian=>'libcrypt-ssleay-perl'},
+       {module=>'Time::HiRes', file=>'Time/HiRes.pm', redhat=>'perl-Time-HiRes', debian=>''},
    );
 
    my @failed_modules = grep { ! eval { require $_->{file} } && $@ } @modules;
@@ -41,13 +42,14 @@ BEGIN
       print "It looks like there are some Perl modules are missing.<br>\n";
       print "You can install all of them at once by issuing the following command from root SSH console:<br><br>\n" if @redhat_pkgs || @debian_pkgs;
       printf ("<font style='font-family: monospace'>yum install %s</font>", join(' ', @redhat_pkgs)) if @redhat_pkgs;
-      printf ("<font style='font-family: monospace'>yum install %s</font>", join(' ', @debian_pkgs)) if @debian_pkgs;
+      printf ("<font style='font-family: monospace'>apt-get install %s</font>", join(' ', @debian_pkgs)) if @debian_pkgs;
 
       exit();
    }
 };
 
 use Session;
+use XUtils;
 use CGI::Carp qw(fatalsToBrowser);
 use DBI;
 
@@ -96,7 +98,7 @@ if($f->{site_settings})
    print F $conf;
    close F;
 
-   add_cronjob("*/1 * * * *\tcd $f->{cgi_dir} && ./transfer.pl 2>&1 >/dev/null");
+   add_cronjob("*/1 * * * *\tcd $f->{cgi_dir} && ./transfer.pl 2>&1 >/dev/null") if $f->{cgi_dir};
 }
 
 if($f->{save_sql_settings} || $f->{site_settings})
@@ -119,8 +121,11 @@ if($f->{save_sql_settings} || $f->{site_settings})
    print F $conf;
    close F;
 
-   add_cronjob("*/10 * * * *\tcd $f->{cgi_path} && ./cron.pl 2>&1 >/dev/null");
-   add_cronjob("0 23 * * *\tcd $f->{cgi_path} && ./cron_deleted_email.pl 2>&1 >/dev/null");
+   if($f->{cgi_path})
+   {
+      add_cronjob("*/10 * * * *\tcd $f->{cgi_path} && ./cron.pl 2>&1 >/dev/null");
+      add_cronjob("0 23 * * *\tcd $f->{cgi_path} && ./cron_deleted_email.pl 2>&1 >/dev/null");
+   }
 
    $ses->redirect('install.cgi');
 }
