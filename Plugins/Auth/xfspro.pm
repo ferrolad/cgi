@@ -1,42 +1,28 @@
 package Plugins::Auth::xfspro;
 use strict;
-use PBKDF2::Tiny;
+use vars qw($ses $db);
+
+use XFileConfig;
 use MIME::Base64;
-use vars qw($ses $db $c);
+use PBKDF2::Tiny;
 
 sub checkLoginPass
 {
    my ($self, $login, $pass) = @_;
 
-   my $user = $db->SelectRow("SELECT *, UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec
-      FROM Users
-      WHERE usr_login=?
-      AND !usr_social",
-      $login);
+   my $user = $db->SelectRow("SELECT * FROM Users WHERE usr_login=? AND !usr_social", $login) || return;
 
-   my $answer = $user->{usr_password} =~ /^sha256:/
-      ? _check_password_pbkdf2($pass, $user->{usr_password})
-      : _check_password_legacy($pass, $user->{usr_id});
-
-   return $user if $answer;
-}
-
-sub _check_password_pbkdf2
-{
-   my ($actual_pass, $hashed_pass) = @_;
-   my ($algo, $salt, $data) = split(/:/, $hashed_pass);
-   return PBKDF2::Tiny::verify( decode_base64($data), 'SHA-256', $actual_pass, decode_base64($salt), 1000 );
-}
-
-sub _check_password_legacy
-{
-   my ($actual_pass, $usr_id) = @_;
-   return $db->SelectOne("SELECT usr_id FROM Users
-      WHERE usr_id=?
-      AND usr_password=ENCODE(?, ?)",
-      $usr_id,
-      $actual_pass,
-      $c->{pasword_salt});
+   if($user->{usr_password} =~ /^sha256:/)
+   {
+      my ($algo, $turns, $salt, $data) = split(/:/, $user->{usr_password});
+      return $user if PBKDF2::Tiny::verify( decode_base64($data), 'SHA-256', $pass, decode_base64($salt), $turns );
+   }
+   else
+   {
+      # Legacy passwords
+      my $check_pass = $db->SelectOne("SELECT DECODE(usr_password, ?) FROM Users WHERE usr_id=?", $c->{pasword_salt}, $user->{usr_id});
+      return $user if $check_pass eq  $pass;
+   }
 }
 
 1;

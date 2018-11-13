@@ -1,5 +1,10 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
 <script src="<TMPL_VAR site_url>/js/selall.js"></script>
-
+<div class="table_border">
+<div class="tableFlow">
 <form action="">
 	<input type="hidden" name="op" value="admin_approve">
    <input type="hidden" name="token" value="<TMPL_VAR token>">
@@ -38,7 +43,8 @@
 	</tr>
 	</table>
 </form>
-
+</div>
+</div>
 <script>
 $(document).ready(function(){
   $('.slider').bxSlider({
@@ -50,3 +56,4 @@ $(document).ready(function(){
   });
 });
 </script>
+<br /><br />

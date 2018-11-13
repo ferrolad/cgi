@@ -1,17 +1,26 @@
 <script type="text/javascript" src="<TMPL_VAR site_url>/js/bootstrap-confirm.js"></script>
-<script type="text/javascript" src="<TMPL_VAR site_url>/js/dialogs.js"></script>
+<script src="<TMPL_VAR site_url>/js/dialogs.js"></script>
 
-<div style="width: 980px">
+<div class="col-12">
+
 <TMPL_IF torrents>
 <Table class="tbl1" style="width: 600px" id="torrents">
 <TR class="hdr"><td colspan=6>Torrents running<br><small>Progress updating every 15 seconds</small></td></TR>
 <TMPL_LOOP torrents>
 <TR>
     <TD onmouseover="return tooltip('<TMPL_VAR file_list>','Torrent files');" onmouseout="return hideTip();"><TMPL_IF title><TMPL_VAR title><TMPL_ELSE><i>Waiting to start...</i></TMPL_IF></TD>
-    <TD align=right><TMPL_VAR done> of <TMPL_VAR total> Mb (<TMPL_VAR percent>%)</TD>
-    <TD align=right><TMPL_VAR down_speed>/s</TD>
-    <TD align=right><TMPL_VAR up_speed>/s</TD>
+    <TMPL_IF status_error>
+    <TD colspan="4">Tracker error: <TMPL_VAR error></TD>
+    </TMPL_IF>
+    <TMPL_IF status_seeding>
+    <TD colspan="4"><span style="color: green">Seeding <TMPL_VAR uploaded> of <TMPL_VAR seed_until></span></TD>
+    </TMPL_IF>
+    <TMPL_IF status_working>
+    <TD align=right><TMPL_VAR downloaded> of <TMPL_VAR size> Mb (<TMPL_VAR percent>%)</TD>
+    <TD align=right><TMPL_VAR download_speed>/s</TD>
+    <TD align=right><TMPL_VAR upload_speed>/s</TD>
     <TD><TMPL_VAR working></TD>
+    </TMPL_IF>
     <TD><a href="?op=my_files;del_torrent=<TMPL_VAR sid>;token=<TMPL_VAR token>" onClick="return confirm('<TMPL_VAR lang_delete_file>')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
 </TR>
 </TMPL_LOOP>
@@ -35,22 +44,17 @@
 		<input type="hidden" name="op" value="my_files">
 		<input type="hidden" name="token" value="<TMPL_VAR token>">
 		<input type="hidden" name="fld_id" value="<TMPL_VAR folder_id>">
-			<div class="folders"> <!--START FOLDERS BLOCK -->
-				<!-- Start Space Status -->
-				<div class="freespace">
-					<span id="occupied"><b><TMPL_VAR total_size></b>  <TMPL_VAR lang_of> <b><TMPL_VAR disk_space></b></span>
-					<span id="files_total"><TMPL_VAR files_total> <TMPL_VAR lang_files></span>
-					<div class="clear"></div>
-					<div class="indicator">
-						<span class="occupied" style="width: <TMPL_VAR occupied_percent>%;"></span>
+		
+			<div class="col-4 lft">
+				
+				<TMPL_UNLESS trash>
+					<div class="borders lft col-11 padding createFolder">
+					<input type="text" size="18" name="create_new_folder" class="input1" placeholder="New Folder Name">
+					<input value="Create Folder" class="f-btn-green" name="create_folder_submit" type="submit" style="height:auto;">
 					</div>
-				</div>
-				<!-- End SPace Status -->
-				<!-- START PAGING --> 			
-				<div class="paging top">
-
-				</div>
-				<!-- END PAGING --> 
+				</TMPL_UNLESS>
+				
+				<div class="folders gap borders">
 				<!-- START FOLDERS TABLE -->
 				<table cellpadding="0" cellspacing="1" id="folders_list"> 
 					<TMPL_INCLUDE folders.html>
@@ -59,34 +63,48 @@
 				<!-- START PAGING --> 			
 				<div class="paging bottom">
 				</div>
-				<!-- END PAGING --> 
-			</div> 
-			<!--END FOLDERS BLOCK -->
-			
-			<!--START FILES BLOCK -->
-			<div class="files"> 
-				<!-- Start Search -->
-				<div class="search">
-					<input type="text" id="key" name="key" class="input1" value="<TMPL_VAR key>">
-					<input type="submit" value="">
+				<!-- END PAGING -->
 				</div>
-				<!-- End Search --> 
-				<!-- START PAGING --> 			
-				<div class="paging top">
+				
+			</div>
+			<div class="col-8 lft">
+				
+				<div class="col-12 lft">
+					<div class="search borders">
+						<input type="text" id="key" name="key" class="input1" value="<TMPL_VAR key>" placeholder="Enter Search Word">
+						<input type="submit" value="Search">
+					</div>
+				
+					<!-- Start Space Status -->
+					<div class="freespace borders">
+						<span id="occupied"><b><TMPL_VAR total_size></b>  <TMPL_VAR lang_of> <b><TMPL_VAR disk_space></b></span>
+						<span id="files_total"><TMPL_VAR files_total> <TMPL_VAR lang_files></span>
+						<div class="clear"></div>
+						<div class="indicator">
+							<span class="occupied" style="width: <TMPL_VAR occupied_percent>%;"></span>
+						</div>
+					</div>
+					
 				</div>
-				<!-- END PAGING --> 
+				
+				<div class="files gap">
 				<!-- START FILES TABLE -->
-				<table id="files_list" cellpadding="0" cellspacing="1" style="width: 640px" table-layout:fixed> 
-					<TMPL_INCLUDE files.html>
-				</table>
+					<div class="filesInner borders">
+					<table id="files_list" cellpadding="0" cellspacing="1" style="width: 100%" table-layout:fixed> 
+						<TMPL_INCLUDE files.html>
+					</table>
+					</div>
 				<!-- END FILES TABLE -->
 				<!-- START PAGING --> 			
 				<div class="paging bottom">
 				</div>
-				<!-- END PAGING --> 
-			</div> 
+				<!-- END PAGING -->
+				
+			</div>
+			</div>
 			<!--END FILES BLOCK -->
-		</div> <!-- end container -->
+			
+		<!-- end container -->
 	</form>
 	<script>
 	setPagination('.files .paging',
@@ -138,6 +156,40 @@
 .ui-icon.custom-icon-firefox {
         background-image: url(application_firefox.gif);
         background-position: 0 0;
+}
+</style>
+<style>
+embed, div { margin: auto; }
+.SidemenuPanel ul.otherMenus li.activemfl{background:#363636; border-left:2px solid #131313; cursor:pointer}
+.SidemenuPanel ul.otherMenus li.activemfl i{color:#fff;}
+.holderPanel{width: 100%; background:#444444; float:left;}
+.SidemenuPanel{width: 16.66%; float:left; display:block;}
+.contentPanel{width: 83.33%; background:#fff; float:left;}
+footer{display:none;}
+#header #logo{display:none;}
+.SidemenuPanel #logo{display:block;}
+.UserHead{display:block;}
+#container{width:95%;margin: 20px auto;}
+.files table th, tr.hdr td{text-transform:uppercase;}
+@media (min-width: 320px) and (max-width: 480px) {
+.holderPanel{width: 100%;}
+.SidemenuPanel{ display:none;}
+.contentPanel{width: 100%;}
+#header #logo{display:block;}
+.UserHead{display:none;}
+}
+@media (min-width: 600px) and (max-width: 800px) {
+.holderPanel{width: 100%;}
+.SidemenuPanel{ display:none;}
+.contentPanel{width: 100%;}
+#header #logo{display:block;}
+.UserHead{display:none;}
+}
+@media (min-width: 980px) and (max-width: 1024px) {
+.SidemenuPanel{width: 25%;}
+.contentPanel{width: 75%;}
+.col-4, .col-8, .col-11{width:100%;}
+.freespace{width:98%;}
 }
 </style>
 <script>

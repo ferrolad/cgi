@@ -24,7 +24,7 @@ sub checkout {
 	my $plans = $ses->ParsePlans($c->{payment_plans}, 'hash');
     if($c->{paypal_subscription} && !$f->{reseller})
     {
-       my $days = $plans->{$f->{amount}};
+       my $days = $f->{days}||$plans->{$f->{amount}};
        my $time_code='D' if $days<=90;
        unless($time_code){$time_code='M';$days=sprintf("%.0f",$days/30);}
        my $trial;

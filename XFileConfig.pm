@@ -351,8 +351,6 @@ $c=
 
  show_server_stats => '1',
 
-### NEW 1.7 ###
-
  # Start mp3 playing instantly
  mp3_mod_autoplay => '',
 
@@ -421,8 +419,6 @@ $c=
  video_embed_anon => '',
  video_embed_reg => '1',
  video_embed_prem => '1',
-
-### NEW 1.8 ###
 
  m_e => '',
  m_e_vid_width => '320',
@@ -495,8 +491,6 @@ $c=
  twit_consumer1 => 'Ib9LtBjGpyKhrBKFgnJqag',
  twit_consumer2 => '3n8VdCQjgw4Qi9aMnxlzrm5KCw4Fsv6RlTlcIS5QO4g',
 
-### NEW 1.9 ###
-
  m_e_flv => '',
  m_e_flv_bitrate => '450',
 
@@ -516,8 +510,6 @@ $c=
  m_k_manual => '1',
 
  deleted_files_reports => '1',
-
-### NEW 2.0 ###
  image_mod_track_download => '1',
 
  m_x => '',
@@ -586,12 +578,10 @@ $c=
  posonline_operator_id => '',
  posonline_secret => '',
 
- #### NEW 2.0 ####
  bs_logins => '',
  wu_logins => '',
  show_direct_link => '',
 
- #### NEW 2.1 ####
  ss_logins => '',
  as_logins => '',
  ul_logins => '',
@@ -645,21 +635,8 @@ $c=
 
  iframe_breaker => '',
 
- #### NEW 2.2 ####
  smtp_auth => '',
 
- firstdatapay_gateway_id => '',
- firstdatapay_password => '',
- firstdatapay_hmac_key => '',
- firstdatapay_key_id => '',
-
- downloadnolimit_site_id => '',
- downloadnolimit_secret => '',
-
- paysafecard_username => '',
- paysafecard_password => '',
-
- mobile_design => '1',
  docviewer => '1',
  docviewer_no_download => '',
 
@@ -684,8 +661,6 @@ $c=
  m_n_100_complete => '',
  jw6_license => '',
 
- ### NEW 2.3 ####
- 
  ext_not_expire => '',
  reg_enabled => '1',
  image_mod => '',
@@ -705,7 +680,6 @@ $c=
  jw6_skin => '',
  enable_reports => '1',
 
- ### NEW 2.4 ####
  adfly_uid => '',
  currency_symbol => '$',
  file_public_default => '1',
@@ -736,7 +710,6 @@ $c=
  ftp_upload_reg => '',
  ftp_upload_prem => '',
 
- # NEW 2.4.1
  no_adblock_earnings => '',
 };
 

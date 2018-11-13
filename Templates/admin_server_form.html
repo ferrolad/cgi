@@ -1,8 +1,13 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
 <Form method="POST" onSubmit="return checkForm(this)">
 <input type="hidden" name="op" value="admin_server_add">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="srv_id" value="<TMPL_VAR srv_id>">
-<input type="hidden" name="proto" id="proto">
+<div class="table_border-small">
+<div class="overflow">
 <Table class="tbl1" cellpadding=3 cellspacing=1>
 <TR class="hdr"><TD colspan=2><TMPL_IF srv_id><TMPL_VAR lang_edit><TMPL_ELSE><TMPL_VAR lang_add></TMPL_IF> <TMPL_VAR lang_file_server></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_server_name></b></TD><TD><input type="text" name="srv_name" value="<TMPL_VAR srv_name>" size=16></TD></TR>
@@ -42,14 +47,15 @@
 </TD></TR>
 </TMPL_IF>
 
-<TR class="hdr"><TD align=center colspan=2><br>
+<TR><TD align=center colspan=2>
 <input type="submit" name="save" value=" <TMPL_VAR lang_submit> ">
-<br><br></TD></TR>
+</TD></TR>
 </Table>
+</div>
+</div>
 </Form>
 
 <Script>
-$('#proto').val(document.location.protocol);
 function checkForm(f1)
 {
     if(f1.srv_name.value.length<2){alert("Enter server name at least 2 chars");return false;}
@@ -59,3 +65,4 @@ function checkForm(f1)
     return true;
 }
 </Script>
+<br /><br /><br /><br />

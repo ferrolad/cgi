@@ -1,3 +1,6 @@
+   <TMPL_IF my_login>
+   		<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+   </TMPL_IF>
 <h2><TMPL_VAR lang_download_file> <TMPL_VAR file_name></h2>
 <font style="font-size:12px;"><TMPL_VAR lang_you_requested> <font color="red"><TMPL_VAR site_url><TMPL_IF usr_add_login>/<TMPL_VAR usr_login></TMPL_IF>/<TMPL_VAR file_code>/<TMPL_VAR file_name></font> (<TMPL_VAR fsize>)</font>
 <br><br><br>
@@ -15,3 +18,4 @@
 <TMPL_IF ads>
 <br>ADS HERE<br>
 </TMPL_IF>
+<br /><br /><br /><br />

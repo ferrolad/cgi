@@ -1,15 +1,27 @@
+<TMPL_IF my_login>
+	<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+</TMPL_IF>
 <style>
+table#tier_tbl{border:0px; margin:4px auto;}
 #tier_tbl tr td {text-align:center; font-weight:bold; padding:10px;}
+table#tier_tbl tr td:first-child{border-left:0px;}
+table#tier_tbl tr td:last-child{border-right:0px;}
+#tier_tbl tr th{border:0px;}
+
 .tier1 {color:green; font-weight:bold;}
 .tier2 {color:blue; font-weight:bold;}
 .tier3 {color:orange; font-weight:bold;}
 .tier4 {color:red; font-weight:bold;}
+.SidemenuPanel ul.otherMenus li.activemny{background:#363636; border-left:2px solid #131313; cursor:pointer}
+.SidemenuPanel ul.otherMenus li.activemny i{color:#fff;}
+.SidemenuPanel{padding-bottom:20px;}
 </style>
-
 <br>
-<h2>Profit rates for each <TMPL_VAR tier_views_number> download of your files</h2>
+<h2>Profit rates for each <TMPL_VAR tier_views_number> downloads of your files</h2>
 
-<Table class="tbl1" cellpadding=2 id="tier_tbl" width=640>
+<div class="table_border">
+<div class="overflow" style="width:auto;">
+<Table class="tbl1" cellpadding=2 id="tier_tbl" width=100%>
 <TR>
     <TH align=center>Tier / Length</TH>
     <TMPL_LOOP sizes>
@@ -33,7 +45,8 @@
     <TMPL_LOOP tier4><TD>$<TMPL_VAR amount></TD></TMPL_LOOP>
 </TR>
 </Table>
-
+</div>
+</div>
 <br>
 
 <table cellpadding=5 width=640 id="groups_tbl">

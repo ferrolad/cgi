@@ -1,13 +1,19 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
 <h2>Banned users/ IPs</h2>
 
 <TMPL_VAR paging>
-
 <form method="POST" action="">
 	<input type="hidden" name="op" value="admin_bans_list">
    <input type="hidden" name="token" value="<TMPL_VAR token>">
 	Search User / IP: <input type="text" name="key" value="<TMPL_VAR key>"> <input type="submit" name="search"> <input type="submit" name="unban_all" value="Unban All">
+   <input type="button" value="Add new IP..." onclick="document.location='?op=admin_ban_new'">
 </form>
-<table width="800">
+<div class="table_border">
+<div class="tableFlow">
+<table style="width:100%;">
 	<tr>
 		<td valign="top" width="50%">
 			<table class="tbl1" name="banned_users" width="100%">
@@ -55,3 +61,6 @@
 		</td>
 	</tr>
 </table>
+</div>
+</div>
+<br /><br />

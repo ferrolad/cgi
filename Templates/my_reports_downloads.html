@@ -9,6 +9,7 @@
    <td>Amount</td>
    <td>Reason</td>
 </tr>
+<TMPL_IF list>
 <TMPL_LOOP list>
 <tr>
    <td align="center"><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a></td>
@@ -20,4 +21,9 @@
    <td align="center"><TMPL_VAR status></td>
 </tr>
 </TMPL_LOOP>
+<TMPL_ELSE>
+<tr>
+   <td colspan="7" align="center">No downloads found for selected date</td>
+</tr>
+</TMPL_IF>
 </table>

@@ -1,4 +1,12 @@
-<div style="text-align:left;width:720px;">
+<TMPL_IF my_login>
+	<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+</TMPL_IF>
+<style type="text/css">
+.SidemenuPanel ul.otherMenus li.activetos{background:#363636; border-left:2px solid #131313; cursor:pointer}
+.SidemenuPanel ul.otherMenus li.activetos i{color:#fff;}
+.SidemenuPanel{padding-bottom:20px;}
+</style>
+<div class="InnerHolder">
 <h2>Terms of Service</h2>
 This <TMPL_VAR site_name> Service Agreement (the "Agreement") describes the terms and conditions on which <TMPL_VAR site_name> ("we") offer services to you ("User"). By using our services, User agrees to be bound by the following terms and conditions:
 
@@ -14,3 +22,4 @@ This <TMPL_VAR site_name> Service Agreement (the "Agreement") describes the term
 <br>
 <TMPL_VAR site_name> is commited to cooperate with any and all legal authorities if an investigation should arise.
 </div>
+<br><br><br><br>

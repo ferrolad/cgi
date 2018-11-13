@@ -7,9 +7,7 @@ sub Write
    my ($path, $data, %opts) = @_;
 
    my $config = Read($path);
-
    my @fields = @{ $opts{fields} } if $opts{fields};
-
    my $filename = basename($path);
 
    my $conf;
@@ -40,16 +38,17 @@ sub Write
       }
       
       $conf=~s/$x\s*=>\s*('.*')\s*,/"$x => '$val',"/e;
-	}
-	
-	open(F,">$path~")||die("Couldn\'t write '$filename~': $!<br>\nPlease check that CGI dir is writeable by user.<br>\n");
-	print F $conf;
-	close F;
+   }
+   
+   my $temp_file = $opts{temp_file}||"$path~";
+   open(F,">$temp_file")||die("Couldn\'t write '".basename($temp_file)."': $!<br>\nPlease check that directory is writeable by user.<br>\n");
+   print F $conf;
+   close F;
 
-   my $result = do("$path~");
+   my $result = do($temp_file);
    if(ref($result) eq '' && $result)
    {
-      rename("$path~", "$path") || die("Couldn't move '$filename' to '$filename~': $!");
+      rename($temp_file, $path) || die("Couldn't rename $temp_file to $path: $!");
    }
    else
    {

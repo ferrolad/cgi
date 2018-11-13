@@ -1,7 +1,12 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
 <h2>Referrals or <TMPL_VAR usr_login></h2>
 
 <br>
-
+<div class="table_border">
+<div class="tableFlow">
 <Table class="tbl1" cellpadding=2 cellspacing=1>
 <TR class="hdr"><TD colspan=4>User Referrals</TD></TR>
 <TR class="hdr"><TD>Date</TD><TD>Username</TD><TD>Money</TD></TR>
@@ -13,9 +18,10 @@
 </TMPL_IF>
 </TMPL_LOOP>
 </Table>
-
+</div>
+</div>
 <br>
 
 <a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>">Back to user details</a>
 
-<br>
+<br /><br />

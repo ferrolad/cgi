@@ -21,15 +21,18 @@ use Log;
 
 Log->new(filename => 'api.log');
 
-$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME}=0;
+print("Access-Control-Allow-Origin: *\n");
+print("Content-type: text/plain\n\nOK"), exit if $ENV{REQUEST_METHOD} eq 'OPTIONS';
 
-#die"Error1" unless $ENV{REQUEST_METHOD} eq 'POST';
+$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME}=0;
 
 my $q = CGI->new();
 my $f;
 $f->{$_}=$q->param($_) for $q->param;
 
-&CompileChunks if $f->{op} eq 'compile';## && $ENV{HTTP_USER_AGENT} eq 'XFS-FSUploader';
+$ENV{REMOTE_ADDR} = $ENV{HTTP_CF_CONNECTING_IP} if $c->{m_n_chunked_upload} && $ENV{HTTP_CF_CONNECTING_IP};
+
+&CompileChunks if $f->{op} eq 'compile';
 
 &Send( "OK:0:ERROR: unknown main server IP") if $c->{allowed_ip} && $ENV{REMOTE_ADDR} ne $c->{allowed_ip};
 &Send( "OK:0:ERROR: fs_key is wrong or not empty") if $f->{fs_key} ne $c->{fs_key};
@@ -46,7 +49,6 @@ my $sub={
          update_conf    => \&UpdateConfig,
          check_files    => \&CheckFiles,
          get_files_list => \&GetFilesList,
-         get_file_stats => \&GetFileStats,
          import_list    => \&ImportList,
          import_list_do => \&ImportListDo,
          torrent_delete => \&TorrentDelete,
@@ -61,6 +63,7 @@ my $sub={
          reencode       => \&Reencode,
          rethumb        => \&Rethumb,
          get_pieces     => \&GetPieces,
+         get_disk_space => \&GetDiskSpace,
 	}->{ $f->{op} };
 if($sub)
 {
@@ -206,45 +209,22 @@ sub GetFilesList
    &SendJSON(ls("$c->{upload_dir}/*")); # List directories
 }
 
-sub CountFileStats
+sub FilesToImport
 {
-   use File::Find;
-   my ($path) = @_;
-
-   my ($count, $size);
-   my $counter = sub
-   {
-      return if ! -f $_ || $_ !~ /^\w{12}$/;
-      $count += 1;
-      $size += -s $_;
-   };
-
-   find($counter, $path);
-   return($count, $size);
-}
-
-sub GetFileStats
-{
-   my ($files, $size) = CountFileStats($c->{upload_dir});
-
-   my $orig_dir = "$1/orig" if $c->{upload_dir} =~ /^(.*)\/uploads/;
-   $size += ((CountFileStats($orig_dir))[1]) if -d $orig_dir;
-   $files||=0;
-   $size||=0;
-
-   &Send("OK:$files:$size");
+   my @arr;
+   find({ wanted => sub {
+      my $size = -s $_;
+      s/ImportFiles\/?//;
+      push @arr, { path => $_, size => $size } if -f "ImportFiles/$_";
+   }, follow => 1, no_chdir => 1 },
+   "ImportFiles");
+   return sort(@arr);
 }
 
 sub ImportList
 {
    opendir(DIR, "$c->{cgi_dir}/ImportFiles") || &Send("Error:cant open ImportFiles dir");
-   my @arr;
-   while( defined(my $fn=readdir(DIR)) )
-   {
-      next if $fn=~/^\.{1,2}$/;
-      next unless -f "$c->{cgi_dir}/ImportFiles/$fn";
-      push @arr, $fn.'-'.(-s "$c->{cgi_dir}/ImportFiles/$fn");
-   }
+   my @arr = map { "$_->{path}-$_->{size}" } FilesToImport();
    &Send("OK:".join(':',@arr));
 }
 
@@ -253,22 +233,19 @@ sub ImportListDo
    my $usr_id = $f->{usr_id};
    my $pub    = $f->{pub};
    my $import_dir = "$c->{cgi_dir}/ImportFiles";
-   opendir(DIR, $import_dir) || &Send("Error:cant open ImportFiles dir:$!");
-   my $ua = LWP::UserAgent->new(keep_alive => 1,agent => "XFS-FSAgent",timeout => 180,);
    my $cx=0;
    require XUpload;
-   while( defined(my $fn=readdir(DIR)) )
+   for(FilesToImport())
    {
-      next if $fn=~/^\.{1,2}$/;
-      next unless -f "$import_dir/$fn";
-
-      my $file = {file_tmp=>"$import_dir/$fn", file_name_orig=>$fn, file_public=>$pub, usr_id=>$usr_id, no_limits=>1};
-      $f->{ip}='1.1.1.1';
-      # --------------------
-      $file = &XUpload::ProcessFile($file,{ %$f, file_upload_method => 'import' }) unless $file->{file_status};
-      # --------------------
+      my $file = {
+         file_tmp => "$import_dir/$_->{path}",
+         file_name_orig => basename($_->{path}),
+         file_public => $pub,
+         usr_id => $usr_id,
+         no_limits => 1
+      };
+      $file = &XUpload::ProcessFile($file, { %$f, file_upload_method => 'import', fld_path => dirname($_->{path}) });
       &Send("Error: $file->{file_status}") if $file->{file_status};
-
       $cx++;
    }
    &Send("OK:$cx");
@@ -335,7 +312,10 @@ sub UpdateConfig
 
    $cc->{allowed_ip} = $ENV{REMOTE_ADDR} if !$c->{allowed_ip};
 
-   eval { PerlConfig::Write("$c->{cgi_dir}/XFSConfig.pm", $cc, fields => [ keys %{$cc} ]) };
+   eval { PerlConfig::Write("$c->{cgi_dir}/XFSConfig.pm", $cc,
+      fields => [ keys %{$cc} ],
+      temp_file => "$c->{cgi_dir}/logs/XFSConfig.pm~",
+      ) };
    &Send($@) if $@;
 
    my $conf='';
@@ -370,7 +350,6 @@ sub CompileChunks
       close $fh;
       unlink("$c->{temp_dir}/$sid/file_$cx");
       $cx++;
-      print"\#\n";
    }
    close F;
    print("<Error>No chunks were found</Error>"),exit unless $cx;
@@ -380,13 +359,13 @@ sub CompileChunks
    $file->{file_name_orig} = $fname;
    $f->{compile} = 1; # Dump download and delete link
    $f->{sess_id} = $sess_id;
-   $file = &XUpload::ProcessFile($file,{ %$f, file_upload_method => 'uploader' });
+   $file = &XUpload::ProcessFile($file,{ %$f, file_upload_method => 'web' });
 
    print("<Error>".$file->{msg}."</Error>"),exit unless $file->{msg}=~/^OK/;
    my ($link,$del_link) = $file->{msg}=~/^OK=(.+?)\|(.+)$/;
    print("<Error>Can't generate link</Error>"),exit unless $link;
    my $dx = sprintf("%05d",$file->{file_id}/$c->{files_per_folder});
-   print("<Links><Link>$link</Link>\n<DelLink>$del_link</DelLink></Links>");
+   print("<Links><Code>$file->{file_code}</Code><Link>$link</Link>\n<DelLink>$del_link</DelLink></Links>");
    exit;
 }
 
@@ -482,6 +461,12 @@ sub GetPieces
   &SendJSON({ file_size => $file_size, pieces => join('', @ret), piece_size => $f->{piece_size} });
 }
 
+sub GetDiskSpace
+{
+   require XUpload;
+   my ($device, $total, $used, $available) = map { $_ * 1024 } split(/\s+/, [ split(/\n\r?/, XUpload::saferun("df", $c->{upload_dir})->{stdout}) ]->[-1]);
+   &SendJSON({ total => $total, used => $used, available => $available });
+}
 
 sub rarPasswordChange
 {

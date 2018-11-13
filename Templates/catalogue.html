@@ -1,4 +1,4 @@
-<div style="width:720px;">
+<div>
 <h2><TMPL_VAR lang_latest_files> <TMPL_VAR date></h2>
 
 <Form method="GET" action="">
@@ -71,3 +71,12 @@ function addMyAcc(element, file_code) {
    });
 }
 </script>
+<TMPL_IF my_login>
+	<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+</TMPL_IF>
+<style type="text/css">
+.SidemenuPanel ul.otherMenus li.activeclg{background:#363636; border-left:2px solid #131313; cursor:pointer}
+.SidemenuPanel ul.otherMenus li.activeclg i{color:#fff;}
+footer{-webkit-margin-before:-50px;}
+.SidemenuPanel{padding-bottom:20px;}
+</style>

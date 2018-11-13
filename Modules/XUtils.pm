@@ -3,268 +3,6 @@ use strict;
 use XFileConfig;
 use JSON;
 
-sub ReportFile
-{
-   # Adds the file in abuses list
-   # %opts: usr_id - reporter's ID
-   #        ban - ban file by (file_md5, file_size)
-   my ($ses, $file, %opts) = @_;
-   my $db = $ses->db;
-   my $reporter = $db->SelectRow("SELECT * FROM Users WHERE usr_id=?", $opts{usr_id}) if $opts{usr_id};
-   $reporter ||= { usr_id => 0, usr_login => $opts{usr_login}, usr_email => $opts{usr_email} } if $opts{usr_login};
-   my $ban = ",ban_size='$file->{file_size}', ban_md5='$file->{file_md5}' " if $ses->getUser->{takedown_md5};
-   $db->Exec("INSERT INTO Reports SET file_id=?,
-         usr_id=?,
-         filename=?,
-         name=?,
-         email=?,
-         info='auto',
-         created=NOW() $ban",
-         $file->{file_id},
-         $file->{usr_id},
-         $file->{file_name},
-         $reporter->{usr_login},
-         $reporter->{usr_email},
-         );
-}
-
-sub RunServerTests
-{
-   my ($ses, $srv_id) = @_;
-   my $db = $ses->db;
-   my $server = $db->SelectRow("SELECT * FROM Servers WHERE srv_id=?", $srv_id);
-
-   require LWP::UserAgent;
-   my $ua = LWP::UserAgent->new( timeout => 15, agent => 'Opera/9.51 (Windows NT 5.1; U; en)' );
-
-   my @tests;
-   # api.cgi multiple tests
-   my $res = $ses->api2( $srv_id, { op => 'test', site_cgi => $c->{site_cgi} } );
-   if ( $res =~ /^OK/ )
-   {
-      push @tests, 'api.cgi: OK';
-      $res =~ s/^OK:(.*?)://;
-      push @tests, split( /\|/, $res );
-   }
-   else
-   {
-      push @tests, "api.cgi: ERROR ($res)";
-   }
-
-   # upload.cgi
-   $res = $ua->get("$server->{srv_cgi_url}/upload.cgi?mode=test");
-   push @tests, $res->content eq 'XFS' ? 'upload.cgi: OK' : "upload.cgi: ERROR (problems with <a href='$server->{srv_cgi_url}/upload.cgi\?mode=test' target=_blank>link</a>)";
-
-   # htdocs URL accessibility
-   $res = $ua->get("$server->{srv_htdocs_url}/index.html");
-   push @tests, $res->content eq 'XFS' ? 'htdocs URL accessibility: OK' : "htdocs URL accessibility: ERROR (should see XFS on <a href='$server->{srv_htdocs_url}/index.html' target=_blank>link</a>)";
-   return(@tests);
-
-}
-
-sub Ban
-{
-   # Purpose: ban user and/or IP
-   my ($ses, %opts) = @_;
-   if($opts{usr_id})
-   {
-      # Also ban user in XFileSharing <= 2.0 way
-      $ses->db->Exec("UPDATE Users SET usr_status='BANNED' WHERE usr_id=?", $opts{usr_id});
-   }
-   $ses->db->Exec("INSERT IGNORE INTO Bans SET usr_id=?,
-               ip=INET_ATON(?),
-               reason=?",
-         $opts{usr_id}||0,
-         $opts{ip}||0,
-         $opts{reason}||'',
-         );
-}
-
-sub CreateTransaction
-{
-   # Purpose: create a new payment transaction
-   # Returns: new transaction id
-   my ($ses, %opts) = @_;
-   my $db = $ses->db;
-   my $id = int( 1 + rand 9 ) . join( '', map { int( rand 10 ) } 1 .. 9 );
-   $db->Exec("INSERT INTO Transactions SET id=?, usr_id=?, amount=?, ip=INET_ATON(?), created=NOW(), aff_id=?, ref_url=?, verified=?, origin=?",
-         $id,
-         $opts{usr_id},
-         $opts{amount},
-         $ses->getIP||'0.0.0.0',
-         $opts{aff_id}||0,
-         $opts{ref_url}||'',
-         $opts{verified}||0,
-         $opts{origin}||'',
-         );
-   return($id);
-}
-
-sub chargeRef
-{
-   # Purpose: add $amount to $usr_id and run the necessary hooks
-   # Returns: amount charged
-   my ($ses, $usr_id, $amount, %opts) = @_;
-   my $db = $ses->db;
-   $opts{type} ||= 'seller';
-   die("Unknown referral type: $opts{type}")
-      if $opts{type} !~ /^(seller|referral|webmaster)/;
-
-   $ses->AdminLog("Charging $amount to $opts{type} $usr_id");
-   $db->Exec("UPDATE Users SET usr_money=usr_money+? WHERE usr_id=?", $amount, $usr_id) if $usr_id && $amount;
-
-   # Updating stats
-   my $f_count = {   seller => 'sales',
-      }->{$opts{type}};
-   my $f_amount = {   seller => 'profit_sales',
-         referral => 'profit_refs',
-         webmaster => 'profit_site',
-      }->{$opts{type}};
-   if($f_count)
-   {
-      $db->Exec("INSERT INTO Stats2
-                      SET usr_id=?, day=CURDATE(), $f_count=1
-            ON DUPLICATE KEY UPDATE $f_count=$f_count+1", $usr_id);
-   }
-   $db->Exec("INSERT INTO Stats2
-                      SET usr_id=?, day=CURDATE(), $f_amount=$amount
-                      ON DUPLICATE KEY UPDATE $f_amount=$f_amount+$amount",$usr_id) if $c->{m_s} && $usr_id;
-   return($amount);
-}
-
-sub TestFile
-{
-   my ($db, $file_code) = @_;
-   my $file = $db->SelectRow("SELECT *, INET_NTOA(file_ip) as file_ip, u.usr_profit_mode, s.srv_htdocs_url
-                              FROM (Files f, Servers s)
-                              LEFT JOIN Users u ON f.usr_id = u.usr_id 
-                              WHERE f.file_code=? 
-                              AND f.srv_id=s.srv_id",$file_code);
-   return undef if !$file;
-   my $direct_link = &genDirectLink($file, ip => '1.1.1.1');
-   require LWP::UserAgent;
-   my $ua = LWP::UserAgent->new( timeout => 1, agent => 'Opera/9.51 (Windows NT 5.1; U; en)' );
-   my $res = $ua->head($direct_link);
-   return $res->code;
-}
-
-sub CheckAuth
-{
-  my ($ses, $sess_id) = @_;
-  my $sess_id = $ses->getCookie( $ses->{auth_cook} );
-  my $db= $ses->db;
-  my $f= $ses->f;
-  return undef unless $sess_id;
-  $ses->{user} = $db->SelectRow("SELECT u.*,
-                                        UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec,
-                                        UNIX_TIMESTAMP()-UNIX_TIMESTAMP(last_time) as dtt,
-                                        s.last_ip
-                                 FROM Users u, Sessions s 
-                                 WHERE s.session_id=? 
-                                 AND s.usr_id=u.usr_id",$sess_id);
-  unless($ses->{user})
-  {
-     return undef;
-  }
-  if ( $ses->{user}->{usr_adm} && ( my $view_as = $ses->getCookie('view_as_usr_id') ) )
-  {
-     $ses->{user} = $db->SelectRow(
-           "SELECT *,
-           UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec
-           FROM Users
-           WHERE usr_id=?", $view_as);
-
-     $ses->{lang}->{fake_user} = 1;
-  }
-  else
-  {
-     $ses->{lang}->{fake_user} = 0;
-  }
-  if($ses->{user}->{usr_status} eq 'BANNED')
-  {
-     delete $ses->{user};
-     $ses->{msg} = "Your account was banned by administrator.";
-     return undef;
-  }
-  if($c->{mod_sec_restrict_session_ip} && $ses->{user}->{last_ip} ne $ses->getIP)
-  {
-     delete $ses->{user};
-     return undef;
-  }
-  if($ses->{user}->{dtt}>30)
-  {
-     $db->Exec("UPDATE Sessions SET last_ip=?, last_useragent=?, last_time=NOW() WHERE session_id=?",
-        $ses->getIP, $ses->getEnv('HTTP_USER_AGENT')||'', $sess_id);
-     $db->Exec("UPDATE Users SET usr_lastlogin=NOW(), usr_lastip=INET_ATON(?) WHERE usr_id=?", $ses->getIP, $ses->{user}->{usr_id} );
-  }
-  $ses->{user}->{premium}=1 if $ses->{user}->{exp_sec}>0;
-  if($c->{m_d} && $ses->{user}->{usr_mod})
-  {
-      $ses->{lang}->{usr_mod}=1;
-      $ses->{lang}->{m_d_f}=$c->{m_d_f};
-      $ses->{lang}->{m_d_a}=$c->{m_d_a};
-      $ses->{lang}->{m_d_c}=$c->{m_d_c};
-  }
-
-  $ses->{lang}->{enable_reports} = $c->{enable_reports};
-
-  #$ses->setCookie( $ses->{auth_cook} , $sess_id );
-  return $ses->{user};
-}
-
-sub CheckLoginPass
-{
-   use MIME::Base64;
-   use PBKDF2::Tiny;
-
-   my ($ses, $login, $pass) = @_;
-
-   my $user = $ses->db->SelectRow("SELECT * FROM Users WHERE usr_login=?  AND !usr_social", $login);
-
-   my $answer = $user->{usr_password} =~ /^sha256:/
-      ? _check_password_pbkdf2($pass, $user->{usr_password})
-      : _check_password_legacy($pass, $ses->db, $user->{usr_id});
-
-   return GetUser($ses, $user->{usr_id}) if $answer;
-   return 0;
-}
-
-sub _check_password_pbkdf2
-{
-   my ($actual_pass, $hashed_pass) = @_;
-   my ($algo, $turns, $salt, $data) = split(/:/, $hashed_pass);
-   return PBKDF2::Tiny::verify( decode_base64($data), 'SHA-256', $actual_pass, decode_base64($salt), $turns );
-}
-
-sub _check_password_legacy
-{
-   my ($actual_pass, $db, $usr_id) = @_;
-   return $db->SelectOne("SELECT usr_id FROM Users
-      WHERE usr_id=?
-      AND usr_password=ENCODE(?, ?)",
-      $usr_id,
-      $actual_pass,
-      $c->{pasword_salt});
-}
-
-sub GetUser
-{
-   my ($ses, $usr_id) = @_;
-   my $user = $ses->db->SelectRow("SELECT *, UNIX_TIMESTAMP(usr_premium_expire)-UNIX_TIMESTAMP() as exp_sec 
-         FROM Users 
-         WHERE usr_id=?", $usr_id );
-   if($user && $user->{usr_status} eq 'BANNED')
-   {
-      delete $ses->{user};
-      $ses->{msg} = "Your account was banned by administrator.";
-      return undef;
-   }
-
-   $user->{utype} = $user ? ($user->{exp_sec} > 0 ? 'prem' : 'reg') : 'anon' if $user;
-
-   return $user;
-}
-
 sub SelectServer
 {
    my $ses = shift;
@@ -356,8 +94,8 @@ sub TrackDL
         refuse('REWARD_NOT_SPECIFIED') if !$money;
       }
 
-      refuse('MAX24_REACHED') if $c->{max_money_last24} && $db->SelectOne("SELECT SUM(money) FROM IP2Files WHERE ip=INET_ATON(?) AND created>NOW()-INTERVAL 24 HOUR",$opts{ip}) >= $c->{max_money_last24};
-      refuse('MAX24_REACHED') if $c->{max_paid_dls_last24} && $db->SelectOne("SELECT COUNT(*) FROM IP2Files WHERE ip=INET_ATON(?) AND created>NOW()-INTERVAL 24 HOUR AND money > 0",$opts{ip}) >= $c->{max_paid_dls_last24};
+      refuse('MAX24_REACHED') if $c->{max_money_last24} && $db->SelectOne("SELECT SUM(money) FROM IP2Files WHERE ip=? AND created>NOW()-INTERVAL 24 HOUR",$opts{ip}) >= $c->{max_money_last24};
+      refuse('MAX24_REACHED') if $c->{max_paid_dls_last24} && $db->SelectOne("SELECT COUNT(*) FROM IP2Files WHERE ip=? AND created>NOW()-INTERVAL 24 HOUR AND money > 0",$opts{ip}) >= $c->{max_paid_dls_last24};
    }
    else
    {
@@ -426,7 +164,7 @@ sub TrackDL
               SET file_id=?, 
                   usr_id=?, 
                   owner_id=?, 
-                  ip=INET_ATON(?), 
+                  ip=?, 
                   size=?, 
                   money=?,
                   referer=?,
@@ -453,16 +191,28 @@ sub TrackDL
                   file_last_download=NOW() 
               WHERE file_id=?",$money,$file->{file_id});
 
-   $db->Exec("UPDATE LOW_PRIORITY Users SET usr_money=usr_money+? WHERE usr_id=?",$money,$file->{usr_id}) if $file->{usr_id} && $money;
+   if($c->{hold_profits_interval})
+   {
+      $db->Exec("INSERT INTO HoldProfits SET day=CURDATE(), usr_id=?, amount=?
+         ON DUPLICATE KEY UPDATE amount=amount+?",
+         $file->{usr_id}, $money, $money);
+   }
+   else
+   {
+      $db->Exec("UPDATE LOW_PRIORITY Users SET usr_money=usr_money+? WHERE usr_id=?",$money,$file->{usr_id}) if $file->{usr_id} && $money;
+   }
 
    $total_money_charged += $money if $file->{usr_id};
 
-   $db->Exec("INSERT INTO Stats2
-              SET usr_id=?, day=CURDATE(),
-                  downloads=1, profit_dl=$money
-              ON DUPLICATE KEY UPDATE
-                  downloads=downloads+1, profit_dl=profit_dl+$money
-             ",$file->{usr_id}) if $file->{usr_id};
+   if($c->{m_p_show_downloads_mode} ne 'show_only_paid' || $money > 0)
+   {
+      $db->Exec("INSERT INTO Stats2
+                 SET usr_id=?, day=CURDATE(),
+                     downloads=1, profit_dl=$money
+                 ON DUPLICATE KEY UPDATE
+                     downloads=downloads+1, profit_dl=profit_dl+$money
+                ",$file->{usr_id}) if $file->{usr_id};
+   }
 
    if($file->{usr_id} && $c->{referral_aff_percent} && $money)
    {
@@ -488,7 +238,7 @@ sub AddToReports
    my ($ses, $file) = @_;
    my $db = $ses->db;
 
-   $db->Exec("INSERT INTO Reports SET file_id=?, usr_id=?, filename=?, name=?, email=?, reason=?, info=?, ip=INET_ATON(?), status='PENDING', created=NOW()",
+   $db->Exec("INSERT INTO Reports SET file_id=?, usr_id=?, filename=?, name=?, email=?, reason=?, info=?, ip=?, status='PENDING', created=NOW()",
       $file->{file_id},
       $ses->getUserId,
       $file->{file_name},
@@ -497,42 +247,6 @@ sub AddToReports
       'Mass DMCA',
       '',
       $ses->getIP);
-}
-
-sub getTorrents
-{
-   my $ses = $Engine::Core::ses;
-   my $db = $Engine::Core::db;
-
-   my (%opts) = @_;
-   my $filter_usr_id = "AND t.usr_id=" . int($opts{usr_id}) if $opts{usr_id};
-   my $torrents=[];
-   if($ses->iPlg('t'))
-   {
-      $torrents = $db->SelectARef("SELECT *, u.usr_login, UNIX_TIMESTAMP()-UNIX_TIMESTAMP(created) as working
-                                   FROM Torrents t
-                                   LEFT JOIN Users u ON u.usr_id=t.usr_id
-                                   WHERE status='WORKING' 
-                                   $filter_usr_id
-                                   ");
-      for my $t (@$torrents)
-      {
-         my $files = eval { JSON::decode_json($t->{files}) } if $t->{files};
-         $t->{file_list} = join('<br>',map{$ses->SecureStr($_->{path}) . " (<i>".sprintf("%.1f Mb",$_->{size}/1048576)."<\/i>)"} @$files );
-         $t->{title} = $ses->SecureStr($t->{name});
-         $t->{title}=~s/\/.+$//;
-         $t->{title}=~s/:\d+$//;
-         ($t->{done},$t->{total},$t->{down_speed},$t->{up_speed})=split(':',$t->{progress});
-         $t->{percent} = sprintf("%.01f", 100*$t->{done}/$t->{total} ) if $t->{total};
-         $t->{done} = sprintf("%.1f", $t->{done}/1048576 );
-         $t->{total} = sprintf("%.1f", $t->{total}/1048576 );
-         $t->{working} = $t->{working}>3600*3 ? sprintf("%.1f hours",$t->{working}/3600) : sprintf("%.0f mins",$t->{working}/60);
-         $t->{down_speed} = $ses->makeFileSize($t->{down_speed});
-         $t->{up_speed} = $ses->makeFileSize($t->{up_speed});
-      }
-   }
-
-   return $torrents;
 }
 
 sub buildTree
@@ -603,24 +317,6 @@ sub getAffiliate
    $aff_id = 0 if $aff_id==$usr_id;
    $aff_id = $Engine::Core::ses->getUser->{usr_aff_id} if $Engine::Core::ses->getUser && $Engine::Core::ses->getUser->{usr_aff_id} && !$aff_id;
    return($aff_id||0);
-}
-
-sub StartSession
-{
-   my ($usr_id) = @_;
-   my $sess_id = $Engine::Core::ses->randchar(16);
-   $Engine::Core::db->Exec("DELETE FROM Sessions WHERE last_time + INTERVAL 5 DAY < NOW()");
-   $Engine::Core::db->Exec("INSERT INTO Sessions (session_id,usr_id,last_ip,last_useragent,last_time) VALUES (?,?,?,?,NOW())",
-      $sess_id,$usr_id,$Engine::Core::ses->getIP,$Engine::Core::ses->getEnv('HTTP_USER_AGENT')||'');
-   $Engine::Core::db->Exec("UPDATE Users SET usr_lastlogin=NOW(), usr_lastip=INET_ATON(?) WHERE usr_id=?", $Engine::Core::ses->getIP, $usr_id );
-   return $sess_id;
-}
-
-sub GetSession
-{
-   my ($usr_id) = @_;
-   my $session = $Engine::Core::db->SelectRow("SELECT * FROM Sessions WHERE usr_id=?", $usr_id);
-   return $session ? $session->{session_id} : &StartSession($usr_id);
 }
 
 sub makeSortSQLcode
@@ -703,7 +399,7 @@ sub DownloadChecks
 
    if($c->{file_dl_delay})
    {
-      my $cond = $Engine::Core::ses->getUser ? "usr_id=".$Engine::Core::ses->getUserId : "ip=INET_ATON('".$Engine::Core::ses->getIP."')";
+      my $cond = $Engine::Core::ses->getUser ? "usr_id=".$Engine::Core::ses->getUserId : "ip='".$Engine::Core::ses->getIP."'";
       my $last = $Engine::Core::db->SelectRow("SELECT *, UNIX_TIMESTAMP()-UNIX_TIMESTAMP(created) as dt 
                                  FROM IP2Files WHERE $cond 
                                  ORDER BY created DESC LIMIT 1");
@@ -720,7 +416,7 @@ sub DownloadChecks
 
    if($c->{add_download_delay})
    {
-      my $cond = $Engine::Core::ses->getUser ? "usr_id=".$Engine::Core::ses->getUserId : "ip=INET_ATON('".$Engine::Core::ses->getIP."')";
+      my $cond = $Engine::Core::ses->getUser ? "usr_id=".$Engine::Core::ses->getUserId : "ip='".$Engine::Core::ses->getIP."'";
       my $last = $Engine::Core::db->SelectRow("SELECT *, UNIX_TIMESTAMP()-UNIX_TIMESTAMP(created) as dt 
                                  FROM IP2Files WHERE $cond 
                                  ORDER BY created DESC LIMIT 1");
@@ -741,7 +437,7 @@ sub DownloadChecks
          if $Engine::Core::ses->getUserBandwidth($c->{bw_limit_days}) > $Engine::Core::ses->getUserLimit('bw_limit');
    }
 
-   if($file->{file_premium_only} && $Engine::Core::ses->{utype} ne 'prem')
+   if(($owner->{usr_premium_only} || $file->{file_premium_only}) && $Engine::Core::ses->{utype} ne 'prem')
    {
       $Engine::Core::ses->PrintTemplate("download_premium_only.html",%$file), return;
    }
@@ -759,7 +455,7 @@ sub getMaxDLSize
 sub CommentsList
 {
    my ($cmt_type,$cmt_ext_id) = @_;
-   my $list = $Engine::Core::db->SelectARef("SELECT *, INET_NTOA(cmt_ip) as ip, DATE_FORMAT(created,'%M %e, %Y') as date, DATE_FORMAT(created,'%r') as time
+   my $list = $Engine::Core::db->SelectARef("SELECT *, cmt_ip as ip, DATE_FORMAT(created,'%M %e, %Y') as date, DATE_FORMAT(created,'%r') as time
                                FROM Comments 
                                WHERE cmt_type=? 
                                AND cmt_ext_id=?
@@ -785,7 +481,7 @@ sub DownloadTrack
 
    my $total_money_charged = 0;
    
-   if(!$Engine::Core::db->SelectOne("SELECT file_id FROM IP2Files WHERE file_id=? AND ip=INET_ATON(?) AND usr_id=?",$file->{file_id},$Engine::Core::ses->getIP,$usr_id))
+   if(!$Engine::Core::db->SelectOne("SELECT file_id FROM IP2Files WHERE file_id=? AND ip=? AND usr_id=?",$file->{file_id},$Engine::Core::ses->getIP,$usr_id))
    {
       $f->{referer}||= $Engine::Core::ses->getCookie('ref_url') || $Engine::Core::ses->getEnv('HTTP_REFERER');
       $f->{referer}=~s/$c->{site_url}//i;
@@ -795,7 +491,7 @@ sub DownloadTrack
       {
          # Don't charge any money, leave it for fs.cgi instead
          $Engine::Core::db->Exec("INSERT INTO IP2Files SET 
-               file_id=?, usr_id=?, owner_id=?, ip=INET_ATON(?), size=0, referer=?, status=?",      
+               file_id=?, usr_id=?, owner_id=?, ip=?, size=0, referer=?, status=?",      
                $file->{file_id},$usr_id||0,$file->{usr_id}||0,$Engine::Core::ses->getIP,$f->{referer}||'',
                ($f->{adblock_detected} ? 'ADBLOCK' : 'Not completed'));
          return;
@@ -891,7 +587,7 @@ sub UserFilters
    if($f->{key})
    {
       push @filters, ($f->{key} =~ /^\d+\.\d+\.\d+\.\d+$/
-         ? "AND usr_lastip=INET_ATON('$f->{key}')"
+         ? "AND usr_lastip='$f->{key}'"
          : "AND (usr_login LIKE '%$f->{key}%' OR usr_email LIKE '%$f->{key}%')");
    }
 
@@ -924,103 +620,6 @@ sub MapFileServers
          $ses->AdminLog("Error when deleting syms. ServerID: $srv->{srv_id}.\n$res");
       }
    }
-}
-
-sub SMSConfirm
-{
-   my $ses = $Engine::Core::ses;
-   my $db = $Engine::Core::db;
-   my $f = $ses->f;
-   my ($purpose, $msg) = @_;
-
-   $db->Exec("DELETE FROM SecurityTokens WHERE created < NOW() - INTERVAL 30 MINUTE AND purpose=?", $purpose);
-
-   if($f->{confirm})
-   {
-      delete $f->{confirm};
-      my $token = $Engine::Core::db->SelectRow("SELECT * FROM SecurityTokens WHERE usr_id=? AND ip=INET_ATON(?) AND purpose=? AND value=? AND created > NOW() - INTERVAL 30 MINUTE",
-         $ses->getUserId, $ses->getIP, $purpose, $f->{code});
-      $db->Exec("DELETE FROM SecurityTokens WHERE usr_id=? AND purpose=?", $token->{usr_id}, $token->{purpose}) if $token;
-      return $token && $token->{id} ? 1 : SMSConfirm($purpose, "Invalid code");
-   }
-   else
-   {
-      my $user = $ses->getUser;
-      my $token = $Engine::Core::db->SelectRow("SELECT * FROM SecurityTokens WHERE usr_id=? AND ip=INET_ATON(?) AND purpose=? AND created > NOW() - INTERVAL 1 MINUTE",
-         $ses->getUserId, $ses->getIP, $purpose);
-
-      if(!$token)
-      {
-         my $secret_code = $ses->randchar(8);
-
-         $db->Exec("INSERT INTO SecurityTokens SET usr_id=?, purpose=?, ip=INET_ATON(?), value=?, phone=?",
-            $ses->getUserId, $purpose, $ses->getIP, $secret_code, $user->{usr_phone});
-
-         return $ses->message("Error while sending SMS: $ses->{errstr}")
-            if !$ses->SendSMS( $user->{usr_phone}, "$c->{site_name} login confirmation code: $secret_code" );
-      }
-   
-      my @fields = map { { name => $_, value => $f->{$_} } } grep { !/^(confirm|token|code)$/ } keys(%$f);
-
-      delete($ses->{user});
-      $f->{msg} ||= $msg;
-
-      $ses->PrintTemplate("sms_check.html",
-         phone => $user->{usr_phone},
-         usr_id => $user->{usr_id},
-         purpose => $purpose,
-         interval => $c->{countdown_before_next_sms}||60,
-         fields => \@fields);
-      return undef;
-   }
-}
-
-sub CloneFile
-{
-   my ($ses, $file,%opts) = @_;
-   my $db = $ses->db;
-
-   my $code = $ses->randchar(12);
-   while($db->SelectOne("SELECT file_id FROM Files WHERE file_code=? OR file_real=?",$code,$code)){$code = $ses->randchar(12);}
-
-   $db->Exec("INSERT INTO Files 
-        SET usr_id=?, 
-            srv_id=?,
-            file_fld_id=?,
-            file_name=?, 
-            file_descr=?, 
-            file_public=?, 
-            file_code=?, 
-            file_real=?, 
-            file_real_id=?, 
-            file_del_id=?, 
-            file_size=?,
-            file_size_encoded=?,
-            file_password=?, 
-            file_ip=INET_ATON(?), 
-            file_md5=?, 
-            file_spec=?, 
-            file_created=NOW(), 
-            file_last_download=NOW()",
-         $opts{usr_id}||$ses->getUserId,
-         $file->{srv_id},
-         $opts{fld_id}||0,
-         $file->{file_name},
-         '',
-         1,
-         $code,
-         $file->{file_real},
-         $file->{file_real_id}||$file->{file_id},
-         $file->{file_del_id},
-         $file->{file_size},
-         $file->{file_size_encoded},
-         $opts{file_password}||'',
-         $opts{ip}||$ses->getIP,
-         $file->{file_md5},
-         $file->{file_spec}||'',
-       );
-   $db->Exec("UPDATE Servers SET srv_files=srv_files+1 WHERE srv_id=?",$file->{srv_id});
-   return $code;
 }
 
 sub GetPremiumComparison

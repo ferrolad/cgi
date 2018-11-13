@@ -1,41 +1,54 @@
 <br>
-
-<div class="rrd">
-
-<script type="text/javascript" src="<TMPL_VAR site_url>/js/bootstrap-confirm.js"></script>
-<script type="text/javascript" src="<TMPL_VAR site_url>/js/dialogs.js"></script>
-
-<h2 style="margin:0;"><TMPL_VAR lang_user_login></h2>
-
-<form method="POST" action="<TMPL_VAR site_url>/" name="FL">
-<input type="hidden" name="op" value="login">
-<input type="hidden" name="rand" value="<TMPL_VAR rand>">
-<input type="hidden" name="redirect" value="<TMPL_VAR redirect>">
-<table style="width: 500px">
-<tr>
-<td><TMPL_VAR lang_username>:</td><td><input type="text" name="login" value="<TMPL_VAR login>" class="myForm"></td>
-</tr>
-<tr>
-<td><TMPL_VAR lang_password>:</td><td><input type="password" name="password" class="myForm"></td>
-</tr>
-<TMPL_IF ihtml><TR><TD colspan=2 align=center><TMPL_VAR ihtml></td></tr></TMPL_IF>
-</table>
-<TMPL_IF msg><b class='err'><TMPL_VAR msg></b><br></TMPL_IF>
-<br>
-<input type="submit" value="<TMPL_VAR lang_submit>">
-<br>
-<br>
-</form>
-
+<div class="rrd col-5">
+	<form method="POST" action="<TMPL_VAR site_url>/" name="FL">
+	<input type="hidden" name="op" value="login">
+	<input type="hidden" name="token" value="<TMPL_VAR token>">
+	<input type="hidden" name="rand" value="<TMPL_VAR rand>">
+	<input type="hidden" name="redirect" value="<TMPL_VAR redirect>">
+		<table width="90%">
+			<tr>
+				<td><h2 style="margin:0;"><TMPL_VAR lang_user_login></h2></td>
+			</tr>
+			<tr>
+				<td><TMPL_VAR lang_username>:<br /><input type="text" name="login" value="<TMPL_VAR login>" class="myForm"></td>
+			</tr>
+			<tr>
+				<td><TMPL_VAR lang_password>:<br /><input type="password" name="password" class="myForm"></td>
+			</tr>
+			<TMPL_IF ihtml>
+			<TR>
+				<TD align=left><TMPL_VAR ihtml></td>
+			</tr>
+			</TMPL_IF>
+			<tr>
+				<td><a href="<TMPL_VAR site_url>/forgotpass.html" style="font-size:13px; color:#4692c3;"><TMPL_VAR lang_forgot_pass></a></td>
+			</tr>
+			<tr>
+				<td>
+					<TMPL_IF msg><b class='err'><TMPL_VAR msg></b><br></TMPL_IF>
+					<input type="submit" value="<TMPL_VAR lang_submit>">
+					<br>
+				</td>
+			</tr>
+		</table>
+	</form>
 </div>
-
+<br>
 <TMPL_IF m_c>
-<div class="rrd">
-	<TMPL_IF facebook_app_id><a name="auth_facebook" href="<TMPL_VAR site_url>/?op=login&method=facebook"><img src="<TMPL_VAR site_url>/images/facebook.png" alt="Login with Facebook"></a></TMPL_IF>
-	<TMPL_IF twit_consumer1><a name="auth_twitter" href="<TMPL_VAR site_url>/?op=login&method=twitter"><img src="<TMPL_VAR site_url>/images/twitter.png" alt="Login with Twitter"></a></TMPL_IF>
-	<TMPL_IF google_app_id><a name="auth_google" href="<TMPL_VAR site_url>/?op=login&method=google"><img src="<TMPL_VAR site_url>/images/google+.png" alt="Login with Google"></a></TMPL_IF>
-	<TMPL_IF vk_app_id><a name="auth_vk" href="<TMPL_VAR site_url>/?op=login&method=vk"><img src="<TMPL_VAR site_url>/images/vk.png" alt="Login with Vk.com"></a></TMPL_IF>
-</div>
+	<div class="rrd col-5">
+		<TMPL_IF facebook_app_id>
+			<a name="auth_facebook" href="<TMPL_VAR site_url>/?op=login&method=facebook"><img src="<TMPL_VAR site_url>/images/facebook.png" alt="Login with Facebook"></a>
+		</TMPL_IF>
+		<TMPL_IF twit_consumer1>
+			<a name="auth_twitter" href="<TMPL_VAR site_url>/?op=login&method=twitter"><img src="<TMPL_VAR site_url>/images/twitter.png" alt="Login with Twitter"></a>
+		</TMPL_IF>
+		<TMPL_IF google_app_id>
+			<a name="auth_google" href="<TMPL_VAR site_url>/?op=login&method=google"><img src="<TMPL_VAR site_url>/images/google+.png" alt="Login with Google"></a>
+		</TMPL_IF>
+		<TMPL_IF vk_app_id>
+			<a name="auth_vk" href="<TMPL_VAR site_url>/?op=login&method=vk"><img src="<TMPL_VAR site_url>/images/vk.png" alt="Login with Vk.com"></a>
+		</TMPL_IF>
+	</div>
 </TMPL_IF>
 
 <br><br>
@@ -46,5 +59,7 @@ document.FL.password.focus();
 document.FL.login.focus();
 </TMPL_IF>
 </Script>
-
-<style>input.myForm { width: 180px; }</style>
+<style type="text/css">
+.rrd input[type="text"], .rrd input[type="password"]{width:100%}
+footer{-webkit-margin-before:-50px;}
+</style>

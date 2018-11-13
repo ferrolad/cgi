@@ -5,8 +5,9 @@ use XFileConfig;
 use Digest::SHA qw(sha1_hex);
 
 sub new{
-  my $class=shift;
-  my $self={ dbh=>undef };
+  my ($class, %opts) = @_;
+  my $self={ dbh=>undef, %opts };
+  $self->{$_} ||= $c->{$_} for qw(db_name db_host db_login db_passwd);
   bless $self,$class;
   $self->InitDB;
   $self->InitMemd if $c->{memcached_location};
@@ -27,8 +28,9 @@ sub dbh{shift->{dbh}}
 
 sub InitDB{
   my $self=shift;
-  $self->{dbh}=DBI->connect("DBI:mysql:database=$c->{'db_name'};host=$c->{'db_host'};",$c->{'db_login'},$c->{'db_passwd'}) || die ("Can't connect to Mysql server.".$! );
+  $self->{dbh}=DBI->connect("DBI:mysql:database=$self->{'db_name'};host=$self->{'db_host'};",$self->{'db_login'},$self->{'db_passwd'}) || die ("Can't connect to Mysql server.".$! );
   $dbh->{'mysql_enable_utf8'} = 1;
+  $dbh->{'mysql_auto_reconnect'} = 1;
   $self->Exec("SET NAMES 'utf8'");
   $self->Exec("SET sql_mode = ''");
   $self->{'exec'}=0;
@@ -62,9 +64,20 @@ sub UnInitDB{
 
 sub Exec
 {
-  my $self=shift;
-  my ($pkg, $fn, $ln) = caller();
-  $self->{dbh}->do(shift,undef,@_) || die"Can't exec at $fn:$ln:\n".$self->{dbh}->errstr;
+  my $self = shift;
+  my $sql = shift;
+
+  if($c->{enable_query_log} && $sql =~ /$c->{enable_query_log}/)
+  {
+     require JSON;
+     my ($pkg, $fn, $ln) = caller();
+
+     open(DB_LOG, ">>logs/db.log");
+     print DB_LOG (JSON->new->canonical(1)->encode({"_at" => "$fn:$ln", "_sql" => simplify($sql), params => \@_, "stacktrace" => stacktrace() }), "\n");
+     close(DB_LOG);
+  }
+
+  $self->{dbh}->do($sql,undef,@_) || die"Can't exec:\n".$self->{dbh}->errstr;
   $self->{'exec'}++;
 }
 
@@ -72,7 +85,8 @@ sub SelectOne
 {
   my $self=shift;
   my $res = $self->{dbh}->selectrow_arrayref(shift,undef,@_);
-  die"Can't execute select:\n".$self->{dbh}->errstr if $self->{dbh}->err;
+  my ($pkg, $fn, $ln) = caller();
+  die"Can't execute select at $fn:$ln:\n".$self->{dbh}->errstr if $self->{dbh}->err;
   $self->{'select'}++;
   return $res->[0];
 };
@@ -147,5 +161,20 @@ sub getLastInsertId
   return shift->{ dbh }->{'mysql_insertid'};
 }
 
+sub simplify
+{
+   my ($arg) = @_;
+   $arg =~ s/\s+/ /g;
+   return $arg;
+}
 
-1;                                                           
+sub stacktrace
+{
+   require File::Basename;
+   my $i = 1;
+   my ($pkg, $fn, $ln, @ret);
+   push @ret, File::Basename::basename($fn) . ":$ln" while ($pkg, $fn, $ln) = caller($i++);
+   return join("->", reverse(@ret));
+}
+
+1;

@@ -1,76 +1,118 @@
+   <TMPL_IF my_login>
+   		<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+		<style type="text/css">
+		.holderPanel{background:#444;}
+		@media (min-width: 1025px){
+		.holderPanel{background:#444;}
+		}
+		</style>
+   </TMPL_IF>
 	<script src="<TMPL_VAR site_url>/js/share.js"></script>
-	<script src="<TMPL_VAR site_url>/js/countdown.js"></script>
-	<div id="content" style="width: 980px">
-		<div id="container">
+	<script src="<TMPL_VAR site_url>/js/countdown.js?rand=dfgfg"></script>
+	<div id="content">
 			<!--start fileinfo panel-->
-			<table class="filepanel" cellpadding="0" cellspacing="1">
-				<tr>
-					<td width="585">
-						<img src="<TMPL_VAR site_url>/images/icon_file.png" style="float: left;">
-						<div class="dfile">
-							<span class="dfilename"><TMPL_VAR file_name></span>
-							<span class="report">
-								<img src="<TMPL_VAR site_url>/images/icon_flag.png">
-								<a href="<TMPL_VAR site_url>/?op=report_file&amp;id=<TMPL_VAR file_code>"><TMPL_VAR lang_report_abuse></a>
-							</span>
-							<div class="clear"></div>
-							<div style="font-size: 11px;">
-								<TMPL_VAR lang_uploaded_on>
-								<b><TMPL_VAR created_date></b> 
-								<TMPL_VAR created_time>
-								<TMPL_IF file_usr_login>
-								by 
-								<a href="<TMPL_VAR site_url>/users/<TMPL_VAR file_usr_login>" style="text-decoration: none;"><TMPL_VAR file_usr_login></a>
-								</TMPL_IF>
-                        <TMPL_IF admin> <a href="<TMPL_VAR site_url>/?op=admin_files&del_code=<TMPL_VAR file_code>&token=<TMPL_VAR del_token>" onClick="var x=prompt('<TMPL_VAR lang_delete_file> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined'||x==null)return false;this.href+='&del_info='+x;"><img src="<TMPL_VAR site_url>/images/del.gif" border=0></a></TMPL_IF>
-							</div>
+			<div class="filepanel lft">
+				<div class="lft sec">
+					<img src="<TMPL_VAR site_url>/images/icon_down.png" id="icod" style="float: left;">
+					<div class="dfile">
+						<span class="dfilename"><TMPL_VAR file_name></span>
+						<span class="report">
+							<img src="<TMPL_VAR site_url>/images/ico_flag.png">
+							<a href="<TMPL_VAR site_url>/?op=report_file&amp;id=<TMPL_VAR file_code>" name="report-abuse"><TMPL_VAR lang_report_abuse></a>
+						</span>
+						<div class="clear"></div>
+						<div class="upinfo">
+							<TMPL_VAR lang_uploaded_on>
+							<b><TMPL_VAR created_date></b> 
+							<TMPL_VAR created_time>
+							<TMPL_IF file_usr_login>
+							by 
+							<a href="<TMPL_VAR site_url>/users/<TMPL_VAR file_usr_login>" style="text-decoration: none;"><TMPL_VAR file_usr_login></a>
+							</TMPL_IF>
+					<TMPL_IF admin> <a href="<TMPL_VAR site_url>/?op=admin_files&del_code=<TMPL_VAR file_code>&token=<TMPL_VAR del_token>" onClick="var x=prompt('<TMPL_VAR lang_delete_file> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined'||x==null)return false;this.href+='&del_info='+x;"><img src="<TMPL_VAR site_url>/images/del.gif" border=0></a></TMPL_IF>
 						</div>
-					</td>
-					<td>
-						<span class="statd"><TMPL_VAR lang_downloaded></span>
-						<span><TMPL_VAR file_downloads> <TMPL_VAR lang_times></span>
-					</td>
-					<td>
-						<span class="statd"><TMPL_VAR lang_size></span>
-						<span><b><TMPL_VAR fsize></b></span>
-					</td>
-					<td>
-						<ul id="sharebuttons">
-							<li><a href="javascript:share_facebook(document.location)" class="fb" title="Facebook"></a></li>
-							<li><a href="javascript:share_twitter(document.location)" class="tw" title="Twitter"></a></li>
-							<li><a href="javascript:share_vk(document.location)" class="vk" title="Vk"></a></li>
-							<li><a href="javascript:share_gplus(document.location)" class="gplus" title="Google+"></a></li>
-						</ul>
-					</td>
-				</tr>
-			</table>
+
+						<TMPL_IF add_to_account>
+						<div style="text-align: left" name="add_my_acc_wrapper">
+							<a href="#" name="add_my_acc" onclick="addMyAcc('<TMPL_VAR file_code>', this); return false;"><TMPL_VAR lang_add_to_my_account></a>
+						</div>
+						<script>
+						function addMyAcc(file_code, elt)
+						{
+							$.ajax({
+								url: '<TMPL_VAR site_url>/?op=my_files&add_my_acc=' + file_code + '&token=<TMPL_VAR my_files_token>',
+								success: function(response) { $(elt).replaceWith(response) }
+							});
+						}
+						</script>
+						</TMPL_IF>
+					</div>
+				</div>
+				
+				<div class="lft sec">	
+					<span class="statd"><TMPL_VAR lang_downloaded></span>
+					<span><TMPL_VAR file_downloads> <TMPL_VAR lang_times></span>
+				</div>
+				
+				<div class="lft sec">	
+					<span class="statd"><TMPL_VAR lang_size></span>
+					<span><TMPL_VAR fsize></span>
+				</div>
+				
+				<div class="lft sec">	
+					<ul id="sharebuttons">
+						<li><a href="javascript:share_facebook(document.location)" class="fb" title="Facebook"></a></li>
+						<li><a href="javascript:share_twitter(document.location)" class="tw" title="Twitter"></a></li>
+						<li><a href="javascript:share_vk(document.location)" class="vk" title="Vk"></a></li>
+						<li><a href="javascript:share_gplus(document.location)" class="gplus" title="Google+"></a></li>
+					</ul>
+				</div>
+			</div>
 			<div class="clear"></div>
 			<!--end fileinfo panel-->
 			<br>
-			<!--start left column-->
-			<div class="leftcol">
-				<TMPL_IF video_code>
-				<TMPL_IF video_ads>
-				<TMPL_VAR m_a_css>
-				<div style="position: relative;">
-				 <div id="player_img" style="width: <TMPL_VAR vid_width>px; height: <TMPL_VAR vid_height>px;">
-				    <a href="#" onclick="return player_start();"><img src="<TMPL_VAR site_url>/images/<TMPL_IF divx>player_divx.png<TMPL_ELSE>player_flv.png</TMPL_IF>" style="display:block;width:100%;height:<TMPL_VAR vid_height>px;border:0;"></a>
-				    <a href="#" onclick="return player_start();" id="vid_play" style="background-image: url(<TMPL_VAR site_url>/images/player_play.png)"></a>
-				    <div id="player_ads">
-				      <div style="padding:15px;text-align:center;">
-				      <!-- Video ADs code start here -->
-				      <center><TMPL_VAR m_a_code></center>
-				      <!-- Video ADs code end here -->
-				      </div>
-				    </div>
-				 </div>
-				</div>
-				<script>
-				</script>
-				</TMPL_IF>
-				<div id="player_code" class="player" style="width: 600px;height:<TMPL_VAR vid_height>px"><TMPL_VAR video_code></div>
-				</TMPL_IF>
-				<TMPL_IF song_url>
+			<!--start right column-->
+			<form name="F1" method="POST" action="">
+			<input type="hidden" name="op" value="download2">
+			<input type="hidden" name="id" value="<TMPL_VAR file_code>">
+			<input type="hidden" name="rand" value="<TMPL_VAR rand>">
+			<input type="hidden" name="referer" value="<TMPL_VAR referer>">
+			
+			<input type="hidden" name="method_free" value="<TMPL_VAR method_free>">
+			<input type="hidden" name="method_premium" value="<TMPL_VAR method_premium>">
+
+			<TMPL_IF no_adblock_earnings>
+			<input type="hidden" id="adblock_detected" name="adblock_detected">
+			<div class="adsbox"></div>
+			<script>
+			$('#adblock_detected').val($('.adsbox').is(':visible') ? 0 : 1);
+			</script>
+			</TMPL_IF>
+
+			<div class="rightcol">
+				<div class="lft downseclft">				
+					<TMPL_IF video_code>
+					<TMPL_IF video_ads>
+					<TMPL_VAR m_a_css>
+					<div style="position: relative;">
+					 <div id="player_img" style="width: <TMPL_VAR vid_width>px; height: <TMPL_VAR vid_height>px;">
+						<a href="#" onclick="return player_start();"><img src="<TMPL_VAR site_url>/images/<TMPL_IF divx>player_divx.png<TMPL_ELSE>player_flv.png</TMPL_IF>" style="display:block;width:100%;height:<TMPL_VAR vid_height>px;border:0;"></a>
+						<a href="#" onclick="return player_start();" id="vid_play" style="background-image: url(<TMPL_VAR site_url>/images/player_play.png)"></a>
+						<div id="player_ads">
+						  <div style="padding:15px;text-align:center;">
+						  <!-- Video ADs code start here -->
+						  <center><TMPL_VAR m_a_code></center>
+						  <!-- Video ADs code end here -->
+						  </div>
+						</div>
+					 </div>
+					</div>
+					<script>
+					</script>
+					</TMPL_IF>
+					<div id="player_code" class="player" style="width: 600px;height:<TMPL_VAR vid_height>px"><TMPL_VAR video_code></div>
+					</TMPL_IF>
+					<TMPL_IF song_url>
 				<script type='text/javascript' src='/player/jw6.js'></script>
 				<script type='text/javascript' src='/player/jwplayer.html5.js'></script>
 				<div id='mp3player'>This text will be replaced</div>
@@ -83,16 +125,157 @@
 				});
 				</script>
 				</TMPL_IF>
-				<TMPL_IF docviewer_url><iframe src="<TMPL_VAR docviewer_url>" style="height:500px;" frameborder="0"></iframe></TMPL_IF>
+					<TMPL_IF file_adult>
+					<!-- Adult ads -->
+					<TMPL_ELSE>
+					<!-- Family-safe ads -->
+					</TMPL_IF>
+				</div>
+				
+				<div class="rgt downsecrgt">
+					<TMPL_IF video_code>
+					<style type="text/css">
+					#commonId{display:none;}
+					</style>
+					<div class="fileinfo">
+						<h2>File info</h2>
+						<ul>
+							<li><span class="infoname">Codec:</span><span><TMPL_VAR vid_codec></span></li>
+							<li><span class="infoname">Resolution:</span><span><TMPL_VAR vid_width> x <TMPL_VAR vid_height></span></li>
+							<li><span class="infoname">Framerate:</span><span><TMPL_VAR vid_fps> fps</span></li>
+							<li><span class="infoname">Bitrate:</span><span><TMPL_VAR vid_bitrate> Kbps</span></li>
+							<li><span class="infoname">Audio info:</span><span><TMPL_VAR vid_audio_codec>, <TMPL_VAR vid_audio_bitrate> kbps, <TMPL_VAR vid_audio_rate> Hz</span></li>
+							<li><span class="infoname">Description:</span><span><TMPL_VAR file_descr></span></li>
+							<li><span class="snap">Snapshot:</span>
+								<span>
+									<img id="snapshot" src="<TMPL_VAR video_thumb_url>" style="border: 1px #ddd solid">
+								</span>
+							</li>
+						</ul>
+						<div class="clear"></div>
+						<center>
+						<TMPL_UNLESS no_link>
+						<TMPL_IF countdown>
+						<span id="countdown"><br><TMPL_VAR lang_wait> <span class="seconds"><TMPL_VAR countdown></span> <TMPL_VAR lang_seconds><br /></span>
+						</TMPL_IF>
+						<TMPL_IF ihtml><br/><TMPL_VAR ihtml></TMPL_IF>
+						<TMPL_IF bittorrent>
+						<br>
+						You may only download this file with BitTorrent as it has reached the download limit.
+						<br>
+						<button id="dl_bittorent" class="downloadbtn">
+							<span class="bicon">
+								<img class="vanb" src="<TMPL_VAR site_url>/images/ico_down.png">
+							</span>
+							<span class="btext">Download with BitTorrent</span>
+						</button>
+						<TMPL_ELSE>
+						<button id="downloadbtn" class="downloadbtn">
+							<span class="bicon">
+								<img class="vanb" src="<TMPL_VAR site_url>/images/ico_down.png">
+							</span>
+							<span class="btext">Create download link</span>
+						</button>	
+						</TMPL_IF>
+						<TMPL_IF pass_required><br><b><TMPL_VAR lang_password>:</b> <input type="password" name="password" class="myForm"><br></TMPL_IF>
+						</TMPL_UNLESS>
+						</center>
+					</div>
+					</TMPL_IF>					
+					
+					<TMPL_IF song_url>
+					<style type="text/css">
+					#commonId{display:none;}
+					</style>
+					<div class="fileinfo">
+						<h2>File info</h2>
+						<ul>
+							<TMPL_IF mp3_artist><li><span class="infoname">Song Artist:</span><span><TMPL_VAR mp3_artist></span></li></TMPL_IF>
+							<TMPL_IF mp3_title><li><span class="infoname">Song Title:</span><span><TMPL_VAR mp3_title></span></li></TMPL_IF>
+							<TMPL_IF mp3_album><li><span class="infoname">Song Album:</span><span><TMPL_VAR mp3_album> </span></li></TMPL_IF></td></tr>
+						</ul>
+						<div class="clear"></div>
+						<center>
+						<TMPL_UNLESS no_link>
+						<TMPL_IF countdown>
+						<span id="countdown"><br><TMPL_VAR lang_wait> <span class="seconds"><TMPL_VAR countdown></span> <TMPL_VAR lang_seconds><br /></span>
+						</TMPL_IF>
+						<TMPL_IF ihtml><br/><TMPL_VAR ihtml></TMPL_IF>
+						<TMPL_IF bittorrent>
+						<br>
+						You may only download this file with BitTorrent as it has reached the download limit.
+						<br>
+						<button id="dl_bittorent" class="downloadbtn">
+							<span class="bicon">
+								<img class="vanb" src="<TMPL_VAR site_url>/images/ico_down.png">
+							</span>
+							<span class="btext">Download with BitTorrent</span>
+						</button>
+						<TMPL_ELSE>
+						<button id="downloadbtn" class="downloadbtn">
+							<span class="bicon">
+								<img class="vanb" src="<TMPL_VAR site_url>/images/ico_down.png">
+							</span>
+							<span class="btext">Create download link</span>
+						</button>	
+						</TMPL_IF>
+						<TMPL_IF pass_required><br><b><TMPL_VAR lang_password>:</b> <input type="password" name="password" class="myForm"><br></TMPL_IF>
+						</TMPL_UNLESS>
+						</center>
+					</div>
+					</TMPL_IF>
+				</div>
+				
+				
+				
+				
+				
+				<TMPL_IF docviewer_url>
+				<iframe src="<TMPL_VAR docviewer_url>" style="height:500px;" frameborder="0"></iframe>
+				</TMPL_IF>
 				<TMPL_IF image_url>
 				<script src="<TMPL_VAR site_url>/js/scaleimg.js"></script>
-				<img id="img-preview" src="<TMPL_VAR image_url>" style="border: 1px #e4e4e4 solid" class="pic" alt="<TMPL_VAR file_name>" GALLERYIMG="no" onload="scaleImg(this, 600);">
+				<img id="img-preview" src="<TMPL_VAR image_url>" style="border: 1px #e4e4e4 solid; max-width: 100%" class="pic" alt="<TMPL_VAR file_name>" onclick="showFullScreen()">
 				</TMPL_IF>
-				<TMPL_IF file_adult>
-				<!-- Adult ads -->
+				
+				<center>
+				<TMPL_IF msg><br><div class="err"><TMPL_VAR msg></div></TMPL_IF>
+				</center>
+				<div id="commonId" class="col-12 lft">
+				<center>
+				<TMPL_UNLESS no_link>
+				<TMPL_IF countdown>
+				<span id="countdown"><br><TMPL_VAR lang_wait> <span class="seconds"><TMPL_VAR countdown></span> <TMPL_VAR lang_seconds><br /></span>
+				</TMPL_IF>
+				<TMPL_IF ihtml><br/><TMPL_VAR ihtml></TMPL_IF>
+				<TMPL_IF bittorrent>
+				<br>
+				You may only download this file with BitTorrent as it has reached the download limit.
+				<br>
+				<button id="dl_bittorent" class="downloadbtn">
+					<span class="bicon">
+						<img class="vanb" src="<TMPL_VAR site_url>/images/ico_down.png">
+					</span>
+					<span class="btext">Download with BitTorrent</span>
+				</button>
 				<TMPL_ELSE>
-				<!-- Family-safe ads -->
+				<button id="downloadbtn" class="downloadbtn">
+					<span class="bicon">
+						<img class="vanb" src="<TMPL_VAR site_url>/images/ico_down.png">
+					</span>
+					<span class="btext">Create download link</span>
+				</button>	
 				</TMPL_IF>
+				<TMPL_IF pass_required><br><b><TMPL_VAR lang_password>:</b> <input type="password" name="password" class="myForm"><br></TMPL_IF>
+				</TMPL_UNLESS>
+				</center>
+				</div>
+			</div>
+			</form>
+			<!--end right column-->
+
+			<!--start left column-->
+			<div class="leftcol">
 				<div class="sharetabs">
 					<div class="section">
 						<ul class="tabs">
@@ -135,7 +318,7 @@
 						</TMPL_IF>
 						
 						<div class="clear"></div>
-					</div>					
+					</div>			
 				</div>
 				
 				<TMPL_IF enable_file_comments>
@@ -146,18 +329,19 @@
 					<input type="hidden" name="cmt_ext_id" value="<TMPL_VAR file_id>">
 					<input type="hidden" name="cmt_type" value="1">
 					<div id="comments">
-						<h2><TMPL_VAR lang_comments></h2>
+						<div class="HolderInner" style="background:none; border:0px; margin-bottom:0px; padding:0px;"><h2><span><TMPL_VAR lang_comments></span></h2></div>
+						<div class="HolderInner" style="margin-top:0px;">
 						<ul id="comments_list">
 							<TMPL_LOOP comments>
 							<TMPL_INCLUDE comment.html>
 							</TMPL_LOOP>
 						</ul>
-						<Textarea id="cmt_text" name="cmt_text" style="width:578px;display:block;" cols=24 rows=3 id='cmt_txt'></Textarea>
+						<Textarea id="cmt_text" name="cmt_text" style="width:100%;display:block;" cols=24 rows=3 id='cmt_txt'></Textarea>
 						<br/>
+						</div>
 						<div style="text-align: center;">
-							<input type="button" id="comment_btn" value="<TMPL_VAR lang_comment_on_this>">
+							<input type="button" id="comment_btn" value="<TMPL_VAR lang_comment_on_this>" style="padding:0px 20px;">
 						</div>	
-						<br/>
 						<br/>
 					</div> 
 				</form>
@@ -166,86 +350,6 @@
 			</div>
 			<!--end left column-->
 			
-			<!--start right column-->
-			<form name="F1" method="POST" action="">
-			<input type="hidden" name="op" value="download2">
-			<input type="hidden" name="id" value="<TMPL_VAR file_code>">
-			<input type="hidden" name="rand" value="<TMPL_VAR rand>">
-			<input type="hidden" name="referer" value="<TMPL_VAR referer>">
-			
-			<input type="hidden" name="method_free" value="<TMPL_VAR method_free>">
-			<input type="hidden" name="method_premium" value="<TMPL_VAR method_premium>">
-
-			<TMPL_IF no_adblock_earnings>
-			<input type="hidden" id="adblock_detected" name="adblock_detected">
-			<div class="adsbox"></div>
-			<script>
-			$('#adblock_detected').val($('.adsbox').is(':visible') ? 0 : 1);
-			</script>
-			</TMPL_IF>
-
-			<div class="rightcol">
-				<TMPL_IF video_code>
-				<div class="fileinfo">
-					<h2>File info</h2>
-					<ul>
-						<li><span class="infoname">Codec:</span><span><TMPL_VAR vid_codec></span></li>
-						<li><span class="infoname">Resolution:</span><span><TMPL_VAR vid_width> x <TMPL_VAR vid_height></span></li>
-						<li><span class="infoname">Framerate:</span><span><TMPL_VAR vid_fps> fps</span></li>
-						<li><span class="infoname">Bitrate:</span><span><TMPL_VAR vid_bitrate> Kbps</span></li>
-						<li><span class="infoname">Audio info:</span><span><TMPL_VAR vid_audio_codec>, <TMPL_VAR vid_audio_bitrate> kbps, <TMPL_VAR vid_audio_rate> Hz</span></li>
-						<li><span class="infoname">Description:</span><span><TMPL_VAR file_descr></span></li>
-						<li><span class="snap">Snapshot:</span>
-							<span>
-								<img id="snapshot" src="<TMPL_VAR video_thumb_url>" style="border: 1px #ddd solid">
-							</span>
-						</li>
-					</ul>
-				</div>
-				</TMPL_IF>
-				<TMPL_IF song_url>
-				<div class="fileinfo">
-					<h2>File info</h2>
-					<ul>
-						<TMPL_IF mp3_artist><li><span class="infoname">Song Artist:</span><span><TMPL_VAR mp3_artist></span></li></TMPL_IF>
-						<TMPL_IF mp3_title><li><span class="infoname">Song Title:</span><span><TMPL_VAR mp3_title></span></li></TMPL_IF>
-						<TMPL_IF mp3_album><li><span class="infoname">Song Album:</span><span><TMPL_VAR mp3_album> </span></li></TMPL_IF></td></tr>
-					</ul>
-				</div>
-				</TMPL_IF>
-				<div class="clear"></div>
-				<TMPL_IF msg><br><div class="err"><TMPL_VAR msg></div></TMPL_IF>
-				<TMPL_UNLESS no_link>
-				<TMPL_IF countdown>
-				<br><span id="countdown"><TMPL_VAR lang_wait> <span class="seconds"><TMPL_VAR countdown></span> <TMPL_VAR lang_seconds></span>
-				</TMPL_IF>
-				<TMPL_IF ihtml><br/><TMPL_VAR ihtml></TMPL_IF>
-				<TMPL_IF bittorrent>
-				<br>
-				You may only download this file with BitTorrent as it has reached the download limit.
-				<br>
-				<button id="dl_bittorent" class="downloadbtn">
-					<span class="bicon">
-						<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_download_b.png">
-						<img class="barrow van move-bot" src="<TMPL_VAR site_url>/images/icon_ardown.png">
-					</span>
-					<span class="btext">Download with BitTorrent</span>
-				</button>
-				<TMPL_ELSE>
-				<button id="downloadbtn" class="downloadbtn">
-					<span class="bicon">
-						<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_download_b.png">
-						<img class="barrow van move-bot" src="<TMPL_VAR site_url>/images/icon_ardown.png">
-					</span>
-					<span class="btext">Create download link</span>
-				</button>	
-				</TMPL_IF>
-				<TMPL_IF pass_required><br><b><TMPL_VAR lang_password>:</b> <input type="password" name="password" class="myForm"><br></TMPL_IF>
-				</TMPL_UNLESS>
-			</div>
-			</form>
-			<!--end right column-->
-
 			<TMPL_IF more_files>
 			<br>
 			<Table name="more_files" class="tbl1" cellpadding=2 cellspacing=1 width="60%">
@@ -256,7 +360,8 @@
 			</Table>
 			<br>
 			</TMPL_IF>
-		</div> <!-- end container -->
+			
+
 	</div> <!-- end content -->
 	<script>
 	$('#downloadbtn').click(function()
@@ -293,3 +398,25 @@
 		return false;
 	}
 	</script>
+<style type="text/css">
+body{ background:#fff;}
+#container{width:100%; height:100%;}
+#fmenu{float:left;}
+.social{clear:right;}
+</style>
+
+<TMPL_IF image_url>
+<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/modal-image.css"/>
+<div id="modal-image-wrapper" style="display: none;">
+  <div id="modal-image-cloak"></div>
+  <img id="modal-image" src="<TMPL_VAR image_url>">
+  <span class="closeimg" onclick="$('#modal-image-wrapper').hide()">×</span>
+</div>
+</TMPL_IF>
+
+<script>
+function showFullScreen()
+{
+   $('#modal-image-wrapper').show();
+}
+</script>

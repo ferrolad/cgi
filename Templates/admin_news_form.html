@@ -1,3 +1,9 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
+<div class="table_border-small">
+<div class="overflow">
 <Form method="POST" onSubmit="saveEditorContent('news_text');">
 <input type="hidden" name="op" value="admin_news_edit">
 <input type="hidden" name="news_id" value="<TMPL_VAR news_id>">
@@ -6,7 +12,7 @@
 <TR class="hdr"><TD colspan=2><TMPL_VAR lang_add_news></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_title></b></TD><TD><input type="text" name="news_title" value="<TMPL_VAR news_title>" size=80></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_published></b></TD><TD><input type="text" name="created" value="<TMPL_VAR created>" size=20></TD></TR>
-<TR><TD colspan=2 class="editor">
+<TR><TD colspan=2 class="editor" style="padding:10px;">
 <textarea id="news_text" name="news_text" style="width:100%;height:360px;"><TMPL_VAR news_text></textarea>
 </TD></TR>
 </Table>
@@ -14,7 +20,9 @@
 </Form>
 
 <TMPL_INCLUDE nic_edit.html>
-
+</div>
+</div>
 <script>
 nicedit.panelInstance('news_text');
 </script>
+<br /><br /><br /><br />

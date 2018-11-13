@@ -1,3 +1,6 @@
+   <TMPL_IF my_login>
+   		<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+   </TMPL_IF>
 <h2><TMPL_VAR lang_link_generated></h2>
 <table class="file_slot"><tr><td>
 <nobr><TMPL_VAR lang_file_name>: <b><TMPL_VAR file_name></b></nobr><br>
@@ -45,3 +48,4 @@ function player_start(evt)
    return false;
 }
 </script>
+<br /><br /><br /><br />

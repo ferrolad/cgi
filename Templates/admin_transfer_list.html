@@ -1,5 +1,11 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+footer{-webkit-margin-before:-50px;}
+</style>
 <h2>Transfer queue</h2>
-
+<div class="table_border-small" style="width:280px;">
+<div class="overflow">
 <Table class="tbl1">
 <tr class="hdr"><td colspan=2>Server statistics</td></tr>
 <TMPL_LOOP srv_list>
@@ -11,11 +17,13 @@
 </td></tr>
 </TMPL_LOOP>
 </Table>
-
+</div>
+</div>
 <br>
 
 <TMPL_IF restartall><input type="button" name="restart_all_stucked" value="Restart all stucked" onclick="window.location='?op=admin_transfer_list&restart_all=1&ids=<TMPL_VAR restartall>&token=<TMPL_VAR token>'"></a><br><br></TMPL_IF>
-
+<div class="table_border">
+<div class="tableFlow">
 <form method="POST" action="">
 <input type="hidden" name="op" value="admin_transfer_list">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
@@ -59,7 +67,7 @@
 </TR>
 </Table>
 </form>
-
+</div>
+</div>
 <TMPL_VAR paging>
-
-
+<br /><br />

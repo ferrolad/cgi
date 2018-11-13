@@ -1,79 +1,103 @@
 <h2><TMPL_VAR lang_torrents></h2>
 
-<Table name="engines_running" class="tbl1" style="width: 600px">
-<TR class="hdr">
-    <td><TMPL_VAR lang_server></td>
-    <td><TMPL_VAR lang_torrent_engine></td>
-    <td></td>
-</TR>
-<TMPL_LOOP servers>
-<TR align=center>
-    <TD><b><TMPL_VAR srv_name></b></TD>
-    <TMPL_IF active>
-    <TD name="state"><b style="color:green"><TMPL_VAR lang_working></b></TD>
-    <TD><input type="button" name="stop_engine" value="Stop engine" onClick="window.location='?op=admin_torrents&kill=1&srv_id=<TMPL_VAR srv_id>&token=<TMPL_VAR token>';" class=""></TD>
-    <TMPL_ELSE>
-    <TD><b style="color:red"><TMPL_VAR lang_disabled></b></TD>
-    <TD><input type="button" name="start_engine" value="Start engine" onClick="window.location='<TMPL_VAR srv_cgi_url>/Torrents/start.cgi';" class=""></TD>
-    </TMPL_IF>
-</TR>
-</TMPL_LOOP>
-</Table>
+<div class="table_border">
+   <div class="tableFlow">
+      <Table name="engines_running" class="tbl1" style="width: 930px">
+      <TR class="hdr">
+          <td><TMPL_VAR lang_server></td>
+          <td><TMPL_VAR lang_torrent_engine></td>
+          <td></td>
+      </TR>
+      <TMPL_LOOP servers>
+      <TR align=center>
+          <TD><b><TMPL_VAR srv_name></b></TD>
+          <TMPL_IF active>
+          <TD name="state"><b style="color:green"><TMPL_VAR lang_working></b></TD>
+          <TD><input type="button" name="stop_engine" value="Stop engine" onClick="window.location='?op=admin_torrents&kill=1&srv_id=<TMPL_VAR srv_id>&token=<TMPL_VAR token>';" class=""></TD>
+          <TMPL_ELSE>
+          <TD><b style="color:red"><TMPL_VAR lang_disabled></b></TD>
+          <TD><input type="button" name="start_engine" value="Start engine" onClick="window.location='<TMPL_VAR srv_cgi_url>/Torrents/start.cgi';" class=""></TD>
+          </TMPL_IF>
+      </TR>
+      </TMPL_LOOP>
+      </Table>
+   </div>
+</div>
 
 <br><br>
 
-<Table name="torrents_running" class="tbl1" style="width: 600px">
-<TR class="hdr"><TD colspan=8><TMPL_VAR lang_torrents_running></TD></TR>
-<TR class="hdr">
-    <td><TMPL_VAR lang_torrent></td>
-    <td><TMPL_VAR lang_progress></td>
-    <td><TMPL_VAR lang_torrent_download></td>
-    <td><TMPL_VAR lang_torrent_upload></td>
-    <td><TMPL_VAR lang_working></td>
-    <td><TMPL_VAR lang_username></td>
-    <td colspan="2"><TMPL_VAR lang_server></td>
-</TR>
-<TMPL_LOOP torrents>
-<TR>
-    <TD onmouseover="return tooltip('<TMPL_VAR file_list>','Torrent files');" onmouseout="return hideTip();"><TMPL_VAR title></TD>
-    <TD align=right><TMPL_VAR done> of <TMPL_VAR total> Mb (<TMPL_VAR percent>%)</TD>
-    <TD align=right><TMPL_VAR down_speed>/s</TD>
-    <TD align=right><TMPL_VAR up_speed>/s</TD>
-    <TD><TMPL_VAR working></TD>
-    <TD><a href="<TMPL_VAR site_url>/?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></TD>
-    <TD><TMPL_VAR srv_id></TD>
-    <TD><a href="?op=admin_torrents;del_torrent=<TMPL_VAR sid>;token=<TMPL_VAR token>" onClick="return confirm('<TMPL_VAR lang_delete_file>')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
-</TR>
-</TMPL_LOOP>
-</Table>
+<form action="" method="POST">
+   <input type="hidden" name="op" value="admin_torrents">
+   <input type="hidden" name="token" value="<TMPL_VAR token>">
+
+   <div class="table_border">
+      <div class="tableFlow">
+         <Table name="torrents_running" class="tbl1" style="width: 930px">
+         <TR class="hdr"><TD colspan=9><TMPL_VAR lang_torrents_running></TD></TR>
+         <TR class="hdr">
+             <td><input type="checkbox" name="sid" class="selall"></td>
+             <td><TMPL_VAR lang_torrent></td>
+             <td><TMPL_VAR lang_progress></td>
+             <td><TMPL_VAR lang_torrent_download></td>
+             <td><TMPL_VAR lang_torrent_upload></td>
+             <td><TMPL_VAR lang_working></td>
+             <td><TMPL_VAR lang_username></td>
+             <td colspan="2"><TMPL_VAR lang_server></td>
+         </TR>
+         <TMPL_LOOP torrents>
+         <TR>
+             <TD><input type="checkbox" name="sid" value="<TMPL_VAR sid>"></TD>
+             <TD onmouseover="return tooltip('<TMPL_VAR file_list>','Torrent files');" onmouseout="return hideTip();"><TMPL_VAR title></TD>
+             <TD align=right><TMPL_VAR downloaded> of <TMPL_VAR size> Mb (<TMPL_VAR percent>%)</TD>
+             <TD align=right><TMPL_VAR download_speed>/s</TD>
+             <TD align=right><TMPL_VAR upload_speed>/s</TD>
+             <TD><TMPL_VAR working></TD>
+             <TD><a href="<TMPL_VAR site_url>/?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></TD>
+             <TD><TMPL_VAR srv_id></TD>
+             <TD><a href="?op=admin_torrents;del_torrents=1&sid=<TMPL_VAR sid>;token=<TMPL_VAR token>" onClick="return confirm('Delete this torrent?')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
+         </TR>
+         </TMPL_LOOP>
+         <TR class="hdr">
+            <TD colspan="9" style="text-align: left">
+               <input name="del_torrents" value="Delete selected" type="submit" onclick="return confirm('Delete selected torrents?')">
+            </TD>
+         </TR>
+         </Table>
+      </div>
+   </div>
+</form>
 
 <br><br>
 
-<Table name="webseed_peers" class="tbl1" style="width: 600px">
-<TR class="hdr"><TD colspan=8><TMPL_VAR lang_webseed></TD></TR>
-<TR class="hdr">
-    <td><TMPL_VAR lang_file_name></td>
-    <td><TMPL_VAR lang_progress></td>
-    <td>IP</td>
-    <td><TMPL_VAR lang_port></td>
-    <td><TMPL_VAR lang_status></td>
-    <td><TMPL_VAR lang_username></td>
-    <td><TMPL_VAR lang_server></td>
-</TR>
-<TMPL_LOOP webseed>
-<TR>
-   <TD><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a></TD>
-   <TD align="center"><TMPL_VAR progress></TD>
-   <TD align="center"><TMPL_VAR ip2></TD>
-   <TD align="center"><TMPL_VAR port></TD>
-   <TD align="center"><TMPL_IF finished>Seeding<TMPL_ELSE>Downloading</TMPL_IF></TD>
-   <TD align="center"><a href="<TMPL_VAR site_url>/?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></TD>
-   <TD align="center"><TMPL_VAR srv_id></TD>
-</TR>
-</TMPL_LOOP>
-</Table>
+<div class="table_border">
+   <div class="tableFlow">
+      <Table name="webseed_peers" class="tbl1" style="width: 930px">
+      <TR class="hdr"><TD colspan=8><TMPL_VAR lang_webseed></TD></TR>
+      <TR class="hdr">
+          <td><TMPL_VAR lang_file_name></td>
+          <td><TMPL_VAR lang_progress></td>
+          <td>IP</td>
+          <td><TMPL_VAR lang_port></td>
+          <td><TMPL_VAR lang_status></td>
+          <td><TMPL_VAR lang_username></td>
+          <td><TMPL_VAR lang_server></td>
+      </TR>
+      <TMPL_LOOP webseed>
+      <TR>
+         <TD><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a></TD>
+         <TD align="center"><TMPL_VAR progress></TD>
+         <TD align="center"><TMPL_VAR ip2></TD>
+         <TD align="center"><TMPL_VAR port></TD>
+         <TD align="center"><TMPL_IF finished>Seeding<TMPL_ELSE>Downloading</TMPL_IF></TD>
+         <TD align="center"><a href="<TMPL_VAR site_url>/?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></TD>
+         <TD align="center"><TMPL_VAR srv_id></TD>
+      </TR>
+      </TMPL_LOOP>
+      </Table>
+   </div>
+</div>
 <br><br>
 <script type="text/javascript" src="<TMPL_VAR site_url>/js/tips.js"></script>
 <div id="tiplayer" style="position:absolute; visibility:hidden; z-index:10000;"></div>
 
-
+<script src="<TMPL_VAR site_url>/js/selall.js"></script>

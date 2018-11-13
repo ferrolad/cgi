@@ -2,21 +2,27 @@
 document.write('<style type="text/css">.tabber{display:none;}<\/style>');
 var tab_cookie='tab_upres';
 </script>
+<TMPL_IF my_login>
+	<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+</TMPL_IF>
+<div class="rrd col-11">
 
-<h2><TMPL_VAR lang_files_uploaded></h2>
+<h2 style="text-align:left; width:90%; margin:auto; margin-top:20px;"><TMPL_VAR lang_files_uploaded></h2>
 
-<div style="width: 600px; margin: 0 auto">
+<div style="margin: 0 auto">
 <div style="text-align: left">
 <TMPL_LOOP links>
 <span name="file_row">
 <TMPL_IF error>
 <b class="err">Error:</b> <TMPL_VAR error><br>
 <TMPL_ELSE>
+<div style="text-align:left; width:90%; margin:auto;">
 <b><TMPL_VAR lang_file_name>:</b>
     <a name="file_name" href="<TMPL_VAR download_link>"><TMPL_VAR file_name></a><TMPL_IF my_login><TMPL_IF file_code> &nbsp; <a href="?op=file_edit&amp;file_code=<TMPL_VAR file_code>"><img src="<TMPL_VAR site_url>/images/icon_edit.png" border=0></a></TMPL_IF></TMPL_IF>
 <br>
 	<b><TMPL_VAR lang_file_size>:</b>
 	<span name="file_size"><TMPL_VAR file_size></span>
+</div>
 <br>
 </TMPL_IF>
 </span>
@@ -55,3 +61,13 @@ var tab_cookie='tab_upres';
 </table>
 </TMPL_IF>
 </div>
+</div>
+
+<style type="text/css">
+.SidemenuPanel ul.otherMenus li{width:99%;}
+.SidemenuPanel ul.otherMenus li.activeupld{background:#363636; border-left:2px solid #131313; cursor:pointer;}
+.SidemenuPanel ul.otherMenus li.activeupld i{color:#fff;}
+@media (min-width: 980px) and (max-width: 1024px){
+.rrd{width:100%;}
+}
+</style>

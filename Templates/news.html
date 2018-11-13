@@ -1,6 +1,6 @@
 <h2><TMPL_VAR site_name> <TMPL_VAR lang_news></h2>
 <br>
-<div style="width:600px;text-align:left;" id="news">
+<div style="width:80%;text-align:left;" id="news">
 <TMPL_LOOP news>
 <a href="n<TMPL_VAR news_id>-<TMPL_VAR news_title2>.html" class="title"><TMPL_VAR news_title></a>
 <br><small><TMPL_VAR created_txt></small>
@@ -9,5 +9,14 @@
 <br><br>
 </TMPL_LOOP>
 </div>
-
+<TMPL_IF my_login>
+	<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+</TMPL_IF>
+<style type="text/css">
+footer{-webkit-margin-before:-50px;}
+.SidemenuPanel{padding-bottom:20px;}
+.SidemenuPanel ul.otherMenus li.activenws{background:#363636; border-left:2px solid #131313; cursor:pointer}
+.SidemenuPanel ul.otherMenus li.activenws i{color:#fff;}
+</style>
 <TMPL_VAR paging>
+<br><br><br><br>

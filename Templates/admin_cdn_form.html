@@ -1,3 +1,8 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
+<div class="overflow">
 <Form method="POST" onSubmit="return checkForm(this)">
 <input type="hidden" name="op" value="admin_server_add">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
@@ -45,7 +50,7 @@
 <br><br></TD></TR>
 </Table>
 </Form>
-
+</div>
 <Script>
 function checkForm(f1)
 {
@@ -59,3 +64,4 @@ $('#srv_cdn').change(function() {
     document.location = '?op=admin_server_add&cdn=' + this.form.srv_cdn.value;
 })
 </Script>
+<br /><br />

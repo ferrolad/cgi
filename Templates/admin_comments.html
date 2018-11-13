@@ -1,9 +1,16 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+footer{-webkit-margin-before:-50px;}
+</style>
 <Form style="margin:0;" method="POST">
 <input type="hidden" name="op" value="admin_comments">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <h2><TMPL_VAR lang_admin_comments></h2>
 <input type="text" name="key" value="<TMPL_VAR key>"><input type="submit" value="<TMPL_VAR lang_search>">
 <br><br>
+<div class="table_border">
+<div class="tableFlow">
 <Table class="tbl1" name="comments" cellspacing=1 cellpadding=2 width=800>
 <TR class="hdr">
 <TD width="1%"><input type="checkbox" name="cmt_id" class="selall" value="0"></TD>
@@ -31,8 +38,11 @@
     <TD colspan="7" style="text-align:left;"><input type="submit" name="del_selected" value="<TMPL_VAR lang_delete_selected>" class=""></TD>
 </TR>
 </Table>
+</div>
+</div>
 <TMPL_VAR paging>
 <br><br>
 </Form>
 
 <script src="<TMPL_VAR site_url>/js/selall.js"></script>
+<br /><br />

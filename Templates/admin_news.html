@@ -1,7 +1,15 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
+<style type="text/css">
+footer{-webkit-margin-before:-50px;}
+</style>
 <h2><TMPL_VAR lang_adm_news></h2>
 
 <input type="button" name="add_news" value="<TMPL_VAR lang_add_news>" onClick="document.location='?op=admin_news_edit'"><br><br>
-
+<div class="table_border">
+<div class="tableFlow">
 <Table class="tbl1" cellspacing=1 cellpadding=3 style="width: 600px">
 <TR class="hdr">
 <TD><TMPL_VAR lang_title></TD>
@@ -10,6 +18,7 @@
 <TD>&nbsp;</TD>
 <TD>&nbsp;</TD>
 </TR>
+<TMPL_IF news>
 <TMPL_LOOP news>
 <TR>
 <TD><a href="<TMPL_VAR site_url>/n<TMPL_VAR news_id>-<TMPL_VAR news_title2>.html"><TMPL_VAR news_title></a></TD>
@@ -19,5 +28,13 @@
 <TD><a href="?op=admin_news&del_id=<TMPL_VAR news_id>&token=<TMPL_VAR token>" onClick="return confirm('<TMPL_VAR lang_delete_news>')"><img name="delete" src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
 </TR>
 </TMPL_LOOP>
+<TMPL_ELSE>
+<TR>
+    <TD align="center" colspan="5">Nothing found</TD>
+</TR>
+</TMPL_IF>
 </Table>
+</div>
+</div>
 <TMPL_VAR paging>
+<br /><br />

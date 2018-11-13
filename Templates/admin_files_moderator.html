@@ -1,3 +1,7 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
 <h2><TMPL_VAR lang_adm_file_mgmt></h2>
 
 <br>
@@ -8,6 +12,8 @@
 <input type="hidden" name="num" value="<TMPL_VAR num>">
 <input type="hidden" name="usr_id" value="<TMPL_VAR usr_id>">
 <input type="hidden" name="del_info" value="">
+<div class="table_border">
+<div class="tableFlow">
 <Table class="tbl1">
 <tr><td><TMPL_VAR lang_search></td><td><input type="text" name="key" value="<TMPL_VAR key>" size=24></td></tr>
 <tr><td><TMPL_VAR lang_files_per_page></td><td>
@@ -22,6 +28,8 @@
 </td></tr>
 <tr><td colspan=2 align=center><input type="submit" value="<TMPL_VAR lang_show_files>"></td></tr>
 </Table>
+</div>
+</div>
 <br>
 
 <script>
@@ -35,7 +43,8 @@ $(document).ready(function(){
 </script>
 
 <TMPL_VAR paging>
-
+<div class="table_border">
+<div class="tableFlow">
 <Table class="tbl1" cellspacing=1 cellpadding=3>
 <TR class="hdr">
 <TD><input type="checkbox" onClick="for(i=0;i<this.form.file_id.length;i++){this.form.file_id[i].checked=this.checked;}if(this.form.file_id.value)this.form.file_id.checked=this.checked;"></TD>
@@ -61,6 +70,9 @@ $(document).ready(function(){
     </TD>
 </TR>
 </Table>
+</div>
+</div>
 <TMPL_VAR paging>
 <br>
 </Form>
+<br /><br />

@@ -1,13 +1,21 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+footer{-webkit-margin-before:-50px;}
+</style>
 <link href="<TMPL_VAR site_url>/css/jquery-ui.css" rel="stylesheet"/>
 <script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>
 
 <br>
+
 <form action="" method="POST">
 <input type="hidden" name="op" value="admin_external">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <TMPL_VAR lang_external_domain>: <input type="text" name="domain" placeholder="<TMPL_VAR lang_eg> myfriendsite.com"> <input type="submit" name="generate_key" value="<TMPL_VAR lang_generate_key>">
 <br><br>
 <i><TMPL_VAR lang_admin_external_description></i>
+<div class="table_border">
+<div class="tableFlow">
 <table class="tbl1" width="640">
 <tr class="hdr">
    <td><TMPL_VAR lang_domain></td>
@@ -38,6 +46,8 @@
    <td colspan="5"></td>
 </tr>
 </table>
+</div>
+</div>
 </form>
 <script>
 $('.perms').change(function() {
@@ -53,3 +63,4 @@ function showHelp()
 <br><br>
 <img src="<TMPL_VAR site_url>/images/external_api_reference.png" alt="reference">
 </div>
+<br /><br /><br /><br />

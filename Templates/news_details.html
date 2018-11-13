@@ -1,4 +1,4 @@
-<div style="width:600px;text-align:left;" id="news" class="sinput">
+<div style="width:80%;text-align:left;" id="news" class="sinput">
 <a href="n<TMPL_VAR news_id>-<TMPL_VAR news_title2>.html" class="title"><TMPL_VAR news_title></a>
 <br><small><TMPL_VAR created_txt></small>
 <p name="news_text"><TMPL_VAR news_text></p>
@@ -7,3 +7,12 @@
 <TMPL_INCLUDE comments.html>
 </TMPL_IF>
 </div>
+<br><br><br><br>
+<TMPL_IF my_login>
+	<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+</TMPL_IF>
+<style type="text/css">
+.active td { font-weight: bold }
+.SidemenuPanel ul.otherMenus li.activenws{background:#363636; border-left:2px solid #131313; cursor:pointer}
+.SidemenuPanel ul.otherMenus li.activenws i{color:#fff;}
+</style>

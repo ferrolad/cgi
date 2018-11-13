@@ -1,3 +1,7 @@
+<style type="text/css">
+#container{ width:90%!important;}
+select{width:auto}
+</style>
 <h2><TMPL_VAR lang_adm_stats></h2>
 
 <Form>
@@ -11,7 +15,7 @@ From <input type="text" class="date" name="date1" value="<TMPL_VAR date1>" size=
 <a id="nav_details" href="<TMPL_VAR site_url>/?op=admin_stats&section=details">Details</a> &nbsp;
 <TMPL_IF m_x><a id="nav_sites" href="<TMPL_VAR site_url>/?op=admin_stats&section=sites">Sites</a> &nbsp;</TMPL_IF>
 <a id="nav_payments" href="<TMPL_VAR site_url>/?op=admin_stats&section=payments">Payment Plugins</a>
-
+<div class="overflow">
 <script>
 var position = '<TMPL_VAR section>' || 'charts';
 $('#nav_' + position).wrapInner('<b>').children().unwrap();
@@ -33,3 +37,5 @@ img { border: 1px solid #909090; }
         dateFormat: 'yy-mm-dd',
     });
 </script>
+</div>
+<br /><br />

@@ -1,3 +1,5 @@
+<div class="table_border-small">
+<div class="overflow">
 <Form method="POST">
 <input type="hidden" name="op" value="admin_user_edit">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
@@ -32,6 +34,7 @@
 </TMPL_IF>
 <TR><TD align=right><b>Affiliate ID</b></TD><TD><input type="text" name="usr_aff_id" value="<TMPL_VAR usr_aff_id>" size=5></TD></TR>
 <TR><TD align=right><b>Approved affiliate</b></TD><TD><input type="checkbox" name="usr_aff_enabled" value="1"<TMPL_IF usr_aff_enabled> checked</TMPL_IF>></TD></TR>
+<TMPL_IF enp_5><TR><TD align=right><b>Google 2FA</b></TD><TD><input type="checkbox" name="usr_g2fa_secret" value="1"<TMPL_IF usr_g2fa_secret> checked</TMPL_IF>></TD></TR></TMPL_IF>
 <TMPL_IF m_d><TR><TD align=right><b>DMCA agent</b></TD><TD><input type="checkbox" name="usr_dmca_agent" value="1"<TMPL_IF usr_dmca_agent> checked</TMPL_IF>></TD></TR></TMPL_IF>
 <TMPL_IF enp_5>
 <TR><TD align=right><b>2-Factor authentication</b></TD><TD><input type="checkbox" name="usr_2fa" value="1"<TMPL_IF usr_2fa> checked</TMPL_IF>></TD></TR>
@@ -47,14 +50,20 @@
 </TD></TR>
 </TMPL_IF>
 <TMPL_IF m_k_manual><TR><TD align=right><b>Reseller account</b></TD><TD><input type="checkbox" name="usr_reseller" value="1"<TMPL_IF usr_reseller> checked</TMPL_IF>></TD></TR></TMPL_IF>
+<TR><TD align=right ><b>Delete files after</b></TD><TD><input type="text" name="usr_files_expire_access" value="<TMPL_VAR usr_files_expire_access>" size=3> days without downloads</TD>
+</TR>
 <TR><TD colspan="2" align="center"><a name="login_as" href="<TMPL_VAR site_url>/?op=admin_user_edit&login_as=<TMPL_VAR usr_id>&token=<TMPL_VAR token>">Login</a></TD></TR>
-<TR><TD align=left colspan=2><b>Notes:</b><br><textarea name="usr_notes" cols=32 rows=7 style="width:98%"><TMPL_VAR usr_notes></textarea></TD></TR>
+<TR><TD align=left colspan=2><b>Notes:</b><br><textarea name="usr_notes" cols=32 rows=7 style="width:100%"><TMPL_VAR usr_notes></textarea></TD></TR>
 </Table>
 <input type="submit" name="save" value=" Save user details ">
 </Form>
+</div>
+</div>
 
 <TMPL_IF referrals>
-<br><br>
+<br /><br />
+<div class="table_border">
+<div class="tableFlow">
 <Table class="tbl1" cellpadding=2 cellspacing=1>
 <TR class="hdr"><TD colspan=4>User Referrals</TD></TR>
 <TR class="hdr"><TD>Date</TD><TD>Username</TD><TD>Money</TD><TD></TD></TR>
@@ -71,10 +80,14 @@
 </TMPL_IF>
 </TMPL_LOOP>
 </Table>
+</div>
+</div>
 </TMPL_IF>
 
 <TMPL_IF transactions>
-<br><br>
+<br /><br />
+<div class="table_border">
+<div class="tableFlow">
 <Table class="tbl1" cellpadding=2 cellspacing=1>
 <TR class="hdr"><TD colspan=4>Payment Transactions</TD></TR>
 <TR class="hdr"><TD>Transaction ID</TD><TD>Date</TD><TD>Amount</TD><TD>Verified</TD></TR>
@@ -82,10 +95,14 @@
 <TR align=center><TD><TMPL_VAR id></TD><TD><TMPL_VAR created></TD><TD><TMPL_VAR amount></TD><TD><TMPL_IF verified><img src="<TMPL_VAR site_url>/images/done.gif" title="Verified"></TMPL_IF></TD></TR>
 </TMPL_LOOP>
 </Table>
+</div>
+</div>
 </TMPL_IF>
 
 <TMPL_IF payments>
-<br><br>
+<br /><br />
+<div class="table_border">
+<div class="tableFlow">
 <Table class="tbl1" cellpadding=2 cellspacing=1>
 <TR class="hdr"><TD colspan=4>Profit payments sent to user</TD></TR>
 <TR class="hdr"><TD>Date</TD><TD>Amount</TD><TD>Status</TD></TR>
@@ -93,4 +110,7 @@
 <TR align=center><TD><TMPL_VAR created></TD><TD><TMPL_VAR amount></TD><TD><TMPL_VAR status></TD></TR>
 </TMPL_LOOP>
 </Table>
+</div>
+</div>
 </TMPL_IF>
+<br /><br /><br /><br />

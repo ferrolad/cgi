@@ -11,7 +11,6 @@ use LWP::UserAgent;
 use HTTP::Cookies;
 use HTML::Form;
 use HTTP::Request::Common;
-use File::Temp;
 use File::Basename;
 use URI;
 use JSON;
@@ -26,13 +25,12 @@ my ($upload_type) = $ENV{QUERY_STRING}=~/upload_type=([a-z]+)/;
 print("Access-Control-Allow-Origin: *\n");
 print("Content-type: text/plain\n\nOK"), exit if $ENV{REQUEST_METHOD} eq 'OPTIONS';
 
-my $temp_dir = File::Temp::tempdir(DIR => $c->{temp_dir}, CLEANUP => 1);
+$ENV{TMPDIR} = $CGITempFile::TMPDIRECTORY = $c->{temp_dir};
 
 my ($utype) = $ENV{QUERY_STRING}=~/utype=([a-z]+)/;
 $c->{m_n_upload_speed} = $c->{"m_n_upload_speed_$utype"}||$c->{m_n_upload_speed_anon};
 
 $MultipartBuffer::INITIAL_FILLUNIT = max(16 * 1024, $c->{m_n_upload_speed} * 2**10 * 0.1);
-$CGITempFile::TMPDIRECTORY = $temp_dir;
 
 sub throttleHook
 {
@@ -57,10 +55,6 @@ my ($sid) = ($ENV{QUERY_STRING}=~/upload_id=(\d+)/); # get the random id for tem
 
 my @urls;
 
-$c->{ip_not_allowed}=~s/\./\\./g;
-if( $c->{ip_not_allowed} && &GetIP() =~ /^($c->{ip_not_allowed})$/ ) {
-    &xmessage("ERROR: $c->{msg}->{ip_not_allowed}");
-}
 if(!$c->{enabled}) {
     &xmessage("ERROR: Uploads not enabled for this type of users");
 }
@@ -75,8 +69,7 @@ if($c->{max_upload_filesize} && $ENV{CONTENT_LENGTH} > 1048576*$c->{max_upload_f
 
 print "Content-type: application/json\n\n";
 my @file_inputs;
-@file_inputs = &URLUpload() if $upload_type eq 'url';
-@file_inputs = &FileUpload() if !@file_inputs;
+@file_inputs = $upload_type eq 'url' ? &URLUpload() : &FileUpload();
 
 my @results = ProcessFiles(@file_inputs);
 print JSON::encode_json(\@results);
@@ -105,7 +98,7 @@ sub ProcessFiles
 
 # --------------------
         $file = &XUpload::ProcessFile($file, { %$f,
-      file_upload_method => $upload_type eq 'file' ? 'web' : $upload_type
+      file_upload_method => $upload_type eq 'url' ? $upload_type : "web",
    }) unless $file->{file_status};
 # --------------------
 

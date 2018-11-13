@@ -45,10 +45,12 @@ sub ImportDir
 sub saferun
 {
    my (@args) = @_;
+   my $ret = {};
    my $pid = open3(\*WRFH, \*RDFH, \*ERRFH, @args) || die("Couldn't open: $!");
-   my $str = join('', <RDFH>);
-   my $status = waitpid($pid, 1);
-   return $str;
+   $ret->{stdout} = join('', <RDFH>);
+   $ret->{stderr} = join('', <ERRFH>);
+   $ret->{exit_code} = waitpid($pid, 0);
+   return $ret;
 }
 
 # Mandatory args: file_tmp, file_name_orig, file_descr, file_public
@@ -70,7 +72,7 @@ sub ProcessFile
    my $ua = LWP::UserAgent->new(agent => "XFS-FSAgent", timeout => 90);
    if($c->{enable_clamav_virus_scan})
    {
-      my $clam = &saferun("clamscan", "--no-summary", $file->{file_tmp});
+      my $clam = &saferun("clamscan", "--no-summary", $file->{file_tmp})->{stdout};
       if($clam=~/: (.+?) FOUND/)
       {
          $file->{file_status}="file contain $1 virus";
@@ -93,20 +95,14 @@ sub ProcessFile
    read(FILE,$data,4096);
    seek(FILE,-4096,2);
    read(FILE,$data,4096,4096);
+
    $file->{md5} = Digest::MD5::md5_base64 $data;
 
    if($c->{m_v} && $file->{file_name_orig}=~/\.(avi|divx|xvid|mpg|mpeg|vob|mov|3gp|flv|mp4|wmv|mkv)$/i)
    {
-      my $info = &saferun("./mplayer", $file->{file_tmp}, "-identify", "-frames", "0", "-quiet", "-ao", "null", "-vo", "null");
       my @fields = qw(ID_LENGTH ID_VIDEO_WIDTH ID_VIDEO_HEIGHT ID_VIDEO_BITRATE ID_AUDIO_BITRATE ID_AUDIO_RATE ID_VIDEO_CODEC ID_AUDIO_CODEC ID_VIDEO_FPS);
-      do{($f->{$_})=$info=~/$_=([\w\.]{2,})/is} for @fields;
-      $f->{ID_LENGTH} = int $f->{ID_LENGTH};
-      if($f->{ID_VIDEO_WIDTH})
-      {
-         $f->{ID_VIDEO_BITRATE}=int($f->{ID_VIDEO_BITRATE}/1000);
-         $f->{ID_AUDIO_BITRATE}=int($f->{ID_AUDIO_BITRATE}/1000);
-         $file->{file_spec} = 'V|'.join('|', map{$f->{$_}}@fields );
-      }
+      my $ret = getVideoInfo($file->{file_tmp});
+      $file->{file_spec} = 'V|'.join('|', map{$ret->{$_}} @fields);
    }
 
    if($file->{file_name_orig}=~/\.mp3$/i)
@@ -326,30 +322,8 @@ sub SaveFile
    if($c->{m_v} && $file->{file_spec}=~/^V/)
    {
       $file->{type}='video';
-      &saferun("./mplayer", "$c->{upload_dir}/$dx/$file->{file_code}", "-ss", "00:05", "-vo", "jpeg:outdir=$c->{temp_dir}:quality=65", "-nosound", "-frames", "1", "-slave", "-really-quiet", "-nojoystick", "-nolirc", "-nocache", "-noautosub");
-      if(-e "$c->{temp_dir}/00000001.jpg")
-      {
-       move("$c->{temp_dir}/00000001.jpg","$idir/$dx/$file->{file_code}.jpg");
-      }
-      else
-      {
-        symlink("$idir/default.jpg","$idir/$dx/$file->{file_code}.jpg");
-      }
-      &saferun("./mplayer", "$c->{upload_dir}/$dx/$file->{file_code}", "-ss", "00:05", "-vf", "scale=200:-3", "-vo", "jpeg:outdir=$c->{temp_dir}:quality=65", "-nosound", "-frames", "1", "-slave", "-really-quiet", "-nojoystick", "-nolirc", "-nocache", "-noautosub");
-      if(-e "$c->{temp_dir}/00000001.jpg")
-      {
-       move("$c->{temp_dir}/00000001.jpg","$idir/$dx/$file->{file_code}_t.jpg");
-      }
-      else
-      {
-        symlink("$idir/default.jpg","$idir/$dx/$file->{file_code}_t.jpg");
-      }
-   }
-   if($c->{m_e} && $file->{file_name_orig}=~/\.(avi|divx|xvid|mpg|mpeg|vob|mov|3gp|flv|mp4|wmv|mkv)$/i)
-   {
-      open(FILE,">>$c->{cgi_dir}/enc.list");
-      print FILE "$dx:$file->{file_code}\n";
-      close FILE;
+      makeSnap("$c->{upload_dir}/$dx/$file->{file_code}", "$idir/$dx/$file->{file_code}.jpg", '00:05');
+      makeSnap("$c->{upload_dir}/$dx/$file->{file_code}", "$idir/$dx/$file->{file_code}_t.jpg", '00:05', 200);
    }
 }
 
@@ -540,6 +514,51 @@ sub WatermarkImg
    rename("$file\_w",$file) if -f "$file\_w";
    unlink("$file\_w") if -f "$file\_w";
    undef $image;
+}
+
+sub getVideoInfo
+{
+   my ($file_tmp) = @_;
+   die("Couldn't open file") if !$file_tmp;
+   my $info = `./ffmpeg -i $file_tmp 2>&1`;
+
+   my $ret = {};
+   ($ret->{ID_AUDIO_RATE}) = $info=~/, (\d+) Hz,/i;
+   ($ret->{ID_VIDEO_WIDTH},$ret->{ID_VIDEO_HEIGHT}) = $info=~/, (\d{3,4})x(\d{3,4})/i;
+   my ($durH,$durM,$durS) = $info=~/Duration: (\d+):(\d+):(\d+)/i;
+   $ret->{ID_LENGTH} = $durH*3600 + $durM*60 + $durS;
+   ($ret->{ID_AUDIO_BITRATE}) = $info=~/Audio:.+?, (\d+) kb\/s/i;
+   ($ret->{ID_VIDEO_BITRATE}) = $info=~/, (\d+) kb\/s,/i;
+   unless($ret->{ID_VIDEO_BITRATE})
+   {
+       ($ret->{ID_VIDEO_BITRATE}) = $info=~/bitrate: (\d+) kb\/s/i;
+       $ret->{ID_VIDEO_BITRATE} = $ret->{ID_VIDEO_BITRATE}-$ret->{ID_AUDIO_BITRATE} if $ret->{ID_VIDEO_BITRATE};
+   }
+   ($ret->{ID_AUDIO_RATE}) = $info=~/, (\d+) Hz,/i;
+   ($ret->{ID_VIDEO_CODEC}) = $info=~/Video: (.+?)[\(\,]/i;
+   ($ret->{ID_AUDIO_CODEC}) = $info=~/Audio: (\w+?)[\,\s]/i;
+   ($ret->{ID_DEMUXER}) = $info=~/Input #\d+, (.+?), from/i;
+   ($ret->{ID_VIDEO_FPS})   = $info=~/, ([\d\.]+) tbr,/i;
+   ($ret->{ID_VIDEO_FPS}) ||= $info=~/, ([\d\.]+) fps,/i;
+   $ret->{srt}=1 if $info=~/Subtitle: (ass|srt|webvtt)/i;
+   ($ret->{video_map}) = $info=~/Stream #(\d+:\d+).*: Video:/i;
+   $ret->{$_} =~ s/^\s*//, $ret->{$_} =~ s/\s*$// for keys(%$ret);
+
+   return $ret;
+}
+
+sub makeSnap
+{
+   my ($file_path, $final_path, $timestamp, $resize_w, $resize_h, $fast) = @_;
+   unlink($final_path);
+   $resize_h||='-1' if $resize_w;
+
+   my @opts = ('-ss', $timestamp, '-i', $file_path, '-an', '-dn', '-sn', '-r', '1', '-vframes', '1', '-y', '-qscale', '3');
+   push @opts, ('-vf', "scale=$resize_w:$resize_h") if $resize_w && $resize_h;
+   push @opts, '-noaccurate_seek' if $fast;
+   my $ret = saferun('timeout', '10s', './ffmpeg',  @opts, $final_path);
+   print STDERR "Failed to create snapshot at $final_path: $ret->{stderr}\n" if ! -f $final_path;
+   return $ret;
 }
 
 sub xmessage

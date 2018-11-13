@@ -913,6 +913,7 @@ lang_please_refresh_this_page_in => "Please refresh this page in",
 lang_size => "size",
 lang_user => "User",
 lang_you_can_leech_from => "You can leech from ",
+lang_tos_title => "Правила использования",
 };
 
 sub getLang{return $lang;}

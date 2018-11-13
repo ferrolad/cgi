@@ -160,6 +160,9 @@ sub NginxLink
    my $dx = sprintf("%d",($file->{file_real_id}||$file->{file_id})/$c->{files_per_folder});
    my $orig = 1 if $file->{file_size_encoded} && !$opts{encoded};
 
+   my @ip = split(/\./, $ip, 4);
+   $ip[$_] ||= '0' for(0..3);
+
    my $mode = {'anon'=>'f','reg'=>'r','prem'=>'p'}->{$ses->{utype}}||'f';
    my $hash = $ses->encode32( $hce->hce_block_encrypt(pack("SLLSA12ASC4LC4SSS",
                                    $file->{srv_id},
@@ -169,7 +172,7 @@ sub NginxLink
                                    $file->{file_real},
                                    $mode,
                                    $opts{speed}||$c->{down_speed},
-                                   split(/\./,$ip),
+                                   @ip,
                                    time+3600*$c->{symlink_expire},
                                    split(/\./,$mask),
                                    $orig,
@@ -177,7 +180,9 @@ sub NginxLink
                                    $opts{limit_conn}||$c->{m_n_limit_conn})) );
    my ($url) = $file->{srv_htdocs_url}=~/https?:\/\/([^\/:]+)/i;
    $opts{file_name}||=$file->{file_name};
-   return "http://$url:182/d/$hash/$opts{file_name}";
+
+   my $port = $c->{m_n_port}||182;
+   return "http://$url:$port/d/$hash/" . $ses->UnsecureStr($opts{file_name});
 }
 
 =item DlCGILink()

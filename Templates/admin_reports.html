@@ -1,9 +1,16 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+footer{-webkit-margin-before:-50px;}
+</style>
 <h2><TMPL_VAR lang_adm_abuse></h2>
 <TMPL_IF history>
 <a href="?op=admin_reports"><TMPL_VAR lang_adm_abuse></a>
 <TMPL_ELSE>
 <a href="?op=admin_reports&history=1"><TMPL_VAR lang_reports_history></a>
 </TMPL_IF>
+<div class="table_border">
+<div class="tableFlow">
 <form action="" method="POST">
 <input type="hidden" name="op" value="admin_reports">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
@@ -23,7 +30,7 @@
    <td align="center"><a href="?op=admin_files&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></td>
    <td align="center"><TMPL_VAR name> (<TMPL_VAR email>, <TMPL_VAR ip>)</td>
    <td align="center"><TMPL_VAR created></td>
-   <td><a href="<TMPL_VAR site_url>/?op=admin_reports&view=<TMPL_VAR id>&token=<TMPL_VAR token>"><TMPL_VAR reason></a></td>
+   <td><a href="<TMPL_VAR site_url>/?op=admin_reports&view=<TMPL_VAR id>"><TMPL_VAR reason></a></td>
 </tr>
 </TMPL_LOOP>
 <tr class="actionpanel">
@@ -36,7 +43,10 @@
 </tr>
 </Table>
 </form>
+</div>
+</div>
 <br>
 <TMPL_VAR paging>
 
 <script src="<TMPL_VAR site_url>/js/selall.js"></script>
+<br /><br />

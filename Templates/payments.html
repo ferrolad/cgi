@@ -1,3 +1,61 @@
-			<br><br>
-			<TMPL_INCLUDE comparison.html>
-			<TMPL_INCLUDE payment_buy_with.html>
+<TMPL_INCLUDE comparison.html>
+<div class="col-12 payments">
+<div class="col-7 lft">
+	<h2>Choose from one of our packages</h2>
+</div>
+
+<div class="col-4 rgt tab_menu">
+<script>
+$(function(){
+    $('.tab_menu a').on('click', function(){
+        $(this).addClass('Active').siblings().removeClass('Active');
+    });
+});
+</script>
+	<script>
+		var divs = ["Prem_days", "Prem_traffic"];
+		var visibleDivId = null;
+		function toggleVisibility(divId) {
+		  if(visibleDivId === divId) {
+			visibleDivId = null;
+		  } else {
+			visibleDivId = divId;
+		  }
+		  hideNonVisibleDivs();
+		}
+		function hideNonVisibleDivs() {
+		  var i, divId, div;
+		  for(i = 0; i < divs.length; i++) {
+			divId = divs[i];
+			div = document.getElementById(divId);
+			if(visibleDivId === divId) {
+			  div.style.display = "block";
+			} else {
+			  div.style.display = "none";
+			}
+		  }
+		}
+	</script>
+	<a href="javascript:void(0);" onClick="toggleVisibility('Prem_days');" class="Active" name="buy-premium-days">Premium Plans</a><a href="javascript:void(0);" onClick="toggleVisibility('Prem_traffic');" name="buy-premium-traffic">Premium Traffic Plans</a>
+</div>
+</div>
+<TMPL_IF my_login>
+	<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+	<style type="text/css">
+	@media (min-width: 1025px){
+	.holderPanel{background:#444;}
+	}
+	@media (min-width: 1920px){
+	#container{height:100%;}
+	}
+	</style>
+</TMPL_IF>
+<style type="text/css">
+.SidemenuPanel ul.otherMenus li.activepmnt{background:#363636; border-left:2px solid #131313; cursor:pointer}
+.SidemenuPanel ul.otherMenus li.activepmnt i{color:#fff;}
+@media (min-width: 980px) and (max-width: 1024px) {
+.col-7{ width:57%;}
+}
+</style>
+<TMPL_INCLUDE payment_buy_with.html>
+<br><br><br><br>

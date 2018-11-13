@@ -1,18 +1,32 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
 <h2>IPN Logs</h2>
 <Form>
 <input type="hidden" name="op" value="admin_ipn_logs">
 <input type="text" name="key" value="<TMPL_VAR key>">
 <input type="submit" value="Search">
+<input type="button" value="Manual processing..." onclick="document.location = '?op=admin_ipn_manual'">
 </Form>
 
 <br>
-
+<div class="table_border">
+<div class="tableFlow">
 <Table class="tbl1" cellpadding=2>
+<TMPL_IF list>
 <TMPL_LOOP list>
 <TR>
     <TD><b><TMPL_VAR created></b><br><TMPL_IF usr_id>User ID: <a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_id></a><br></TMPL_IF><TMPL_VAR info></TD>
 </TR>
 </TMPL_LOOP>
+<TMPL_ELSE>
+<TR>
+    <TD align="center">Nothing found</TD>
+</TR>
+</TMPL_IF>
 </Table>
+</div>
+</div>
 <TMPL_VAR paging>
-<br>
+<br /><br />

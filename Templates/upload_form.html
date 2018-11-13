@@ -1,11 +1,21 @@
    <TMPL_IF msg><br><font class="ok"><TMPL_VAR msg></font><br><br></TMPL_IF>
-   <div style="width: 980px">
+   <div class="rrd col-9">
    <link href="//code.jquery.com/ui/1.11.2/themes/cupertino/jquery-ui.css" type="text/css" rel="stylesheet" />
    <script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>
-
+   <TMPL_IF my_login>
+   		<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+   </TMPL_IF>
    <link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/upload.css"/>
+	<TMPL_IF m_n_chunked_upload>
+	<script src="<TMPL_VAR site_url>/js/upload-chunked.js"></script>
+	<TMPL_ELSE>
 	<script src="<TMPL_VAR site_url>/js/upload.js"></script>
+	</TMPL_IF>
+	<script src="<TMPL_VAR site_url>/js/dragndrop.js"></script>
 	<script src="<TMPL_VAR site_url>/js/multiselector.js"></script>
+			<div id="dropzone" style="display: none">
+				<p>Drag-n-drop your files here...</p>
+			</div>
 			<div class="section">
 				<ul class="tabs">
 					<li id="select_file" class="current"><TMPL_VAR lang_file_upload></li>
@@ -23,16 +33,16 @@
 							<div class="browsebtn">
 								<input type="file" multiple="multiple" id="file_0" class="uploadbtn">
 								<span class="bicon">
-								<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_browse.png">
+								<img class="vanb" src="<TMPL_VAR site_url>/images/ico_f_btn_browse.png">
 								<span class="bfolder van move"></span>
 								</span>
 								<span class="btext">
-								Browse
+								Browse Files
 								</span>
 							</div>
 							<div class="progress_div"></div>
-							<table id="files_list" style="width: 530px;"></table>
-							<table id="advanced_opts" style="display: none; width: 480px">
+							<table id="files_list" style="width:"></table>
+							<table id="advanced_opts" style="display: none;">
 								<tr><td><TMPL_VAR lang_rcpt_email>:</td><td><input type="text" name="link_rcpt" class="myForm" size=24 maxlength=42></td></tr>
 								<tr><td><TMPL_VAR lang_link_pass>:</td><td><input type="text" name="link_pass" class="myForm" size=8></td></tr>
 								<tr>
@@ -70,7 +80,7 @@
 									<TMPL_IF leech_left_mb><p>You can leech <b><TMPL_VAR leech_left_mb> Mb</b> more files today<br></TMPL_IF>
 									<TMPL_IF max_upload_files>You can enter up to <b><TMPL_VAR max_upload_files></b> URLs, one URL per row</p></TMPL_IF>
 									<TMPL_IF max_upload_filesize><p>Max file size is <b><TMPL_VAR max_upload_filesize> Mb</b></p></TMPL_IF>
-									<textarea name="url_mass" style="width:100%; margin-top: 10px;" placeholder="<TMPL_IF supported_sites>Supported sites: <TMPL_VAR supported_sites></TMPL_IF>"></textarea>
+									<textarea name="url_mass" style="width:530px; margin-top: 10px;" placeholder="<TMPL_IF supported_sites>Supported sites: <TMPL_VAR supported_sites></TMPL_IF>"></textarea>
 								</div>
 								<div class="advanced">
 									<h2>Advanced options</h2>
@@ -101,8 +111,9 @@
 								<div style="text-align: center; padding: 10px; margin: 20px auto;"> 
 									<button name="upload" class="uploadbtn">
 									<span class="bicon">
-									<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_upload_b.png">
-									<img class="barrow van move-top" src="<TMPL_VAR site_url>/images/icon_f_btn_upload.png">
+									<!--<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_upload_b.png">
+									<img class="barrow van move-top" src="<TMPL_VAR site_url>/images/icon_f_btn_upload.png">-->
+									<img class="vanb" src="<TMPL_VAR site_url>/images/ico_f_btn_browse.png">
 									</span>
 									<span class="btext">Upload<i>!</i></span>
 									</button>	
@@ -132,8 +143,9 @@
 								<div style="text-align: center; padding: 10px; margin: 20px auto;"> 
 									<button name="upload" class="uploadbtn">
 									<span class="bicon">
-									<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_upload_b.png">
-									<img class="barrow van move-top" src="<TMPL_VAR site_url>/images/icon_f_btn_upload.png">
+									<!--<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_upload_b.png">
+									<img class="barrow van move-top" src="<TMPL_VAR site_url>/images/icon_f_btn_upload.png">-->
+									<img class="vanb" src="<TMPL_VAR site_url>/images/ico_f_btn_browse.png">
 									</span>
 									<span class="btext">Upload<i>!</i></span>
 									</button>	
@@ -160,7 +172,8 @@
 									<div class="browsebtn">
 										<input name="file_0" type="file" multiple="multiple" class="uploadbtn" accept=".torrent">
 										<span class="bicon">
-											<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_browse.png">
+											<!--<img class="vanb" src="<TMPL_VAR site_url>/images/icon_f_btn_browse.png">-->
+											<img class="vanb" src="<TMPL_VAR site_url>/images/ico_f_btn_browse.png">
 											<span class="bfolder van move"></span>
 										</span>
 										<span class="btext">
@@ -255,3 +268,27 @@
 			$('#magnet').on('paste', function(evt) { setTimeout(function() { evt.target.form.submit() }, 0) });
 			</script>
    </div>
+<style type="text/css">
+#container {padding-bottom:100px;}
+.SidemenuPanel ul.otherMenus li.activeupld{background:#363636; border-left:2px solid #131313; cursor:pointer}
+.SidemenuPanel ul.otherMenus li.activeupld i{color:#fff;}
+@media (min-width: 980px) and (max-width: 1024px){
+.rrd{width:100%;}
+}
+</style>
+
+<script>
+var dropzone = document.getElementById('dropzone');
+var dragndrop = new DragNDropHandler(dropzone, { multiselector: multiselector });
+var ctr = 0;
+
+document.body.addEventListener('dragenter', function() {
+   ctr++;
+   if(ctr > 0) $(dropzone).show();
+});
+
+document.body.addEventListener('dragleave', function() {
+   ctr--;
+   if(ctr <= 0) $(dropzone).hide();
+});
+</script>

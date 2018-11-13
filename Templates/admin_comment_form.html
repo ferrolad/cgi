@@ -1,3 +1,9 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
+<div class="table_border-small">
+<div class="overflow">
 <Form method="POST" name="comment_form">
 <input type="hidden" name="op" value="admin_comment_edit">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
@@ -14,6 +20,9 @@
 <TR><TD align=right><b><TMPL_VAR lang_username></b></TD><TD><TMPL_VAR usr_login></TD></TR>
 <TR><TD align=right><b>IP</b></TD><TD><TMPL_VAR ip></TD></TR>
 <TR><TD align=right><b><TMPL_VAR lang_date></b></TD><TD><TMPL_VAR created></TD></TR>
-<TR><TD colspan="2" class="editor"><textarea id="cmt_text" name="cmt_text" cols="70" rows="5"><TMPL_VAR cmt_text></textarea></TD></TR>
+<TR><TD colspan="2" class="editor"><textarea id="cmt_text" name="cmt_text" cols="70" rows="5" style="width: 100%"><TMPL_VAR cmt_text></textarea></TD></TR>
 <TR><TD colspan="2" align="center"><input type="submit" name="save" value=" Save comment "></TD></TR>
 </Table>
+</div>
+</div>
+<br /><br />

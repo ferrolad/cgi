@@ -2,10 +2,18 @@
 <TMPL_LOOP torrents>
 <TR>
     <TD onmouseover="return tooltip('<TMPL_VAR file_list>','Torrent files');" onmouseout="return hideTip();"><TMPL_IF title><TMPL_VAR title><TMPL_ELSE><i>Waiting to start...</i></TMPL_IF></TD>
-    <TD align=right><TMPL_VAR done> of <TMPL_VAR total> Mb (<TMPL_VAR percent>%)</TD>
-    <TD align=right><TMPL_VAR down_speed>/s</TD>
-    <TD align=right><TMPL_VAR up_speed>/s</TD>
+    <TMPL_IF status_error>
+    <TD colspan="4">Tracker error: <TMPL_VAR error></TD>
+    </TMPL_IF>
+    <TMPL_IF status_seeding>
+    <TD colspan="4"><span style="color: green">Seeding <TMPL_VAR uploaded> of <TMPL_VAR seed_until></span></TD>
+    </TMPL_IF>
+    <TMPL_IF status_working>
+    <TD align=right><TMPL_VAR downloaded> of <TMPL_VAR size> Mb (<TMPL_VAR percent>%)</TD>
+    <TD align=right><TMPL_VAR download_speed>/s</TD>
+    <TD align=right><TMPL_VAR upload_speed>/s</TD>
     <TD><TMPL_VAR working></TD>
-    <TD><a href="?op=my_files;del_torrent=<TMPL_VAR sid>" onClick="return confirm('<TMPL_VAR lang_delete_file>')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
+    </TMPL_IF>
+    <TD><a href="?op=my_files;del_torrent=<TMPL_VAR sid>;token=<TMPL_VAR token>" onClick="return confirm('<TMPL_VAR lang_delete_file>')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
 </TR>
 </TMPL_LOOP>

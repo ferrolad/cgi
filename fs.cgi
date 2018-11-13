@@ -120,7 +120,7 @@ $user ||= &GetUser($torrent->{usr_id}) if $torrent;
 $user ||= &GetUser($session->{usr_id}) if $session && $session->{usr_id};
 $user ||= &GetUser($f->{usr_id}) if $f->{usr_id};
 $user ||= &GetUser($db->SelectOne("SELECT usr_id FROM Users WHERE usr_login=?", $f->{usr_login})) if $f->{usr_login};
-$user ||= XUtils::CheckLoginPass($ses, $f->{check_login}, $f->{check_pass}) || die("Invalid login / pass") if $f->{check_login};
+$user ||= $ses->require("Engine::Components::Auth")->checkLoginPass( $f->{check_login}, $f->{check_pass}) || die("Invalid login / pass") if $f->{check_login};
 
 sub GetUser
 {
@@ -132,7 +132,7 @@ sub GetUser
 }
 
 my $utype = $user ? ($user->{exp_sec}>0 ? 'prem' : 'reg') : 'anon';
-$c->{$_}=$c->{"$_\_$utype"} for qw(disk_space max_upload_filesize max_rs_leech torrent_dl torrent_dl_slots remote_url);
+$c->{$_}=$c->{"$_\_$utype"} for qw(disk_space max_upload_filesize max_rs_leech torrent_dl torrent_dl_slots remote_url torrent_seed_rate upload_on);
 
 
 my $sub={
@@ -142,6 +142,7 @@ my $sub={
          add_torrent    => \&TorrentAdd,
          torrent_stats  => \&TorrentStats,
          torrent_done   => \&TorrentDone,
+         torrent_error   => \&TorrentError,
          file_new_size  => \&FileNewSize,
          file_new_spec  => \&FileNewSpec,
          leech_mb_left  => \&LeechMBLeft,
@@ -150,6 +151,8 @@ my $sub={
          transfer_error       => \&TransferError,
          queue_transfer_next  => \&QueueTransferNext,
          queue_transfer_done  => \&QueueTransferDone,
+         queue_enc_next       => \&QueueEncNext,
+         enc_progress         => \&EncProgress,
         }->{ $f->{op} };
 if($sub)
 {
@@ -210,29 +213,38 @@ sub TorrentAdd
    print("ERROR:You're already using $c->{torrent_dl_slots} torrent slots"),exit 
       if $c->{torrent_dl_slots} && $db->SelectOne("SELECT COUNT(*) FROM Torrents WHERE usr_id=? AND status='WORKING'",$user->{usr_id})>=$c->{torrent_dl_slots};
 
-   $db->Exec("INSERT INTO Torrents SET sid=?, usr_id=?, srv_id=?, fld_id=?, link_rcpt=?, link_pass=?, progress='0:$f->{total_size}:0:0', created=NOW()",
+   $db->Exec("INSERT INTO Torrents SET sid=?, usr_id=?, srv_id=?, fld_id=?, link_rcpt=?, link_pass=?, seed_until_rate=?, created=NOW()",
               $f->{sid},
               $user->{usr_id},
               $server->{srv_id},
               $f->{fld_id}||0,
               $f->{link_rcpt}||'',
               $f->{link_pass}||'',
-            );
+              $c->{torrent_seed_rate}||0);
    print"OK";
 }
 
 sub TorrentStats
 {
+   my @deleted_torrents;
+   $db->Exec("DELETE FROM Torrents WHERE status='SEEDING' AND uploaded / size >= seed_until_rate");
    my $torrents = JSON::decode_json($ses->UnsecureStr($f->{data}));
+
    for(@$torrents)
    {
-      $db->Exec("UPDATE Torrents SET progress=?, name=?, files=? WHERE sid=? AND status='WORKING'",
-         "$_->{total_done}:$_->{total_wanted}:$_->{download_rate}:$_->{upload_rate}",
+      push @deleted_torrents, $_->{info_hash} if !$db->SelectOne("SELECT * FROM Torrents WHERE sid=?", $_->{info_hash});
+      $db->Exec("UPDATE Torrents SET name=?, downloaded=?, uploaded=?, download_speed=?, upload_speed=?, size=?, files=?, updated=NOW() WHERE sid=?",
          $_->{name}||'',
+         $_->{total_done},
+         $_->{total_uploaded},
+         $_->{download_rate},
+         $_->{upload_rate},
+         $_->{total_wanted},
          JSON::encode_json($_->{files}||[]),
          $_->{info_hash});
    }
-   print"Content-type:text/html\n\nOK";
+
+   &SendJSON({ status => 'OK', deleted_torrents => \@deleted_torrents });
 }
 
 sub TorrentDone
@@ -247,9 +259,11 @@ sub TorrentDone
       sid => $f->{sid},
       usr_id => $torrent->{usr_id},
    });
-   print STDERR "Server return: $res\n";
 
-   $db->Exec("DELETE FROM Torrents WHERE sid=?",$f->{sid});
+   print STDERR "Server return: $res\n";
+   my $seed = 1 if $c->{"torrent_seed_rate_$utype"};
+   my $sql = $seed ? "UPDATE Torrents SET downloaded=size, status='SEEDING' WHERE sid=?" : "DELETE FROM Torrents WHERE sid=?";
+   $db->Exec($sql, $f->{sid});
 
    if($torrent->{link_rcpt})
    {
@@ -258,14 +272,22 @@ sub TorrentDone
       $ses->SendMail( $torrent->{link_rcpt}, $c->{email_from}, "$c->{site_name}: File send notification", $tmpl->output() );
    }
 
-   &Send('OK');
+   local *to_json_bool = sub { return shift() ? JSON::true : JSON::false };
+   &SendJSON({ status => 'OK', delete => to_json_bool(!$seed) });
+}
+
+sub TorrentError
+{
+   $db->Exec("UPDATE Torrents SET status='ERROR', error=? WHERE sid=?", $f->{error}, $f->{sid});
+   &SendJSON({ status => 'OK' });
 }
 
 sub CheckFolder
 {
    my ($path, $usr_id) = @_;
-   my @path = split(/\/+/, $path);
+   return if $path =~ /^(\.|\.{2})$/;
 
+   my @path = split(/\/+/, $path);
    die("No usr_id") if !$usr_id;
 
    my $fld_id;
@@ -289,6 +311,13 @@ sub SaveFile
    my $size  = $f->{file_size}||0;
    my $filename = $f->{file_name};
    my $descr = $f->{file_descr}||'';
+
+   if(!$c->{upload_on})
+   {
+      print"Content-type:text/html\n\n";
+      print"0:0:0:uploads are not enabled for your account type";
+      exit;
+   }
 
    unless($f->{no_limits})
    {
@@ -317,11 +346,11 @@ sub SaveFile
          if($c->{max_rs_leech})
          {
             $c->{max_rs_leech} = $user->{usr_max_rs_leech} if $user;
-            my $leech_left = $c->{max_rs_leech}*1048576 - $db->SelectOne("SELECT SUM(size) FROM IP2RS WHERE created>NOW()-INTERVAL 24 HOUR AND (usr_id=? OR ip=INET_ATON(?))",$user->{usr_id},$f->{file_ip});
+            my $leech_left = $c->{max_rs_leech}*1048576 - $db->SelectOne("SELECT SUM(size) FROM IP2RS WHERE created>NOW()-INTERVAL 24 HOUR AND (usr_id=? OR ip=?)",$user->{usr_id},$f->{file_ip});
             print("Content-type:text/html\n\n0:0:0:You've used all Remote traffic today"),exit 
                if $leech_left <= 0;
          }
-         $db->Exec("INSERT INTO IP2RS SET usr_id=?, ip=INET_ATON(?), size=?",$user->{usr_id},$f->{file_ip},$size);
+         $db->Exec("INSERT INTO IP2RS SET usr_id=?, ip=?, size=?",$user->{usr_id},$f->{file_ip},$size);
       }
       if( ($c->{ext_allowed} && $filename!~/\.($c->{ext_allowed})$/i) || ($c->{ext_not_allowed} && $filename=~/\.($c->{ext_not_allowed})$/i) )
       {
@@ -335,7 +364,7 @@ sub SaveFile
    $filename=~s/\.(\w+)$/"$c->{add_filename_postfix}\.$1"/e if $c->{add_filename_postfix};
 
    my $usr_id = $user ? $user->{usr_id} : 0;
-   $usr_id = $session->{view_as} if $user->{usr_adm} && $session->{view_as};
+   $usr_id = $session->{view_as} if $user && $user->{usr_adm} && $session->{view_as};
    my $fld_id = $f->{fld_path} ? &CheckFolder($f->{fld_path}, $usr_id) : $f->{fld_id};
 
    if($f->{fld_path} && $f->{check_login} && $user)
@@ -363,7 +392,7 @@ sub SaveFile
 
    if($c->{up_limit_days} && $ses->getUserLimit('up_limit', user => $user))
    {
-      my $cond = $user ? "usr_id=".$user->{usr_id} : "file_ip=INET_ATON('$f->{file_ip}')";
+      my $cond = $user && $user->{usr_id} ? "usr_id=".$user->{usr_id} : "file_ip='$f->{file_ip}'";
       my $uploaded_last = $db->SelectOne("SELECT SUM(file_size) / POW(2,20)
             FROM Files
             WHERE $cond
@@ -394,7 +423,7 @@ sub SaveFile
    
    $db->Exec("INSERT INTO Files 
               SET file_name=?, usr_id=?, srv_id=?, file_descr=?, file_fld_id=?, file_public=?, file_adult=?, file_code=?, file_real=?, file_real_id=?, file_del_id=?, file_size=?, file_size_encoded=?,
-                  file_password=?, file_ip=INET_ATON(?), file_md5=?, file_spec=?, file_awaiting_approve=?, file_upload_method=?, file_created=NOW(), file_last_download=NOW()",
+                  file_password=?, file_ip=?, file_md5=?, file_spec=?, file_awaiting_approve=?, file_upload_method=?, file_created=NOW(), file_last_download=NOW()",
                $filename,
                $usr_id,
                $srv_id,
@@ -434,14 +463,27 @@ sub SaveFile
          $session->{api_key_id}, $size, $size);
    }
    
+   my $file = $db->SelectRow("SELECT * FROM Files WHERE file_id=?", $file_id);
+
    if($f->{compile})
    {
-      my $file = $db->SelectRow("SELECT * FROM Files WHERE file_id=?", $file_id);
       my $link = $ses->makeFileLink($file);
       my $del_link="$link?killcode=$del_id";
       print"Content-type:text/html\n\n";
       print"$file_id:$code:$real:OK=$link|$del_link";
       exit;
+   }
+
+   if($c->{m_e} && $file->{file_name} =~ /\.(avi|divx|xvid|mpg|mpeg|vob|mov|3gp|flv|mp4|wmv|mkv)$/i)
+   {
+      $db->Exec("INSERT IGNORE INTO QueueEncoding
+           SET file_real=?,
+               file_id=?,
+               srv_id=?,
+               created=NOW()",
+           $file->{file_real},
+           $file->{file_id},
+           $file->{srv_id});
    }
    
    print"Content-type:text/html\n\n";
@@ -458,37 +500,42 @@ sub FileNewSize
 
 sub FileNewSpec
 {
-   if($f->{file_code} && $f->{file_size} && $f->{preserve_orig})
+   $f->{file_real} ||= $f->{file_code};
+
+   if($f->{file_real} && $f->{file_size} && $f->{preserve_orig})
    {
       $db->Exec("UPDATE Files 
                  SET file_spec=?, file_size_encoded=? 
-                 WHERE file_real=?",$f->{file_spec},$f->{file_size},$f->{file_code});
+                 WHERE file_real=?",$f->{file_spec},$f->{file_size},$f->{file_real});
    }
-   elsif($f->{file_code} && $f->{file_size} && $f->{encoded})
+   elsif($f->{file_real} && $f->{file_size} && $f->{encoded})
    {
       my $ext = $c->{m_e_flv} ? 'flv' : 'mp4';
       $db->Exec("UPDATE Files 
                  SET file_name=CONCAT(file_name,'.$ext'), file_spec=?, file_size=? 
-                 WHERE file_real=?",$f->{file_spec},$f->{file_size},$f->{file_code});
+                 WHERE file_real=?",$f->{file_spec},$f->{file_size},$f->{file_real});
    }
-   elsif($f->{file_code} && $f->{file_size})
+   elsif($f->{file_real} && $f->{file_size})
    {
       $db->Exec("UPDATE Files 
                  SET file_spec=?, file_size=? 
-                 WHERE file_real=?",$f->{file_spec},$f->{file_size},$f->{file_code});
+                 WHERE file_real=?",$f->{file_spec},$f->{file_size},$f->{file_real});
    }
-   elsif($f->{file_code})
+   elsif($f->{file_real})
    {
       $db->Exec("UPDATE Files 
                  SET file_spec=?
-                 WHERE file_real=?",$f->{file_spec},$f->{file_code});
+                 WHERE file_real=?",$f->{file_spec},$f->{file_real});
    }
+   $db->Exec("DELETE FROM QueueEncoding WHERE file_real=?", $f->{file_real});
    print"Content-type:text/html\n\nOK";
 }
 
 sub LeechMBLeft
 {
-   my $leech_left = $c->{max_rs_leech}*1048576 - $db->SelectOne("SELECT SUM(size) FROM IP2RS WHERE created>NOW()-INTERVAL 24 HOUR AND (usr_id=? OR ip=INET_ATON(?))",$user->{usr_id},$f->{file_ip});
+   $c->{max_rs_leech} = $user->{usr_max_rs_leech} if $user;
+
+   my $leech_left = $c->{max_rs_leech}*1048576 - $db->SelectOne("SELECT SUM(size) FROM IP2RS WHERE created>NOW()-INTERVAL 24 HOUR AND (usr_id=? OR ip=?)",$user->{usr_id},$f->{file_ip});
    $leech_left=0 if $leech_left<0;
    print"Content-type:text/html\n\n";
    print"OK:$leech_left";
@@ -577,9 +624,26 @@ sub QueueTransferDone
    &Send("OK=$res");
 }
 
+sub QueueEncNext
+{
+   my $task = $db->SelectRow("SELECT q.* FROM QueueEncoding q WHERE srv_id=? AND status='PENDING' ORDER BY created LIMIT 1", $server->{srv_id});
+   &Send() if !$task;
+
+   $db->Exec("UPDATE QueueEncoding SET status='ENCODING', started=NOW() WHERE file_real=?", $task->{file_real});
+   $task->{dx} = sprintf("%05d",($task->{file_real_id}||$task->{file_id})/$c->{files_per_folder});
+   &SendJSON($task);
+}
+
 sub TransferProgress
 {
    $db->Exec("UPDATE QueueTransfer SET updated=NOW(), transferred=?, speed=? WHERE file_real=?",$f->{transferred},$f->{speed},$f->{file_real});
+   &Send("OK");
+}
+
+sub EncProgress
+{
+   $f->{progress}=100 if $f->{progress}>100;
+   $db->Exec("UPDATE QueueEncoding SET progress=?, fps=? WHERE file_real=?", $f->{progress}, $f->{fps}, $f->{file_real});
    &Send("OK");
 }
 

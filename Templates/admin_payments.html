@@ -1,12 +1,19 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+footer{-webkit-margin-before:-50px;}
+</style>
 <h2><TMPL_VAR lang_adm_payments></h2>
 <a href="<TMPL_VAR site_url>/?op=admin_payments&history=1">History</a>
 <TMPL_IF msg><br><font class="ok"><TMPL_VAR msg></font><br></TMPL_IF>
+<div class="table_border">
+<div class="tableFlow">
 <Form method="POST">
 <input type="hidden" name="op" value="admin_payments">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="reject_info" value="">
 <Table name="payments_list" class="tbl1" cellpadding=2 cellspacing=1 style="width: 800px">
-<TR class="hdr"><TD colspan=8><TMPL_VAR lang_pending_payments></TD></TR>
+<TR class="hdr"><TD colspan=8 style="border-bottom:1px solid #fff;"><TMPL_VAR lang_pending_payments></TD></TR>
 <TR class="hdr">
     <TD><input type="checkbox" onClick="if(!this.form.pay_id)return false;for(i=0;i<this.form.pay_id.length;i++){this.form.pay_id[i].checked=this.checked;}if(this.form.pay_id.value)this.form.pay_id.checked=this.checked;"></TD>
     <TD><TMPL_VAR lang_username></TD>
@@ -27,12 +34,18 @@
     <TD><TMPL_VAR created></TD>
 </TR>
 </TMPL_LOOP>
-<TR class="hdr"><TD colspan=2></TD><TD><TMPL_VAR currency_symbol><TMPL_VAR amount_sum></TD><TD colspan=4></TD></TR>
-<TR class="hdr"><TD colspan=7 style="text-align:left;"><input type="submit" name="mark_paid" value="<TMPL_VAR lang_mark_paid>" class="" style="background-color:#99CC99;"> &nbsp; <input type="submit" name="mark_rejected" value="<TMPL_VAR lang_mark_rejected>" class="" style="background-color:#CC9999;"></TD></TR>
+<TR><TD colspan=2></TD><TD><TMPL_VAR currency_symbol><TMPL_VAR amount_sum></TD><TD colspan=4></TD></TR>
+<TR class="hdr"><TD colspan=7 style="text-align:left;"><input type="submit" name="mark_paid" value="<TMPL_VAR lang_mark_paid>" class="" style="background-color:#99CC99;"> &nbsp; <input type="submit" name="mark_rejected" value="<TMPL_VAR lang_mark_rejected>" class="" style="background-color:#CC9999;" onClick="var x=prompt('Do you want to delete the selected payment?','');if(typeof(x)=='undefined'||x==null)return false;this.form.reject_info.value=x;"></TD></TR>
 <TR class="hdr"><TD colspan=7 style="text-align:left;"><input type="submit" name="export_file" value="<TMPL_VAR lang_mass_payment>" class=""></TD></TR>
 </Table>
 </Form>
+</div>
+</div>
 <style>
 .tbl1 .payment_green td { background-color: #bef574; }
 .tbl1 .payment_green:hover td {background-color: #bef574;}
+@media (min-width: 320px) and (max-width: 600px) {
+.table_border{margin-bottom:50px!important;}
+}
 </style>
+<br /><br />

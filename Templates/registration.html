@@ -1,49 +1,82 @@
 <br>
-<div class="rrd" style="width: 500px; margin: auto;">
-
-<h2 style="margin:0;"><TMPL_VAR lang_user_registration></h2>
-
+<div class="rrd col-5">
 <Form method="POST" onSubmit="return CheckForm(this)">
 <input type="hidden" name="op" value="register">
 <input type="hidden" name="save" value="1">
 <input type="hidden" name="rand" value="<TMPL_VAR rand>">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="next" value="<TMPL_VAR next>">
-<Table>
-<TR><TD align=right><b><TMPL_VAR lang_username></b></TD><TD><input type="text" name="usr_login" value="<TMPL_VAR usr_login>"></TD></TR>
-<TR><TD align=right><b><TMPL_VAR lang_email></b></TD><TD><input type="text" name="usr_email" value="<TMPL_VAR usr_email>"></TD></TR>
-<TMPL_IF mod_sec_require_phone_number><TR><TD align=right><b>Phone number</b></TD><TD><input type="text" name="usr_phone" value="<TMPL_VAR usr_phone>" pattern="^[0-9\+-]+$" title="Phone number"></TD></TR></TMPL_IF>
-<TR><TD align=right><b><TMPL_VAR lang_password></b></TD><TD><input type="password" name="usr_password" value="<TMPL_VAR usr_password>"></TD></TR>
-<TR><TD align=right><b><TMPL_VAR lang_retype_password></b></TD><TD><input type="password" name="usr_password2" value="<TMPL_VAR usr_password2>"></TD></TR>
-<TR><TD align=right><b><TMPL_VAR lang_payment_info></b><br><small>(<TMPL_VAR lang_optional>)</small></TD><TD nowrap>
-<input type="text" name="usr_pay_email" value="<TMPL_VAR usr_pay_email>" size=18>
-<select name="usr_pay_type"  class="myForm2">
-<option value=""></option>
-<TMPL_LOOP payout_list>
-<option value="<TMPL_VAR name>" <TMPL_IF checked> selected</TMPL_IF>>
-<TMPL_VAR name>
-</option>
-</TMPL_LOOP>
-</select>
-</TD></TR>
-<TMPL_IF coupons><TR><TD align=right><b><TMPL_VAR lang_coupon_code></b><br><small>(<TMPL_VAR lang_optional>)</small></td><td><input type="text" name="coupon_code" value="<TMPL_VAR coupon_code>" size=12></td></tr></TMPL_IF>
-<TMPL_IF ihtml><TR><TD colspan=2 align=center><TMPL_VAR ihtml></td></tr></TMPL_IF>
-<TR><TD colspan=2 align=center><TMPL_IF msg><font class="err"><TMPL_VAR msg></font><br><br></TMPL_IF><input type="submit" name="submit" value=" <TMPL_VAR lang_submit> "></TD></TR>
-</Table>
+	<Table width="90%">
+		<tr>
+			<td>
+				<h2 style="margin:0;"><TMPL_VAR lang_user_registration></h2>
+			</td>
+		</tr>
+		<TR>
+			<TD align=right><TMPL_VAR lang_username>:<br /><input type="text" name="usr_login" value="<TMPL_VAR usr_login>"></TD>
+		</TR>
+		<TR>
+			<TD align=right><TMPL_VAR lang_email>:<br /><input type="text" name="usr_email" value="<TMPL_VAR usr_email>"></TD>
+		</TR>
+		<TMPL_IF mod_sec_require_phone_number>
+		<TR>
+			<TD align=right>Phone number:<br /><input type="text" name="usr_phone" value="<TMPL_VAR usr_phone>" pattern="^[0-9\+-]+$" title="Phone number"></TD>
+		</TR>
+		</TMPL_IF>
+		<TR>
+			<TD align=right><TMPL_VAR lang_password>:<br /><input type="password" name="usr_password" value="<TMPL_VAR usr_password>"></TD>
+		</TR>
+		<TR>
+			<TD align=right><TMPL_VAR lang_retype_password>:<br /><input type="password" name="usr_password2" value="<TMPL_VAR usr_password2>"></TD>
+		</TR>
+		<TR>
+			<TD align=right><TMPL_VAR lang_payment_info></b> <small>(<TMPL_VAR lang_optional>)</small>:<br />
+			<input type="text" name="usr_pay_email" value="<TMPL_VAR usr_pay_email>" size=18><br />
+			<select name="usr_pay_type"  class="myForm2">
+			<option value=""></option>
+			<TMPL_LOOP payout_list>
+			<option value="<TMPL_VAR name>" <TMPL_IF checked> selected</TMPL_IF>>
+			<TMPL_VAR name>
+			</option>
+			</TMPL_LOOP>
+			</select>
+			</TD>
+		</TR>
+		<TMPL_IF coupons>
+		<TR>
+			<TD align=right><TMPL_VAR lang_coupon_code></b> <small>(<TMPL_VAR lang_optional>)</small>:<br />
+			<input type="text" name="coupon_code" value="<TMPL_VAR coupon_code>" size=12></td>
+		</tr>
+		</TMPL_IF>
+		<TMPL_IF ihtml>
+		<TR>
+			<TD align=center><TMPL_VAR ihtml></td>
+		</tr>
+		</TMPL_IF>
+		<TR>
+			<TD colspan=2 align=center><TMPL_IF msg><font class="err"><TMPL_VAR msg></font><br><br></TMPL_IF>
+			<input type="submit" name="submit" value=" <TMPL_VAR lang_submit> "></TD>
+		</TR>
+	</Table>
 </Form>
 </div>
-
-<TMPL_IF m_c>
 <br>
-<div class="rrd">
-	<TMPL_IF facebook_app_id><a href="<TMPL_VAR site_url>/?op=login&method=facebook"><img src="<TMPL_VAR site_url>/images/facebook.png" alt="Login with Facebook"></a></TMPL_IF>
-	<a href="<TMPL_VAR site_url>/?op=login&method=twitter"><img src="<TMPL_VAR site_url>/images/twitter.png" alt="Login with Twitter"></a>
-	<TMPL_IF google_app_id><a href="<TMPL_VAR site_url>/?op=login&method=google"><img src="<TMPL_VAR site_url>/images/google+.png" alt="Login with Google"></a></TMPL_IF>
-	<TMPL_IF vk_app_id><a href="<TMPL_VAR site_url>/?op=login&method=vk"><img src="<TMPL_VAR site_url>/images/vk.png" alt="Login with Vk.com"></a></TMPL_IF>
-</div>
+<TMPL_IF m_c>
+	<div class="rrd">
+		<TMPL_IF facebook_app_id>
+			<a href="<TMPL_VAR site_url>/?op=login&method=facebook"><img src="<TMPL_VAR site_url>/images/facebook.png" alt="Login with Facebook"></a>
+		</TMPL_IF>
+			<a href="<TMPL_VAR site_url>/?op=login&method=twitter"><img src="<TMPL_VAR site_url>/images/twitter.png" alt="Login with Twitter"></a>
+		<TMPL_IF google_app_id>
+			<a href="<TMPL_VAR site_url>/?op=login&method=google"><img src="<TMPL_VAR site_url>/images/google+.png" alt="Login with Google"></a>
+		</TMPL_IF>
+		<TMPL_IF vk_app_id>
+			<a href="<TMPL_VAR site_url>/?op=login&method=vk"><img src="<TMPL_VAR site_url>/images/vk.png" alt="Login with Vk.com"></a>
+		</TMPL_IF>
+	</div>
 </TMPL_IF>
-<br><br>
 
+<br><br><br><br>
 <Script>
 function  CheckForm(f)
 {
@@ -58,3 +91,6 @@ function  CheckForm(f)
     if(err.length>0){alert( '<TMPL_VAR lang_plz_fix_errors>:\n\n'+err.join('\n') );return false;}
 }
 </Script>
+<style type="text/css">
+.rrd input[type="text"], .rrd input[type="password"]{width:100%}
+</style>

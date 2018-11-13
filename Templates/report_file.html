@@ -9,20 +9,26 @@ function CheckForm(f)
     return true;
 }
 </Script>
-
+<style type="text/css">
+.rrd input[type="text"], .rrd input[type="password"]{width:100%}
+.rrd table h2 {
+    font-size: 20px;
+}
+</style>
+<div class="rrd col-5">
 <Form method="post" action="<TMPL_VAR site_url>/" onSubmit="return CheckForm(this);">
 <input type="hidden" name="op" value="report_file">
 <input type="hidden" name="send" value="1">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="rand" value="<TMPL_VAR rand>">
 <input type="hidden" name="id" value="<TMPL_VAR id>">
-<table cellpadding=3 cellspacing=1 class="tbl1">
-<TR class="hdr"><TD colspan=2><TMPL_VAR lang_report_abuse></TD></TR>
-<tr><td align=right><b><TMPL_VAR lang_file_name></b></td><td><TMPL_VAR file_name></td></tr>
-<tr><td align=right><b>IP</b></td><td><TMPL_VAR ip></td></tr>
-<tr><td align=right><b><TMPL_VAR lang_name></b></td><td><input type="text" name="name" value="<TMPL_VAR name>" maxlength=32></td></tr>
-<tr><td align=right><b><TMPL_VAR lang_email></b></td><td><input type="text" name="email" value="<TMPL_VAR email>" maxlength=32></td></tr>
-<tr><td align=right><b><TMPL_VAR lang_reason></b></td><td>
+<table width="90%">
+<TR><TD><h2 style="margin:0;"><TMPL_VAR lang_report_abuse></h2></TD></TR>
+<tr><td align=right><b><TMPL_VAR lang_file_name></b><br /><TMPL_VAR file_name></td></tr>
+<tr><td align=right><b>IP</b><br /><TMPL_VAR ip></td></tr>
+<tr><td align=right><b><TMPL_VAR lang_name></b><br /><input type="text" name="name" value="<TMPL_VAR name>" maxlength=32></td></tr>
+<tr><td align=right><b><TMPL_VAR lang_email></b><br /><input type="text" name="email" value="<TMPL_VAR email>" maxlength=32></td></tr>
+<tr><td align=right><b><TMPL_VAR lang_reason></b><br />
 <Select name="reason">
 <option value="Content copyright restriction"><TMPL_VAR lang_content_copyright></option>
 <option value="File corrupt"><TMPL_VAR lang_file_corrupt></option>
@@ -30,12 +36,13 @@ function CheckForm(f)
 <option value="Other"><TMPL_VAR lang_other></option>
 </Select>
 </td></tr>
-<tr><td align=right><b><TMPL_VAR lang_information></b></td><td><textarea name="message" rows=5 cols=20 style="width:300px"><TMPL_VAR message></textarea></td></tr>
+<tr><td align=right><b><TMPL_VAR lang_information></b><br /><textarea name="message" rows=5 cols=20 ><TMPL_VAR message></textarea></td></tr>
 
 
-<TMPL_IF ihtml><tr><td colspan=2 align=center><TMPL_VAR ihtml></td></tr></TMPL_IF>
+<TMPL_IF ihtml><tr><td align=center><TMPL_VAR ihtml></td></tr></TMPL_IF>
 
-<tr><td colspan=2 align=center><font class="err"><TMPL_VAR msg></font><br><input type="submit" value="<TMPL_VAR lang_send_file_report>"><br><br></td></tr>
+<tr><td align=center><font class="err"><TMPL_VAR msg></font><br><input type="submit" value="<TMPL_VAR lang_send_file_report>"><br><br></td></tr>
 </table>
 </Form>
-<br>
+</div>
+<br /><br /><br /><br />

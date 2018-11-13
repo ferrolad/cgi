@@ -1,37 +1,37 @@
-		   <script type="text/javascript" src="<TMPL_VAR site_url>/js/bootstrap-confirm.js"></script>
-		   <script type="text/javascript" src="<TMPL_VAR site_url>/js/dialogs.js"></script>
+<script src="<TMPL_VAR site_url>/js/bootstrap-confirm.js"></script>
+<script type="text/javascript" src="<TMPL_VAR site_url>/js/dialogs.js"></script>
 
-         <table class="extend_premium" style="width: 400px">
-         <tr>
-            <TMPL_LOOP plans>
-            <td>
-            <div class="paybox" style="margin-bottom: 100px">
-               <div class="days"><TMPL_VAR days> days</div>
-               <div class="price"><TMPL_VAR currency_symbol><TMPL_VAR amount></div>
-               <TMPL_LOOP payment_types>
-               <a href="<TMPL_VAR site_url>/?op=payments&amount=<TMPL_VAR amount>&type=<TMPL_VAR name>&r=<TMPL_VAR rand>&token=<TMPL_VAR token_payments>" <TMPL_IF ask_email> onclick="return Dialogs.askEmail(this)"</TMPL_IF>><div class="paysys"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" alt="<TMPL_VAR name>"></div></a>
-               </TMPL_LOOP>
-            </div>
-            </td>
-            </TMPL_LOOP>
-         </tr>
-         </table>
-
-         <TMPL_IF traffic_packages>
-         <TMPL_IF plans><h2>Or choose one of our premium traffic packages:</h2></TMPL_IF>
-         <table class="extend_premium" style="width: 400px">
-         <tr>
-            <TMPL_LOOP traffic_packages>
-            <td>
-            <div class="paybox" style="margin-bottom: 100px">
-               <div class="days"><TMPL_VAR value> GB</div>
-               <div class="price"><TMPL_VAR currency_symbol><TMPL_VAR amount></div>
-               <TMPL_LOOP payment_types>
-               <a href="<TMPL_VAR site_url>/?op=payments&amount=<TMPL_VAR amount>&type=<TMPL_VAR name>&r=<TMPL_VAR rand>&target=premium_traffic&token=<TMPL_VAR token_payments>"><div class="paysys"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" alt="<TMPL_VAR name>"></div></a>
-               </TMPL_LOOP>
-            </div>
-            </td>
-            </TMPL_LOOP>
-         </tr>
-         </table>
-         </TMPL_IF>
+<div class="payment_table" id="Prem_days">
+	<TMPL_LOOP plans>
+    	<div class="col-3 payInner">
+			<div class="section">
+				<div class="paybox">
+					<div class="price"><TMPL_VAR currency_symbol><TMPL_VAR amount>
+						<div class="days"><TMPL_VAR days> days</div>
+					</div>
+					<TMPL_LOOP payment_types>
+						<a href="<TMPL_VAR site_url>/?op=payments&amount=<TMPL_VAR amount>&type=<TMPL_VAR name><TMPL_IF submethod>&submethod=<TMPL_VAR submethod></TMPL_IF>&r=<TMPL_VAR rand>&token=<TMPL_VAR token_payments>" <TMPL_IF ask_email> onclick="return Dialogs.askEmail(this)"</TMPL_IF>><div class="paysys"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" alt="<TMPL_VAR title>"></div></a>
+					</TMPL_LOOP>
+				</div>
+			</div>
+    	</div>
+	</TMPL_LOOP>
+</div>
+<div class="payment_table" id="Prem_traffic" style="display: none;">
+	<TMPL_IF traffic_packages>
+		<TMPL_LOOP traffic_packages>
+			<div class="col-3 payInner">
+				<div class="section">
+					<div class="paybox" style="margin-bottom: 100px">
+						<div class="price"><TMPL_VAR currency_symbol><TMPL_VAR amount>
+							<div class="days"><TMPL_VAR value> GB</div>
+						</div>
+						<TMPL_LOOP payment_types>
+						<a href="<TMPL_VAR site_url>/?op=payments&amount=<TMPL_VAR amount>&type=<TMPL_VAR name>&r=<TMPL_VAR rand>&target=premium_traffic&token=<TMPL_VAR token_payments>" <TMPL_IF ask_email> onclick="return Dialogs.askEmail(this)"</TMPL_IF>><div class="paysys"><img src="<TMPL_VAR site_url>/images/<TMPL_VAR image>" alt="<TMPL_VAR title>"></div></a>
+						</TMPL_LOOP>
+					</div>
+				</div>
+			</div>
+		</TMPL_LOOP>
+	</TMPL_IF>
+</div>

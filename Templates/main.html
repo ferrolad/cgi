@@ -5,7 +5,7 @@
     <meta name="description" content="<TMPL_IF meta_descr><TMPL_VAR meta_descr><TMPL_ELSE><TMPL_VAR site_name> - Free file upload service</TMPL_IF>">
     <meta name="keywords"    content="<TMPL_IF meta_keywords><TMPL_VAR meta_keywords><TMPL_ELSE>file upload,share files,free upload</TMPL_IF>">
     <script language="JavaScript" type="text/javascript" CHARSET="UTF-8" src="<TMPL_VAR site_url>/js/jquery-1.9.1.min.js"></script>
-
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="<TMPL_VAR site_url>/css/bootstrap.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
@@ -18,6 +18,10 @@
     <title><TMPL_IF page_title><TMPL_VAR page_title><TMPL_ELSE><TMPL_VAR site_name> - <TMPL_VAR lang_page_title></TMPL_IF></title>
     <link rel="icon" href="images/favicon.gif" type="image/x-icon"/>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/> 
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css">
+  	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/v4-shims.css">
+	
     <link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/style.css"/>
     <script type="text/javascript" src="<TMPL_VAR site_url>/js/jquery.paging.js"></script> 
     <script type="text/javascript" src="<TMPL_VAR site_url>/js/jquery.cookie.js"></script> 
@@ -74,136 +78,237 @@
 </TMPL_IF>
 </head>
 <body<TMPL_IF lang_rtl> style="direction:rtl;"</TMPL_IF>>
-<div class="wrapper">
-   <div id="header">
-      <div class="container1">
-         <div id="logo" style="float: left;" onclick="location.href='<TMPL_VAR site_url>';"><!--start logo-->
-         </div><!--end logo-->
-         <div id="mainmenu"><!--start main menu-->
-            <ul>
-               <TMPL_IF my_login>
-               <TMPL_IF dmca_agent>
-               <li><a href="<TMPL_VAR site_url>/?op=mass_dmca">DMCA takedown</a></li>
-               <TMPL_ELSE>
-               <li><a href="<TMPL_VAR site_url>/?op=my_account"><TMPL_VAR lang_my_account></a></li>
-               <li><a href="<TMPL_VAR site_url>/?op=upload_form"><TMPL_VAR lang_upload_files></a></li>
-               <li><a href="<TMPL_VAR site_url>/?op=my_files"><TMPL_VAR lang_my_files></a></li>
-               <TMPL_IF enable_reports><li><a href="<TMPL_VAR site_url>/?op=my_reports"><TMPL_VAR lang_my_reports></a></li></TMPL_IF>
-               <TMPL_IF enabled_prem>
-               <li><a href="<TMPL_VAR site_url>/?op=payments"><TMPL_IF premium><TMPL_VAR lang_renew_premium><TMPL_ELSE><TMPL_VAR lang_buy_premium></TMPL_IF></a></li>
-               </TMPL_IF>
-               </TMPL_IF>
-               <TMPL_IF fake_user>
-               <li><a name="back_to_administration" href="<TMPL_VAR site_url>/?back_to_admin=1" style="color:#c47a66;">Back to administration</a></li>
-               <TMPL_ELSE>
-               <li><a href="<TMPL_VAR site_url>/?op=logout" style="color:#c47a66;"><TMPL_VAR lang_logout></a></li>
-               </TMPL_IF>
-               <TMPL_ELSE>
-               <TMPL_IF enabled_reg>
-               <li><a href="<TMPL_VAR site_url>/login.html"><TMPL_VAR lang_login></a>&nbsp; &nbsp;</li>
-               <li><a class="btn_blue" href="<TMPL_VAR site_url>/register.html"><TMPL_VAR lang_signup></a>&nbsp; &nbsp;</li>
-               <li><a href="<TMPL_VAR site_url>/forgotpass.html"><TMPL_VAR lang_forgot_pass></a></li>
-               </TMPL_IF>
-               </TMPL_IF>
+<div class="wrapper">	
+	<TMPL_IF usr_mod>
+	   	<TMPL_UNLESS admin>
+	   		<div id="wheader">
+		  		<div class="container1">
+			 		<div id="wmenu"><!--start main menu-->
+                  <ul>
+   			 			<li><a href="<TMPL_VAR site_url>/?op=admin_approve"><b>Approve files (<TMPL_VAR g_files_approve>)</b></li></a>
+   						<TMPL_IF m_d_f><li><a href="<TMPL_VAR site_url>/?op=moderator_files"><TMPL_VAR lang_adm_file_mgmt></a></li></TMPL_IF>
+   						<TMPL_IF m_d_a><li><a href="<TMPL_VAR site_url>/?op=admin_reports"><TMPL_VAR lang_adm_abuse><TMPL_IF dmca_reports_count> (<TMPL_VAR dmca_reports_count>)</TMPL_IF></a></li></TMPL_IF>
+   						<TMPL_IF m_d_c><li><a href="<TMPL_VAR site_url>/?op=admin_comments"><TMPL_VAR lang_file_cmt_sett></a></li></TMPL_IF>
+                  </ul>
+			 		</div>
+		  		</div>
+	   		</div>
+	   	</TMPL_UNLESS>
+	</TMPL_IF>
+	   
+	<TMPL_IF admin>
+	   	<div id="wheader">
+		  	<div class="container1">
+			 <div id="wmenu"><!--start main menu-->
+				   <ul>
+					  <TMPL_IF g_files_approve><li><a href="<TMPL_VAR site_url>/?op=admin_approve"><b>Approve files (<TMPL_VAR g_files_approve>)</b></a></li></TMPL_IF>
+					  <li><a href="<TMPL_VAR site_url>/?op=admin_files"><TMPL_VAR lang_adm_file_mgmt></a></li>
+					  <li><a href="<TMPL_VAR site_url>/?op=admin_users"><TMPL_VAR lang_adm_user_mgmt></a></li>
+					  <li><a href="<TMPL_VAR site_url>/?op=admin_servers"><TMPL_VAR lang_adm_server_mgmt></a></li>
+					  <TMPL_IF enp_t><li><a href="<TMPL_VAR site_url>/?op=admin_torrents"><TMPL_VAR lang_torrents></a></li></TMPL_IF>
+					  <li><a href="<TMPL_VAR site_url>/?op=admin_reports"<TMPL_IF g_reports> class="has-new"</TMPL_IF>><TMPL_VAR lang_adm_abuse><TMPL_IF g_reports> (<TMPL_VAR g_reports>)</TMPL_IF></a></li>
+					  <li><a href="<TMPL_VAR site_url>/?op=admin_news"><TMPL_VAR lang_adm_news></a></li>
+					  <li><a href="<TMPL_VAR site_url>/?op=admin_comments"><TMPL_VAR lang_file_cmt_sett></a></li>
+					  <li><a href="<TMPL_VAR site_url>/?op=admin_payments"<TMPL_IF g_payments> class="has-new"</TMPL_IF>><TMPL_VAR lang_adm_payments><TMPL_IF g_payments> (<TMPL_VAR g_payments>)</TMPL_IF></a></li>
+					  <li><a href="<TMPL_VAR site_url>/?op=admin_stats"><TMPL_VAR lang_adm_stats></a></li>
+					  <li><a href="<TMPL_VAR site_url>/?op=admin_external"><TMPL_VAR lang_api_keys></a></li>
+					  <li><a href="<TMPL_VAR site_url>/?op=admin_settings"<TMPL_IF g_del_confirm> class="has-new"</TMPL_IF>><TMPL_VAR lang_adm_settings><TMPL_IF g_del_confirm> (<TMPL_VAR g_del_confirm>)</TMPL_IF></a></li>
+				   </ul>
+			 </div>
+		  	</div>
+	   	</div>
+	</TMPL_IF>
+
+   	<div class="clear"></div>
+
+	<!-- Sidenav slide menu start -->
+	<script>
+	function openNav() {
+		document.getElementById("mySidenav").style.width = "100%";
+	}
+	
+	function closeNav() {
+		document.getElementById("mySidenav").style.width = "0";
+	}
+	</script>
+	<span id="open" class="open" onClick="openNav()">&#9776;</span>
+	<div id="mySidenav" class="sidenav">
+		<a href="javascript:void(0)" class="closebtn" onClick="closeNav()" style="font-size:36px!important; border-bottom:0px;color:#fff;">&times;</a>
+		<div style="margin-top:40px;">
+         <TMPL_IF my_login>
+				<a href="<TMPL_VAR site_url>/?op=my_account"><i class="fa fa-cogs"></i> <TMPL_VAR lang_my_account></a>
+				<a href="<TMPL_VAR site_url>/?op=my_files"><i class="fa fa-file-text"></i> <TMPL_VAR lang_my_files></a>
+				<TMPL_IF enable_reports><a href="<TMPL_VAR site_url>/?op=my_reports"><i class="fa fa-bar-chart"></i> <TMPL_VAR lang_my_reports></a></TMPL_IF>
+				<a href="<TMPL_VAR site_url>/?op=upload_form"><i class="fas fa-cloud-upload-alt"></i>  <TMPL_VAR lang_upload></a>
+				<a href="<TMPL_VAR site_url>/?op=news"><i class="far fa-newspaper"></i> <TMPL_VAR lang_news></a>
+				<a href="<TMPL_VAR site_url>/contact.html"><i class="fa fa-envelope "></i> <TMPL_VAR lang_contact_us></a>
+				<a href="<TMPL_VAR site_url>/make_money.html"><i class="fa fa-usd"></i> Earn Money</a>
+				<a href="<TMPL_VAR site_url>/tos.html"><i class="fa fa-gavel"></i> <TMPL_VAR lang_tos></a>
+				<a href="<TMPL_VAR site_url>/faq.html"><i class="fa fa-question"></i> <TMPL_VAR lang_faq></a>
+				<TMPL_IF enable_catalogue><a href="<TMPL_VAR site_url>/?op=catalogue"><i class="fas fa-th"></i> <TMPL_VAR lang_catalogue></a></TMPL_IF> 
+				<a href="<TMPL_VAR site_url>/?op=payments"><i class="fa fa-star"></i> <TMPL_IF premium><TMPL_VAR lang_renew_premium><TMPL_ELSE><TMPL_VAR lang_buy_premium></TMPL_IF></a>
+				<a href="<TMPL_VAR site_url>/?op=check_files"><i class="fas fa-clipboard-check"></i> <TMPL_VAR lang_link_checker></a>
+				<a href="<TMPL_VAR site_url>/links.html"><i class="fas fa-link"></i> <TMPL_VAR lang_links></a>
+            <a href="<TMPL_VAR site_url>/?op=logout" class="btn_blue"><TMPL_VAR lang_logout></a>
+         <TMPL_ELSE>
+			<TMPL_IF enabled_reg>
+				<a href="<TMPL_VAR site_url>/login.html"><TMPL_VAR lang_login></a>
+				<a href="<TMPL_VAR site_url>/register.html"><TMPL_VAR lang_signup></a>
+			</TMPL_IF>
+            <a href="<TMPL_VAR site_url>"><TMPL_VAR lang_home></a>
+            <TMPL_IF enabled_prem><a href="<TMPL_VAR site_url>/premium.html"><TMPL_VAR lang_premium></a></TMPL_IF>
+            <TMPL_IF enable_catalogue><a href="<TMPL_VAR site_url>/?op=catalogue"><TMPL_VAR lang_catalogue></a></TMPL_IF>
+            <a href="<TMPL_VAR site_url>/faq.html"><TMPL_VAR lang_faq></a>
+            <a href="<TMPL_VAR site_url>/tos.html"><TMPL_VAR lang_tos></a>
+            <a href="<TMPL_VAR site_url>/?op=checkfiles"><TMPL_VAR lang_link_checker></a>
+            <a href="<TMPL_VAR site_url>/?op=news"><TMPL_VAR lang_news></a>
+            <a href="<TMPL_VAR site_url>/contact.html"><TMPL_VAR lang_contact_us></a>
+            <a href="<TMPL_VAR site_url>/links.html"><TMPL_VAR lang_links></a>
+         </TMPL_IF>
+		</div>
+	</div>
+	
+	<!-- Sidenav slide menu end -->
+   
+	<div class="holderPanel">
+		<div class="SidemenuPanel">
+			<div id="logo" style="float: left;" onClick="location.href='<TMPL_VAR site_url>';"></div>
+			<ul class="otherMenus">
+				<li class="activemact"><a href="<TMPL_VAR site_url>/?op=my_account"><i class="fa fa-cogs"></i> <TMPL_VAR lang_my_account></a></li>
+				<li class="activemfl"><a href="<TMPL_VAR site_url>/?op=my_files"><i class="fa fa-file-text"></i> <TMPL_VAR lang_my_files></a></li>
+				<TMPL_IF enable_reports><li class="activerpt"><a href="<TMPL_VAR site_url>/?op=my_reports"><i class="fa fa-bar-chart"></i> <TMPL_VAR lang_my_reports></a></li></TMPL_IF>
+				<li class="activeupld"><a href="<TMPL_VAR site_url>/?op=upload_form"><i class="fas fa-cloud-upload-alt"></i>  <TMPL_VAR lang_upload></a></li>
+				<li class="activenws"><a href="<TMPL_VAR site_url>/?op=news"><i class="far fa-newspaper"></i> <TMPL_VAR lang_news></a></li>
+				<li class="activecnt"><a href="<TMPL_VAR site_url>/contact.html"><i class="fa fa-envelope "></i> <TMPL_VAR lang_contact_us></a></li>
+				<li class="activemny"><a href="<TMPL_VAR site_url>/make_money.html"><i class="fa fa-usd"></i> Earn Money</a></li>
+				<li class="activetos"><a href="<TMPL_VAR site_url>/tos.html"><i class="fa fa-gavel"></i> <TMPL_VAR lang_tos></a></li>
+				<li class="activefaq"><a href="<TMPL_VAR site_url>/faq.html"><i class="fa fa-question"></i> <TMPL_VAR lang_faq></a></li> 
+				<TMPL_IF enable_catalogue><li class="activeclg"><a href="<TMPL_VAR site_url>/?op=catalogue"><i class="fas fa-th"></i> <TMPL_VAR lang_catalogue></a>  </li></TMPL_IF>
+				<li class="activepmnt"><a href="<TMPL_VAR site_url>/?op=payments"><i class="fa fa-star"></i> <TMPL_IF premium><TMPL_VAR lang_renew_premium><TMPL_ELSE><TMPL_VAR lang_buy_premium></TMPL_IF></a></li>
+				<li class="activelchk"><a href="<TMPL_VAR site_url>/?op=check_files"><i class="fas fa-clipboard-check"></i> <TMPL_VAR lang_link_checker></a></li>
+				<li class="activelnks"><a href="<TMPL_VAR site_url>/links.html"><i class="fas fa-link"></i> <TMPL_VAR lang_links></a></li>
+			</ul>			
+		</div>
+		<div class="contentPanel">
+			
+			   <div id="header">
+				  <div class="container1">
+					 <div id="logo" style="float: left;" onClick="location.href='<TMPL_VAR site_url>';"><!--start logo-->
+					 </div><!--end logo-->
+					 <div class="UserHead"><span>&#9776;</span>
+						<TMPL_IF op_my_account>
+						Welcome back <b><TMPL_VAR my_login></b>, this is your userpanel
+						<TMPL_ELSE>
+						Balance:
+						<strong><TMPL_VAR g.currency_symbol><TMPL_VAR g.usr_money></strong>,
+
+						<TMPL_VAR lang_used_disk_space>:
+						<strong><TMPL_VAR g.total_size><TMPL_IF g.disk_space> <TMPL_VAR lang_of> <TMPL_VAR g.disk_space></TMPL_IF> GB</strong>,
+
+						<TMPL_IF g.usr_premium_traffic>Premium traffic remaining<TMPL_ELSE><TMPL_VAR lang_traffic_available></TMPL_IF>:
+						<strong><TMPL_IF g.usr_premium_traffic><TMPL_VAR g.usr_premium_traffic_mb> MB<TMPL_ELSE><TMPL_IF g.traffic_left><TMPL_VAR g.traffic_left> Mb<TMPL_ELSE>Unlimited</TMPL_IF></TMPL_IF></strong>
+						</TMPL_IF>
+					 </div>
+					 <div id="mainmenu"><!--start main menu-->
+						<ul>
+						   <TMPL_IF my_login>
+						   <TMPL_IF dmca_agent>
+						   <li><a href="<TMPL_VAR site_url>/?op=mass_dmca">DMCA takedown</a></li>					   
+						   </TMPL_IF>
+
+						   <TMPL_IF admin_panel>
+						   <li><a href="<TMPL_VAR site_url>/?op=my_account"><TMPL_VAR lang_my_account></a></li>
+						   <li><a href="<TMPL_VAR site_url>/?op=upload_form"><TMPL_VAR lang_upload_files></a></li>
+						   <li><a href="<TMPL_VAR site_url>/?op=my_files"><TMPL_VAR lang_my_files></a></li>
+						   <TMPL_IF enable_reports><li><a href="<TMPL_VAR site_url>/?op=my_reports"><TMPL_VAR lang_my_reports></a></li></TMPL_IF>
+						   <TMPL_IF enabled_prem>
+						   <li><a href="<TMPL_VAR site_url>/?op=payments"><TMPL_IF premium><TMPL_VAR lang_renew_premium><TMPL_ELSE><TMPL_VAR lang_buy_premium></TMPL_IF></a></li>
+						   </TMPL_IF>
+						   </TMPL_IF>
+
+						   <TMPL_IF fake_user>
+						   <li><a name="back_to_administration" href="<TMPL_VAR site_url>/?back_to_admin=1">Back to administration</a></li>
+						   <TMPL_ELSE>
+						   <li><a href="<TMPL_VAR site_url>/?op=logout" class="btn_blue"><TMPL_VAR lang_logout></a></li>
+						   </TMPL_IF>
+						   <TMPL_ELSE>
+						   <TMPL_IF enabled_reg>
+						   <li><a href="<TMPL_VAR site_url>/login.html"><TMPL_VAR lang_login></a></li>
+						   <li><a class="btn_blue" href="<TMPL_VAR site_url>/register.html"><TMPL_VAR lang_signup></a></li>
+						   </TMPL_IF>
+						   </TMPL_IF>
+						</ul>
+						<div id="language">
+						   <ul>
+							  <li>
+								 <a>
+									<span class="trf trf-<TMPL_VAR language>"></span>
+								 </a>
+								 <ul>
+									<TMPL_LOOP languages>
+									<li>
+									   <a href="<TMPL_VAR site_url>/?op=change_lang&lang=<TMPL_VAR lang>">
+										  <span class="trf trf-<TMPL_VAR lang>"></span><span class="langname"><TMPL_VAR lang2></span>
+									   </a>
+									</li>
+									</TMPL_LOOP>
+								 </ul>
+							  </li>
+						   </ul>
+						</div>
+					 </div>   
+				  </div><!--end main menu-->   
+			   </div> <!--end header-->
+			   
+			<div class="clear"></div>
+			<div id="container">
+			<TMPL_IF show_last_news_days>                                                                                                         
+				<TMPL_INCLUDE static/last_news.html>
+			</TMPL_IF>
+	
+			<TMPL_VAR tmpl>
+			</div>
+		</div>
+	</div>
+
+	<div class="page-buffer"></div>
+	<div class="clear"></div>
+
+</div>
+<!--<br /><br /><br /><br />-->
+<footer id="footer">
+   	<div class="container1">
+      	<div id="fmenu"><!--start footer menu-->
+			<ul>
+               	<li><a href="<TMPL_VAR site_url>"><TMPL_VAR lang_home></a></li>
+               	<TMPL_IF enabled_prem><li><a href="<TMPL_VAR site_url>/premium.html"><TMPL_VAR lang_premium></a>  </li></TMPL_IF>
+               	<TMPL_IF enable_catalogue><li><a href="<TMPL_VAR site_url>/?op=catalogue"><TMPL_VAR lang_catalogue></a>  </li></TMPL_IF>
             </ul>
-            <div id="language">
-               <ul>
-                  <li>
-                     <a>
-                        <span class="trf trf-<TMPL_VAR language>"></span>
-                     </a>
-                     <ul>
-                        <TMPL_LOOP languages>
-                        <li>
-                           <a href="<TMPL_VAR site_url>/?op=change_lang&lang=<TMPL_VAR lang>">
-                              <span class="trf trf-<TMPL_VAR lang>"></span><span class="langname"><TMPL_VAR lang2></span>
-                           </a>
-                        </li>
-                        </TMPL_LOOP>
-                     </ul>
-                  </li>
-               </ul>
-            </div>
-         </div>   
-      </div><!--end main menu-->   
-   </div> <!--end header-->
-   
-   <div class="clear"></div>
-
-   <TMPL_IF usr_mod>
-   <TMPL_UNLESS admin>
-   <div id="wheader">
-      <div class="container1">
-         <div id="wmenu"><!--start main menu-->
-               <ul>
-                  <li><a href="<TMPL_VAR site_url>/?op=admin_approve"><b>Approve files (<TMPL_VAR g_files_approve>)</b></a></li>
-						<TMPL_IF m_d_f><li><a href="<TMPL_VAR site_url>/?op=moderator_files"><TMPL_VAR lang_adm_file_mgmt></a></li></TMPL_IF>
-						<TMPL_IF m_d_a><li><a href="<TMPL_VAR site_url>/?op=admin_reports"><TMPL_VAR lang_adm_abuse><TMPL_IF dmca_reports_count> (<TMPL_VAR dmca_reports_count>)</TMPL_IF></a></li></TMPL_IF>
-						<TMPL_IF m_d_c><li><a href="<TMPL_VAR site_url>/?op=admin_comments"><TMPL_VAR lang_file_cmt_sett></a></li></TMPL_IF>
-               </ul>
-         </div>
-      </div>
-   </div>
-   </TMPL_UNLESS>
-   </TMPL_IF>
-   
-   <TMPL_IF admin>
-   <div id="wheader">
-      <div class="container1">
-         <div id="wmenu"><!--start main menu-->
-               <ul>
-                  <TMPL_IF g_files_approve><li><a href="<TMPL_VAR site_url>/?op=admin_approve"><b>Approve files (<TMPL_VAR g_files_approve>)</b></a></li></TMPL_IF>
-                  <li><a href="<TMPL_VAR site_url>/?op=admin_files"><TMPL_VAR lang_adm_file_mgmt></a></li>
-                  <li><a href="<TMPL_VAR site_url>/?op=admin_users"><TMPL_VAR lang_adm_user_mgmt></a></li>
-                  <li><a href="<TMPL_VAR site_url>/?op=admin_servers"><TMPL_VAR lang_adm_server_mgmt></a></li>
-                  <TMPL_IF enp_t><li><a href="<TMPL_VAR site_url>/?op=admin_torrents"><TMPL_VAR lang_torrents></a></li></TMPL_IF>
-                  <li><a href="<TMPL_VAR site_url>/?op=admin_reports"<TMPL_IF g_reports> class="has-new"</TMPL_IF>><TMPL_VAR lang_adm_abuse><TMPL_IF g_reports> (<TMPL_VAR g_reports>)</TMPL_IF></a></li>
-                  <li><a href="<TMPL_VAR site_url>/?op=admin_news"><TMPL_VAR lang_adm_news></a></li>
-                  <li><a href="<TMPL_VAR site_url>/?op=admin_comments"><TMPL_VAR lang_file_cmt_sett></a></li>
-                  <li><a href="<TMPL_VAR site_url>/?op=admin_payments"<TMPL_IF g_payments> class="has-new"</TMPL_IF>><TMPL_VAR lang_adm_payments><TMPL_IF g_payments> (<TMPL_VAR g_payments>)</TMPL_IF></a></li>
-                  <li><a href="<TMPL_VAR site_url>/?op=admin_stats"><TMPL_VAR lang_adm_stats></a></li>
-                  <li><a href="<TMPL_VAR site_url>/?op=admin_external"><TMPL_VAR lang_api_keys></a></li>
-                  <li><a href="<TMPL_VAR site_url>/?op=admin_settings"<TMPL_IF g_del_confirm> class="has-new"</TMPL_IF>><TMPL_VAR lang_adm_settings><TMPL_IF g_del_confirm> (<TMPL_VAR g_del_confirm>)</TMPL_IF></a></li>
-               </ul>
-         </div>
-      </div>
-   </div>
-   </TMPL_IF>
-   
-   <div class="clear"></div>
-   <div id="container">
-   <TMPL_IF show_last_news_days>                                                                                                         
-   <TMPL_INCLUDE static/last_news.html>
-   </TMPL_IF>
-
-   <TMPL_VAR tmpl>
-   </div>
-   </div>
-<div class="page-buffer"></div>
-<div class="clear"></div>
-<footer>
-   <div class="container1">
-      <div style="float: left;">
-         <p style="line-height: 50px;">© 2008 - 2017  <a href="https://sibsoft.net" title="Sibsoft Ltd.">Sibsoft Ltd.</a></p> 
-      </div>
-      <div id="fmenu"><!--start footer menu-->
-            <ul>
-
-               <li><a href="<TMPL_VAR site_url>"><TMPL_VAR lang_home></a></li>
-               <li><a href="<TMPL_VAR site_url>/?op=news"><TMPL_VAR lang_news></a></li>
-               <TMPL_IF enable_catalogue><li><a href="<TMPL_VAR site_url>/?op=catalogue"><TMPL_VAR lang_catalogue></a>  </li></TMPL_IF>
-               <li><a href="<TMPL_VAR site_url>/faq.html"><TMPL_VAR lang_faq></a></li>
-               <li><a href="<TMPL_VAR site_url>/tos.html"><TMPL_VAR lang_tos></a></li>
-               <TMPL_IF enabled_prem><TMPL_UNLESS premium><li><a href="<TMPL_VAR site_url>/premium.html"><TMPL_VAR lang_premium></a>  </li></TMPL_UNLESS></TMPL_IF>
-               <li><a href="<TMPL_VAR site_url>/?op=check_files"><TMPL_VAR lang_link_checker></a></li>
-               <li><a href="<TMPL_VAR site_url>/links.html"><TMPL_VAR lang_links></a></li>
-               <li><a href="<TMPL_VAR site_url>/contact.html"><TMPL_VAR lang_contact_us></a></li>
-               <TMPL_IF mobile_device><li><a href="#" onclick="$.removeCookie('design', { path: '/', domain: document.domain });document.location.reload();return false;">Mobile Version</a></li></TMPL_IF>
+			<ul>
+               	<li><a href="<TMPL_VAR site_url>/faq.html"><TMPL_VAR lang_faq></a></li>
+               	<li><a href="<TMPL_VAR site_url>/tos.html"><TMPL_VAR lang_tos></a></li>
+               	<li><a href="<TMPL_VAR site_url>/?op=checkfiles"><TMPL_VAR lang_link_checker></a></li>
             </ul>
-      </div>
-      <a href="https://sibsoft.net/xfilesharing.html" title="file hosting script"><img class="flogo" src="<TMPL_VAR site_url>/images/logo_bw.png" alt="file hosting script"></a>
-      
-   </div>
+			<ul>
+               	<li><a href="<TMPL_VAR site_url>/?op=news"><TMPL_VAR lang_news></a></li>
+               	<li><a href="<TMPL_VAR site_url>/contact.html"><TMPL_VAR lang_contact_us></a></li>
+               	<li><a href="<TMPL_VAR site_url>/links.html"><TMPL_VAR lang_links></a></li>
+            </ul>
+      	</div>
+      	<div class="flogo"><a href="http://sibsoft.net/xfilesharing.html"><img src="<TMPL_VAR site_url>/images/logo_lgrey.png"></a></div>
+		<div class="social">	
+			<div>Connect</div> 
+			<a href="https://www.facebook.com/sibsoft.net"><img src="<TMPL_VAR site_url>/images/ico_fb.png"></a>
+			<a href="https://twitter.com/sibsoft"><img src="<TMPL_VAR site_url>/images/ico_tr.png"></a>
+			<a href="https://plus.google.com/communities/112171049017576936029"><img src="<TMPL_VAR site_url>/images/ico_gp.png"></a>
+		</div>
+   	</div>
+	<div class="copyright">© 2018 <a href="https://sibsoft.net">Sibsoft Ltd</a>. All rights reserved</div>
 </footer>
+
 </body>
 </html>
+
+<TMPL_IF gdpr_cookie_notice>
+<TMPL_INCLUDE gdpr_cookie_notice.html>
+</TMPL_IF>

@@ -1,8 +1,15 @@
-<table id="error_message" cellpadding=8 cellspacing=0 style="min-width:400px;background:#E9E9E9;border:1px solid #BBB;margin:20px auto;">
-<tr><td name="msg_title" style="background:#D3D3D3;border-bottom:1px solid #BBB;font:bold 13px Verdana;padding:3px;"><TMPL_IF err_title><TMPL_VAR err_title><TMPL_ELSE>Error</TMPL_IF></td></tr>
-<tr><td align=center name="contents">
+<div class="table_border col-5">
+<div class="overflow" style="width:auto;">
+<table id="error_message" width="100%" cellpadding=8 cellspacing=0 style="margin:5px auto;">
+<tr><td name="msg_title" style="background:#D3D3D3;font:bold 13px Verdana;padding:3px; border-radius: 5px 5px 0 0"><TMPL_IF err_title><TMPL_VAR err_title><TMPL_ELSE>Error</TMPL_IF></td></tr>
+<tr><td align=center name="contents" style="background:#E9E9E9; border-radius: 0 0 5px 5px; border-spacing: 0;">
 <font style="color:#d33;"><TMPL_VAR err></font>
 <font class="ok"><TMPL_VAR msg></font>
 </td></tr>
 </table>
+</div>
+</div>
 <!--a href="javascript: window.history.back();">-Back-</a-->
+<style type="text/css">
+.col-5{max-width:400px;}
+</style>

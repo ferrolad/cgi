@@ -1,7 +1,7 @@
 #!/usr/bin/perl -X
 use strict;
+use lib ".";
 
-use lib '.';
 use XFileConfig;
 use Session;
 use XUtils;
@@ -15,8 +15,7 @@ our $f = $ses->f;
 if($ENV{REQUEST_METHOD})
 {
    # Script is requested through the web interface, so checking for the admin priviliges
-   my $user = XUtils::CheckAuth($ses, $ses->getCookie( $ses->{auth_cook} ));
-   $ses->message("Access denied"), exit if !$user || !$user->{usr_adm};
+   $ses->message("Access denied"), exit if !$ses->getUser() || !$ses->getUser()->{usr_adm};
 }
 
 $|++;
@@ -24,12 +23,15 @@ print"Content-type:text/html\n\n";
 
 $db->Exec("INSERT INTO Misc SET name='last_cron_time', value=? ON DUPLICATE KEY UPDATE value=?",time,time);
 
-if($ARGV[0])
+my $job_name = ucfirst($f->{op}||$ARGV[0]);
+
+if($job_name)
 {
    # Run a single cronjob
-   my $filename = "$c->{cgi_path}/Engine/Cronjobs/$ARGV[0].pm";
+   my $filename = "$c->{cgi_path}/Engine/Cronjobs/$job_name.pm";
    die("No such file: $filename") if ! -e $filename;
-   eval { LoadCronjobHandler($ARGV[0])->() };
+   my $should_run = sub { return 1 }; # Explicitly requested by user, so avoid period check
+   eval { LoadCronjobHandler($job_name)->($should_run) };
    print "$@" if $@;
 }
 else
@@ -39,15 +41,30 @@ else
    
    foreach my $fn (readdir(DIR))
    {
-      next unless $fn =~ /^(\w+)\.pm$/i;
-      eval { LoadCronjobHandler($1)->() };
+      my ($task_name) = $fn =~ /^(\w+)\.pm$/i;
+      next if !$task_name;
+
+      my $should_run = sub {
+         my ($period_in_minutes) = @_;
+         my $ts_name = sprintf("last_%s_time", lc($task_name));
+         my $last_time = $ses->db->SelectOne( "SELECT value FROM Misc WHERE name=?", $ts_name )||0;
+         return 0 if time() - $last_time < $period_in_minutes * 60;
+
+         $db->Exec("INSERT INTO Misc SET name=?, value=? ON DUPLICATE KEY UPDATE value=?",$ts_name,time(),time());
+         return 1;
+      };
+
+      eval { LoadCronjobHandler($task_name)->($should_run) };
       print "$@" if $@;
    }
 
    closedir(DIR);
 }
 
-print"-----------------------<br>ALL DONE<br><br><a href='$c->{site_url}/?op=admin_servers'>Back to server management</a>";
+my $redirect_to = $1 if $f->{redirect} =~ /^(admin_servers|admin_settings)$/;
+$redirect_to ||= 'admin_servers';
+
+print"-----------------------<br>ALL DONE<br><br><a href='$c->{site_url}/?op=$redirect_to'>Back to server management</a>";
 
 sub LoadCronjobHandler
 {

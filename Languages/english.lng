@@ -11,7 +11,7 @@ lang_welcome            => "Welcome,",
 lang_upload_files       => "Upload Files",
 lang_my_files           => "My Files",
 lang_renew_premium      => "Renew premium",
-lang_buy_premium        => "Upgrade to premium",
+lang_buy_premium        => "Premium",
 lang_logout             => "Logout",
 lang_adm_file_mgmt      => "Files",
 lang_adm_user_mgmt      => "Users",
@@ -907,6 +907,8 @@ lang_anti_hack => "Anti-Hack center",
 lang_old_password => "Old password",
 lang_domain => "Domain",
 lang_add_news => "Add news",
+lang_tos_title => "Terms of Service",
+lang_successfully_subscribed => "You've successfully subscribed to email newsletters",
 
 };
 

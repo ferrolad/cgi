@@ -9,12 +9,13 @@
 <br><br>
 <form method="post">
 <input type="hidden" name="op" value="payments">
-<input type="hidden" name="token" value="<TMPL_VAR token_payments>">
+<input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="reseller" value="1">
+<input type="hidden" name="submethod">
 Add money to reseller balance: <TMPL_VAR currency_symbol><input type="text" name="amount" value="50.00" size=6>
 <select name="type">
 <TMPL_LOOP payment_types>
-<option value="<TMPL_VAR name>"><TMPL_VAR title></option>
+<option value="<TMPL_VAR name><TMPL_IF submethod>-<TMPL_VAR submethod></TMPL_IF>"><TMPL_VAR title></option>
 </TMPL_LOOP>
 </select>
 <input type="submit" name="submit" value="Add money">
@@ -49,7 +50,7 @@ Add money to reseller balance: <TMPL_VAR currency_symbol><input type="text" name
 <TR>
     <TD><TMPL_VAR key_id><TMPL_VAR key_code></TD>
     <TD align=center><TMPL_VAR key_time></TD>
-    <TD><TMPL_IF usr_id_activated>Used on <TMPL_VAR key_activated><TMPL_ELSE>PENDING <a href="?op=my_reseller&del=<TMPL_VAR key_id>&token=<TMPL_VAR token>" onClick="return confirm('Delete this key?')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TMPL_IF></TD>
+    <TD><TMPL_IF usr_id_activated>Used on <TMPL_VAR key_activated><TMPL_ELSE>PENDING <a href="?op=my_reseller&del=<TMPL_VAR key_id>" onClick="return confirm('Delete this key?')"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TMPL_IF></TD>
 </TR>
 </TMPL_LOOP>
 <TMPL_ELSE>

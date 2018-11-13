@@ -1,4 +1,3 @@
-
 <Script type="text/javascript">
 function CheckForm(f)
 {
@@ -12,28 +11,58 @@ function CheckForm(f)
 }
 </Script>
 
-<div class="rrd">
-
-<h2><TMPL_VAR lang_contact_us></h2>
-<p><TMPL_VAR lang_contact_1> <a href="faq.html">FAQ</a> <TMPL_VAR lang_and_our> <a href="tos.html"><TMPL_VAR lang_terms_of_service></a> <TMPL_VAR lang_contact_2>.</p>
-<br>
+<div class="rrd col-5">
 <Form method="post" action="<TMPL_VAR site_url>/" onSubmit="return CheckForm(this);">
 <input type="hidden" name="op" value="contact">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
 <input type="hidden" name="rand" value="<TMPL_VAR rand>">
-<table border=0 width="600">
-<tr><td><TMPL_VAR lang_name>:</td><td><input type="text" name="name" value="<TMPL_VAR name>" maxlength=32 style="width: 99%"></td></tr>
-<tr><td><TMPL_VAR lang_email>:</td><td><input type="text" name="email" value="<TMPL_VAR email>" size=24 maxlength=32 style="width: 99%"></td></tr>
-<tr><td colspan="2" class="editor"><textarea id="message" name="message" rows=7 style="width: 100%"><TMPL_VAR message></textarea></td></tr>
-
-<TMPL_IF ihtml>
-<tr><td colspan=2 align=center><TMPL_VAR ihtml></td></tr>
-</TMPL_IF>
-
-<tr><td colspan=2 align=center><font class="err"><TMPL_VAR msg></font><br><input name="send" type="submit" name="btn" value="<TMPL_VAR lang_send_message>"></td></tr>
-</table>
+	<Table width="90%" style="margin-bottom:0px;">	
+		<tr>
+			<td>
+				<h2><TMPL_VAR lang_contact_us></h2>
+			</td>
+		</tr>
+	</Table>
+	<div class="cont_text">
+		To contact us simply fill the form below. Please take a minute reading both our <a href="faq.html">FAQ</a> and our <a href="tos.html"><TMPL_VAR lang_terms_of_service></a> before sending any messages regarding our services.
+	</div>
+	<Table width="90%">		
+		<tr>
+			<td><TMPL_VAR lang_name>:<br /><input type="text" name="name" value="<TMPL_VAR name>" maxlength=32></td>
+		</tr>
+		<tr>
+			<td><TMPL_VAR lang_email>:<br /><input type="text" name="email" value="<TMPL_VAR email>" size=24 maxlength=32></td>
+		</tr>
+		<tr>
+			<td class="editor"><textarea id="message" name="message" rows=7><TMPL_VAR message></textarea></td>
+		</tr>	
+		<TMPL_IF ihtml>
+		<tr>
+			<td align=center><TMPL_VAR ihtml></td>
+		</tr>
+		</TMPL_IF>
+		<tr>
+			<td align=center><font class="err"><TMPL_VAR msg></font><br><input name="send" type="submit" name="btn" value="<TMPL_VAR lang_send_message>"></td>
+		</tr>
+	</table>
 </Form>
-
 </div>
-
+<br><br><br><br>
+<TMPL_IF my_login>
+	<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+	<style type="text/css">
+	@media (min-width: 1025px){
+	.holderPanel{background:#444;}
+	}
+	</style>
+</TMPL_IF>
+<style type="text/css">
+.rrd input[type="text"], .rrd input[type="password"]{width:100%}
+.SidemenuPanel ul.otherMenus li.activecnt{background:#363636; border-left:2px solid #131313; cursor:pointer}
+.SidemenuPanel ul.otherMenus li.activecnt i{color:#fff;}
+.SidemenuPanel{height:100%;}
+@media (min-width: 980px) and (max-width: 1024px){
+.rrd{width:70%;}
+}
+</style>
 <TMPL_INCLUDE nic_edit.html>

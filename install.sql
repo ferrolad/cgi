@@ -57,7 +57,7 @@ DROP TABLE IF EXISTS `Bans`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Bans` (
   `usr_id` mediumint(8) unsigned NOT NULL,
-  `ip` int(20) unsigned NOT NULL,
+  `ip` varchar(45) NOT NULL DEFAULT '',
   `reason` varchar(32) DEFAULT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY `usr_id` (`usr_id`,`ip`)
@@ -76,7 +76,7 @@ CREATE TABLE `BtTracker` (
   `peer_id` varchar(20) NOT NULL,
   `file_id` int(10) unsigned NOT NULL,
   `usr_id` mediumint(8) unsigned NOT NULL,
-  `ip` bigint(20) unsigned NOT NULL,
+  `ip` varchar(45) NOT NULL DEFAULT '',
   `port` smallint(5) unsigned NOT NULL,
   `last_announce` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `bytes_left` bigint(20) unsigned NOT NULL DEFAULT '0',
@@ -96,7 +96,7 @@ CREATE TABLE `Comments` (
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `cmt_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `cmt_ext_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `cmt_ip` int(10) unsigned NOT NULL DEFAULT '0',
+  `cmt_ip` varchar(45) NOT NULL DEFAULT '',
   `cmt_name` varchar(32) NOT NULL DEFAULT '',
   `cmt_email` varchar(64) NOT NULL DEFAULT '',
   `cmt_website` varchar(100) NOT NULL DEFAULT '',
@@ -126,6 +126,21 @@ CREATE TABLE `DelReasons` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `DownloadTokens`
+--
+
+DROP TABLE IF EXISTS `DownloadTokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `DownloadTokens` (
+  `code` varchar(20) NOT NULL,
+  `file_id` int(10) unsigned NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `Files`
 --
 
@@ -149,7 +164,7 @@ CREATE TABLE `Files` (
   `file_size` bigint(20) unsigned NOT NULL DEFAULT '0',
   `file_size_encoded` bigint(20) unsigned NOT NULL DEFAULT '0',
   `file_password` varchar(32) NOT NULL DEFAULT '',
-  `file_ip` int(20) unsigned NOT NULL DEFAULT '0',
+  `file_ip` varchar(45) NOT NULL DEFAULT '',
   `file_md5` varchar(64) NOT NULL DEFAULT '',
   `file_spec` text NOT NULL,
   `file_last_download` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -211,6 +226,22 @@ CREATE TABLE `Folders` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `HoldProfits`
+--
+
+DROP TABLE IF EXISTS `HoldProfits`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `HoldProfits` (
+  `day` date NOT NULL,
+  `usr_id` mediumint(8) unsigned NOT NULL,
+  `amount` decimal(11,5) unsigned NOT NULL DEFAULT '0.00000',
+  `hold_done` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`day`,`usr_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `IP2Files`
 --
 
@@ -219,7 +250,7 @@ DROP TABLE IF EXISTS `IP2Files`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `IP2Files` (
   `file_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `ip` int(20) unsigned NOT NULL DEFAULT '0',
+  `ip` varchar(45) NOT NULL DEFAULT '',
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `owner_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `size` bigint(20) unsigned NOT NULL DEFAULT '0',
@@ -247,7 +278,7 @@ CREATE TABLE `IP2RS` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `usr_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `size` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `ip` int(10) unsigned NOT NULL DEFAULT '0',
+  `ip` varchar(45) NOT NULL DEFAULT '',
   KEY `created` (`created`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -278,7 +309,7 @@ DROP TABLE IF EXISTS `LoginProtect`;
 CREATE TABLE `LoginProtect` (
   `usr_id` mediumint(8) unsigned NOT NULL,
   `login` varchar(32) NOT NULL,
-  `ip` int(20) unsigned NOT NULL,
+  `ip` varchar(45) NOT NULL DEFAULT '',
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY `usr_id` (`usr_id`),
   KEY `ip` (`ip`)
@@ -448,6 +479,29 @@ CREATE TABLE `PremiumPackages` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `QueueEncoding`
+--
+
+DROP TABLE IF EXISTS `QueueEncoding`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `QueueEncoding` (
+  `file_real` varchar(12) NOT NULL DEFAULT '',
+  `file_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `srv_id` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `started` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `status` enum('PENDING','ENCODING') NOT NULL DEFAULT 'PENDING',
+  `progress` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `fps` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `error` text NOT NULL,
+  PRIMARY KEY (`file_real`),
+  KEY `srv` (`srv_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `QueueTransfer`
 --
 
@@ -488,7 +542,7 @@ CREATE TABLE `Reports` (
   `email` varchar(64) NOT NULL DEFAULT '',
   `reason` varchar(100) NOT NULL DEFAULT '',
   `info` text NOT NULL,
-  `ip` int(20) unsigned NOT NULL DEFAULT '0',
+  `ip` varchar(45) NOT NULL DEFAULT '',
   `status` enum('PENDING','APPROVED','DECLINED') NOT NULL DEFAULT 'PENDING',
   `ban_size` bigint(20) unsigned DEFAULT '0',
   `ban_md5` varchar(64) DEFAULT '',
@@ -510,7 +564,7 @@ DROP TABLE IF EXISTS `SecurityTokens`;
 CREATE TABLE `SecurityTokens` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `usr_id` mediumint(8) unsigned NOT NULL,
-  `ip` int(20) unsigned NOT NULL,
+  `ip` varchar(45) NOT NULL DEFAULT '',
   `purpose` varchar(32) NOT NULL,
   `value` varchar(16) NOT NULL,
   `phone` varchar(20) DEFAULT NULL,
@@ -529,7 +583,7 @@ DROP TABLE IF EXISTS `Servers`;
 CREATE TABLE `Servers` (
   `srv_id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `srv_name` varchar(64) NOT NULL DEFAULT '',
-  `srv_ip` varchar(16) NOT NULL DEFAULT '',
+  `srv_ip` varchar(45) NOT NULL DEFAULT '',
   `srv_cgi_url` varchar(255) NOT NULL DEFAULT '',
   `srv_htdocs_url` varchar(255) NOT NULL DEFAULT '',
   `srv_key` varchar(8) NOT NULL DEFAULT '',
@@ -542,6 +596,7 @@ CREATE TABLE `Servers` (
   `srv_torrent` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `srv_created` date NOT NULL DEFAULT '0000-00-00',
   `srv_last_upload` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `srv_last_updated` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `srv_countries` varchar(255) NOT NULL DEFAULT '',
   `srv_cdn` varchar(32) NOT NULL DEFAULT '',
   `srv_ftp` tinyint(1) NOT NULL DEFAULT '0',
@@ -563,7 +618,7 @@ CREATE TABLE `Sessions` (
   `last_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `api_key_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `last_useragent` varchar(256) DEFAULT NULL,
-  `last_ip` varchar(32) DEFAULT NULL,
+  `last_ip` varchar(45) NOT NULL DEFAULT '',
   `view_as` mediumint(8) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`session_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
@@ -616,11 +671,13 @@ CREATE TABLE `Stats2` (
   `downloads` int(10) unsigned NOT NULL DEFAULT '0',
   `sales` smallint(5) unsigned NOT NULL DEFAULT '0',
   `rebills` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `refunds` smallint(5) unsigned NOT NULL DEFAULT '0',
   `profit_dl` decimal(9,4) unsigned NOT NULL DEFAULT '0.0000',
   `profit_sales` decimal(9,4) unsigned NOT NULL DEFAULT '0.0000',
   `profit_rebills` decimal(9,4) unsigned NOT NULL DEFAULT '0.0000',
   `profit_refs` decimal(9,5) unsigned NOT NULL DEFAULT '0.00000',
   `profit_site` decimal(9,5) unsigned NOT NULL DEFAULT '0.00000',
+  `refunds_amount` decimal(9,5) unsigned NOT NULL DEFAULT '0.00000',
   PRIMARY KEY (`usr_id`,`day`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -638,12 +695,19 @@ CREATE TABLE `Torrents` (
   `srv_id` smallint(5) unsigned NOT NULL DEFAULT '0',
   `fld_id` int(11) unsigned NOT NULL DEFAULT '0',
   `name` varchar(128) NOT NULL DEFAULT '',
+  `downloaded` bigint(20) unsigned DEFAULT NULL,
+  `uploaded` bigint(20) unsigned DEFAULT NULL,
+  `size` bigint(20) unsigned DEFAULT NULL,
+  `seed_until_rate` decimal(8,2) unsigned NOT NULL DEFAULT '0.00',
+  `download_speed` int(10) unsigned DEFAULT NULL,
+  `upload_speed` int(10) unsigned DEFAULT NULL,
   `link_rcpt` varchar(64) NOT NULL DEFAULT '',
   `link_pass` varchar(32) NOT NULL DEFAULT '',
   `files` text NOT NULL,
-  `progress` varchar(100) NOT NULL DEFAULT '',
-  `status` enum('WORKING','DONE') NOT NULL DEFAULT 'WORKING',
+  `status` enum('WORKING','ERROR','SEEDING') NOT NULL DEFAULT 'WORKING',
+  `error` varchar(256) NOT NULL DEFAULT '',
   `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   KEY `sid` (`sid`),
   KEY `user` (`usr_id`),
   KEY `status` (`status`)
@@ -666,14 +730,18 @@ CREATE TABLE `Transactions` (
   `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `aff_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `file_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `ip` int(20) unsigned NOT NULL DEFAULT '0',
+  `ip` varchar(45) NOT NULL DEFAULT '',
   `plugin` varchar(16) NOT NULL DEFAULT '',
   `verified` tinyint(4) unsigned NOT NULL DEFAULT '0',
+  `refunded` tinyint(1) NOT NULL DEFAULT '0',
+  `refunded_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `domain` varchar(32) NOT NULL DEFAULT '',
   `ref_url` varchar(255) NOT NULL DEFAULT '',
   `email` varchar(64) NOT NULL DEFAULT '',
   `rebill` tinyint(1) NOT NULL DEFAULT '0',
   `target` varchar(32) NOT NULL DEFAULT '',
+  `report_awaiting` tinyint(1) NOT NULL DEFAULT '0',
+  `last_rebill_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `user` (`usr_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
@@ -716,7 +784,7 @@ CREATE TABLE `Users` (
   `usr_created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `usr_lastlogin` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `usr_plan_changed` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `usr_lastip` int(20) unsigned NOT NULL DEFAULT '0',
+  `usr_lastip` varchar(45) NOT NULL DEFAULT '',
   `usr_pay_email` text NOT NULL,
   `usr_pay_type` varchar(16) NOT NULL DEFAULT '',
   `usr_disk_space` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -742,6 +810,10 @@ CREATE TABLE `Users` (
   `usr_restricted_ips` text,
   `usr_2fa` tinyint(1) NOT NULL DEFAULT '0',
   `usr_allow_vip_files` tinyint(1) NOT NULL DEFAULT '0',
+  `usr_premium_only` tinyint(1) NOT NULL DEFAULT '0',
+  `usr_api_key` varchar(32) NOT NULL DEFAULT '',
+  `usr_g2fa_secret` varchar(32) NOT NULL DEFAULT '',
+  `usr_files_expire_access` mediumint(8) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`usr_id`),
   KEY `login` (`usr_login`),
   KEY `aff_id` (`usr_aff_id`)

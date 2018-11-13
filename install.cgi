@@ -16,6 +16,7 @@ BEGIN
        {module=>'Digest::SHA', file=>'Digest/SHA.pm', redhat=>'perl-Digest-SHA', debian=>'libdigest-sha-perl'},
        {module=>'LWP', file=>'LWP/UserAgent.pm', redhat=>'perl-libwww-perl', debian=>'libwww-perl'},
        {module=>'Crypt::SSLeay', file=>'Crypt/SSLeay.pm', redhat=>'perl-Crypt-SSLeay', debian=>'libcrypt-ssleay-perl'},
+       {module=>'LWP::Protocol::https', file=>'LWP/Protocol/https.pm', redhat=>'perl-LWP-Protocol-https', debian=>'liblwp-protocol-https-perl'},
        {module=>'Time::HiRes', file=>'Time/HiRes.pm', redhat=>'perl-Time-HiRes', debian=>''},
    );
 

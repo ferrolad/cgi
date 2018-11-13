@@ -1,23 +1,31 @@
-<h2><TMPL_VAR lang_my_reports></h2>
-
+<div class="col-7 borders">
 <Form>
 <input type="hidden" name="op" value="my_reports">
-From <input type="text" class="date" name="date1" value="<TMPL_VAR date1>" size=10> to <input type="text" class="date" name="date2" value="<TMPL_VAR date2>" size=10>
-<input type="submit" name="show" value="Show">
+<table width="100%" class="reports">
+	<tr>
+		<td>View Reports</td>
+		<td>
+			From <input type="text" class="date" name="date1" value="<TMPL_VAR date1>" size=10> <i class="far fa-calendar-alt"></i> - To <input type="text" class="date" name="date2" value="<TMPL_VAR date2>" size=10> <i class="far fa-calendar-alt"></i>
+		</td>
+		<td><input type="submit" name="show" value=" Search "></td>
+	</tr>
+</table>
 </Form>
-
-<br>
-
-<div id="chart_div" style="width: 100%; height: 360px">
-<TMPL_UNLESS list>
-<style>#chart_div { line-height: 360px }</style>
-No earnings for selected period
-</TMPL_UNLESS>
 </div>
+<br style="clear:both;">
 
+<div class="col-9 borders" style="margin-top:10px;">
+	<div id="chart_div" style="width: 100%; height: 360px">
+	<TMPL_UNLESS list>
+	<style>#chart_div { line-height: 360px }</style>
+	No earnings for selected period
+	</TMPL_UNLESS>
+	</div>
+</div>
 <br><br>
-
-<Table name="reports" class="tbl1" cellpadding=2>
+<div class="overflow">
+<div class="table_border">
+<Table name="reports" class="tbl1" cellpadding=2 width="95%">
 <TR class="hdr">
     <td>Date</td>
     <td>Downloads</td>
@@ -25,6 +33,7 @@ No earnings for selected period
     <td>Rebills</td>
     <td>Referrals</td>
     <TMPL_IF m_x><td>Websites</td></TMPL_IF>
+    <td>Refunds</td>
     <td>Total</td>
 </TR>
 <TMPL_LOOP list>
@@ -40,6 +49,7 @@ No earnings for selected period
     <TD align="center"><a href="<TMPL_VAR site_url>/?op=my_reports&day=<TMPL_VAR day>&section=rebills"><TMPL_VAR rebills> / <TMPL_VAR currency_symbol><TMPL_VAR profit_rebills></a></TD>
     <TD align="center"><a href="<TMPL_VAR site_url>/?op=my_reports&day=<TMPL_VAR day>&section=refs"><TMPL_VAR currency_symbol><TMPL_VAR profit_refs></a></TD>
     <TMPL_IF m_x><TD align="center"><a href="<TMPL_VAR site_url>/?op=my_reports&day=<TMPL_VAR day>&section=sites"><TMPL_VAR currency_symbol><TMPL_VAR profit_site></a></TD></TMPL_IF>
+    <TD align="center"><a href="<TMPL_VAR site_url>/?op=my_reports&day=<TMPL_VAR day>&section=refunds"><TMPL_IF refunds_amount>-</TMPL_IF><TMPL_VAR currency_symbol><TMPL_VAR refunds_amount></a></TD>
     <TD align="center"><TMPL_VAR currency_symbol><TMPL_VAR profit_total></TD>
 </TR>
 </TMPL_LOOP>
@@ -50,13 +60,44 @@ No earnings for selected period
     <td><TMPL_VAR sum_rebills> / <TMPL_VAR currency_symbol><TMPL_VAR sum_profit_rebills></td>
     <td><TMPL_VAR currency_symbol><TMPL_VAR sum_profit_refs></td>
     <TMPL_IF m_x><td><TMPL_VAR currency_symbol><TMPL_VAR sum_profit_site></td></TMPL_IF>
+    <td><TMPL_IF sum_refunds_amount>-</TMPL_IF><TMPL_VAR currency_symbol><TMPL_VAR sum_refunds_amount></td>
     <td><TMPL_VAR currency_symbol><TMPL_VAR sum_profit_total></td>
 </TR>
 </Table>
-
-
+</div>
+</div>
+<br /><br />
 <style>
+.SidemenuPanel ul.otherMenus li.activerpt{background:#363636; border-left:2px solid #131313; cursor:pointer}
+.SidemenuPanel ul.otherMenus li.activerpt i{color:#fff;}
 embed, div { margin: auto; }
+.holderPanel{width: 100%; background:#444444; float:left;}
+.SidemenuPanel{width: 16.66%; float:left; display:block;}
+.contentPanel{width: 83.33%; background:#fff; float:left;}
+footer{display:none;}
+#header #logo{display:none;}
+.SidemenuPanel #logo{display:block;}
+.UserHead{display:block;}
+#container{width:95%;margin: 20px auto;}
+@media (min-width: 320px) and (max-width: 480px) {
+.holderPanel{width: 100%;}
+.SidemenuPanel{ display:none;}
+.contentPanel{width: 100%;}
+#header #logo{display:block;}
+.UserHead{display:none;}
+}
+@media (min-width: 600px) and (max-width: 800px) {
+.holderPanel{width: 100%;}
+.SidemenuPanel{ display:none;}
+.contentPanel{width: 100%;}
+#header #logo{display:block;}
+.UserHead{display:none;}
+}
+@media (min-width: 980px) and (max-width: 1024px) {
+.SidemenuPanel{width: 25%;}
+.contentPanel{width: 75%;}
+.col-7{width: 68%; float:none;}
+}
 </style>
 <link href="<TMPL_VAR site_url>/css/jquery-ui.css" rel="stylesheet"/>
 <script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>

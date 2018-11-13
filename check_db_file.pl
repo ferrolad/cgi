@@ -2,6 +2,7 @@
 $|++;
 
 use strict;
+use lib ".";
 use lib 'Modules';
 use XFileConfig;
 use Session;

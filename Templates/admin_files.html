@@ -1,3 +1,7 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
 <h2><TMPL_VAR lang_adm_file_mgmt></h2>
 <a href="?op=admin_downloads"><TMPL_VAR lang_last_downloads></a> &nbsp; 
 <a href="?op=admin_anti_hack"><TMPL_VAR lang_anti_hack></a>
@@ -10,7 +14,9 @@
 <input type="hidden" name="usr_id" value="<TMPL_VAR usr_id>">
 <input type="hidden" name="srv_id" value="<TMPL_VAR srv_id>">
 <input type="hidden" name="del_info" value="">
-<Table class="tbl1" style="width: 800px">
+<div class="table_border-small">
+<div class="overflow">
+<Table class="tbl1">
 <tr><td><TMPL_VAR lang_search></td><td><input type="text" name="key" value="<TMPL_VAR key>" size=24></td></tr>
 <tr><td><TMPL_VAR lang_username></td><td><input type="text" name="usr_login" value="<TMPL_VAR usr_login>" size=24></td></tr>
 <tr><td><TMPL_VAR lang_file_size></td><td>&gt;=<TMPL_VAR lang_more_than> <input type="text" name="size_more" value="<TMPL_VAR size_more>" size=4>Mb &lt;= <input type="text" name="size_less" value="<TMPL_VAR size_less>" size=4>Mb<br></td></tr>
@@ -23,83 +29,88 @@
 </td></tr>
 <tr><td colspan=2 align=center>
     <textarea name="mass_search" id="mass_search" wrap="off" style="width:99%;display:none;font-size:11px;" rows=10></textarea>
-    <small><a href="#" id="expand_mass_search"><TMPL_VAR lang_mass_search></a></small>
+    <small><a href="#" id="btn1" name="expand_mass_search"><TMPL_VAR lang_mass_search></a></small>
 </td></tr>
-<tr><td colspan=2 align=center><input type="submit" name="show_files" value="<TMPL_VAR lang_show_files>"></td></tr>
+<tr><td colspan=2 align=center><input type="submit" name="show_files" value="<TMPL_VAR lang_show_files>" style="height:auto;"></td></tr>
 </Table>
+</div>
+</div>
 <br>
 
 <TMPL_VAR paging>
-
-<Table class="tbl1" cellspacing=1 cellpadding=3 id="xfiles">
-<TR class="hdr">
-<TD><input type="checkbox" id="selall"></TD>
-<TD title="Sort by Filename"><TMPL_VAR s_file_name><TMPL_VAR lang_file_name><TMPL_VAR s2_file_name></TD>
-<TD title="Sort by File Size"><TMPL_VAR s_file_size><TMPL_VAR lang_file_size><TMPL_VAR s2_file_size></TD>
-<TD title="Sort by User"><TMPL_VAR s_usr_login><TMPL_VAR lang_uploaded_by><TMPL_VAR s2_usr_login></TD>
-<TD title="Sort by Number of Downloads"><TMPL_VAR s_file_downloads>DL<TMPL_VAR s2_file_downloads></TD>
-<TD title="Sort by Traffic Generated"><TMPL_VAR s_traffic><TMPL_VAR lang_traffic><TMPL_VAR s2_traffic></TD>
-<TD><TMPL_VAR s_file_money><TMPL_VAR lang_money><TMPL_VAR s2_file_money></TD>
-<TD title="Sort by Creation Date"><TMPL_VAR s_file_created><TMPL_VAR lang_uploaded_on><TMPL_VAR s2_file_created></TD>
-<TD title="Sort by Last Download Date"><TMPL_VAR s_file_last_download><TMPL_VAR lang_last_download><TMPL_VAR s2_file_last_download></TD>
-<TD>IP</TD>
-<TD>Src</TD>
-<TD title="Server ID">#</TD>
-<TD colspan=2>&nbsp;</TD>
-</TR>
-<TMPL_LOOP files>
-<TR align=center<TMPL_UNLESS __ODD__> class="hi"</TMPL_UNLESS>>
-<TD<TMPL_IF file_public> class='pub'</TMPL_IF>><input type="checkbox" name="file_id" value="<TMPL_VAR file_id>"></TD>
-<TD align=left><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name_txt></a><TMPL_IF file_password><img src="<TMPL_VAR site_url>/images/lock.gif" title="Password"></TMPL_IF></TD>
-<TD align=right><TMPL_VAR file_size2></TD>
-<TD align=center><a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></TD>
-<TD align=center><a href="?op=admin_downloads&file_id=<TMPL_VAR file_id>"><TMPL_VAR file_downloads></a></TD>
-<TD align=right><TMPL_VAR traffic></TD>
-<TD align=center><TMPL_VAR currency_symbol><TMPL_VAR file_money></TD>
-<TD nowrap><small><TMPL_VAR file_created></small></TD>
-<TD nowrap><small><TMPL_VAR file_last_download></small></TD>
-<TD align=center><a href="?op=admin_files&ip=<TMPL_VAR file_ip>"><small><TMPL_VAR file_ip><TMPL_IF file_country> / <TMPL_VAR file_country></TMPL_IF></small></a></TD>
-<TD align=center><small><TMPL_VAR file_upload_method></small></TD>
-<TD><TMPL_VAR srv_id></TD>
-<TD><a href="?op=admin_file_edit&file_id=<TMPL_VAR file_id>"><img src="<TMPL_VAR site_url>/images/icon_edit.png" border=0></a></TD>
-<TD><a href="?op=admin_files&del_code=<TMPL_VAR file_code>&token=<TMPL_VAR token>" onClick="var x=prompt('<TMPL_VAR lang_delete_file> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined'||x==null)return false;this.href+='&del_info='+x;"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
-</TR>
-</TMPL_LOOP>
-<TR class="hdr">
-    <TD colspan=14 style="text-align:left;">
-    <input type="submit" name="del_selected" value="<TMPL_VAR lang_delete_selected>" class="" onClick="var x=prompt('<TMPL_VAR lang_delete_confirm> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined'||x==null)return false;this.form.del_info.value=x;"> &nbsp;
-    <input type="button" name="transfer_to" value="<TMPL_VAR lang_transfer>..." class="btn2 lmargin10" onclick="$(this).hide();$('#trans_id').show();">
-    <span id="trans_id" style="display:none" class="lmargin10">
-        <select name="srv_id2">
-        <option value=""><TMPL_VAR lang_transfer_files_to></option>
-            <TMPL_LOOP servers>
-            <option value="<TMPL_VAR srv_id>"><TMPL_VAR srv_id> - <TMPL_VAR srv_name></option>
-        </TMPL_LOOP>
-        </select>
-        <input type="submit" name="transfer_files" value="Transfer" class="btn2">
-    </span>
-    &nbsp;
-    <input type="button" name="special" value="<TMPL_VAR lang_special>..." class="btn2 lmargin10" onclick="$(this).hide();$('#btn_special').show();">
-    <span id="btn_special" class="inv" style="display: none;">
-	    <TMPL_IF m_v>
-        <input type="submit" name="reencode_selected" value="<TMPL_VAR lang_reencode>" class="btn2 lmargin10"> &nbsp;
-        </TMPL_IF>
-	    <TMPL_IF m_i>
-        <input type="submit" name="rethumb_selected" value="<TMPL_VAR lang_regen_thumb>" class="btn2 lmargin10">
-        </TMPL_IF>
-    </span>
-
-    </TD>
-</TR>
-</Table>
+<div class="table_border">
+	<div class="tableFlow">
+		<Table class="tbl1" cellspacing=1 cellpadding=3 id="xfiles">
+		<TR class="hdr">
+		<TD><input type="checkbox" id="selall"></TD>
+		<TD title="Sort by Filename"><TMPL_VAR s_file_name><TMPL_VAR lang_file_name><TMPL_VAR s2_file_name></TD>
+		<TD title="Sort by File Size"><TMPL_VAR s_file_size><TMPL_VAR lang_file_size><TMPL_VAR s2_file_size></TD>
+		<TD title="Sort by User"><TMPL_VAR s_usr_login><TMPL_VAR lang_uploaded_by><TMPL_VAR s2_usr_login></TD>
+		<TD title="Sort by Number of Downloads"><TMPL_VAR s_file_downloads>DL<TMPL_VAR s2_file_downloads></TD>
+		<TD title="Sort by Traffic Generated"><TMPL_VAR s_traffic><TMPL_VAR lang_traffic><TMPL_VAR s2_traffic></TD>
+		<TD><TMPL_VAR s_file_money><TMPL_VAR lang_money><TMPL_VAR s2_file_money></TD>
+		<TD title="Sort by Creation Date"><TMPL_VAR s_file_created><TMPL_VAR lang_uploaded_on><TMPL_VAR s2_file_created></TD>
+		<TD title="Sort by Last Download Date"><TMPL_VAR s_file_last_download><TMPL_VAR lang_last_download><TMPL_VAR s2_file_last_download></TD>
+		<TD>IP</TD>
+		<TD>Src</TD>
+		<TD title="Server ID">#</TD>
+		<TD colspan=2>&nbsp;</TD>
+		</TR>
+		<TMPL_LOOP files>
+		<TR align=center<TMPL_UNLESS __ODD__> class="hi"</TMPL_UNLESS>>
+		<TD<TMPL_IF file_public> class='pub'</TMPL_IF>><input type="checkbox" name="file_id" value="<TMPL_VAR file_id>"></TD>
+		<TD align=left><a href="<TMPL_VAR download_link>"><TMPL_VAR file_name_txt></a><TMPL_IF file_password><img src="<TMPL_VAR site_url>/images/lock.gif" title="Password"></TMPL_IF></TD>
+		<TD align=right><TMPL_VAR file_size2></TD>
+		<TD align=center><a href="?op=admin_user_edit&usr_id=<TMPL_VAR usr_id>"><TMPL_VAR usr_login></a></TD>
+		<TD align=center><a href="?op=admin_downloads&file_id=<TMPL_VAR file_id>"><TMPL_VAR file_downloads></a></TD>
+		<TD align=right><TMPL_VAR traffic></TD>
+		<TD align=center><TMPL_VAR file_money></TD>
+		<TD nowrap><small><TMPL_VAR file_created></small></TD>
+		<TD nowrap><small><TMPL_VAR file_last_download></small></TD>
+		<TD align=center><a href="?op=admin_files&ip=<TMPL_VAR file_ip>"><small><TMPL_VAR file_ip><TMPL_IF file_country> / <TMPL_VAR file_country></TMPL_IF></small></a></TD>
+		<TD align=center><small><TMPL_VAR file_upload_method></small></TD>
+		<TD><TMPL_VAR srv_id></TD>
+		<TD><a href="?op=admin_file_edit&file_id=<TMPL_VAR file_id>"><img src="<TMPL_VAR site_url>/images/icon_edit.png" border=0></a></TD>
+		<TD><a href="?op=admin_files&del_code=<TMPL_VAR file_code>&token=<TMPL_VAR token>" onClick="var x=prompt('<TMPL_VAR lang_delete_file> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined'||x==null)return false;this.href+='&del_info='+x;"><img src="<TMPL_VAR site_url>/images/icon_delete.png" border=0></a></TD>
+		</TR>
+		</TMPL_LOOP>
+		<TR class="hdr">
+			<TD colspan=14 style="text-align:left;">
+			<input type="submit" name="del_selected" value="<TMPL_VAR lang_delete_selected>" class="" onClick="var x=prompt('<TMPL_VAR lang_delete_confirm> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined'||x==null)return false;this.form.del_info.value=x;"> &nbsp;
+			<input type="button" name="transfer_to" value="<TMPL_VAR lang_transfer>..." class="btn2 lmargin10" onclick="$(this).hide();$('#trans_id').show();">
+			<span id="trans_id" style="display:none" class="lmargin10">
+				<select name="srv_id2">
+				<option value=""><TMPL_VAR lang_transfer_files_to></option>
+					<TMPL_LOOP servers>
+					<option value="<TMPL_VAR srv_id>"><TMPL_VAR srv_id> - <TMPL_VAR srv_name></option>
+				</TMPL_LOOP>
+				</select>
+				<input type="submit" name="transfer_files" value="Transfer" class="btn2">
+			</span>
+			&nbsp;
+			<input type="button" name="special" value="<TMPL_VAR lang_special>..." class="btn2 lmargin10" onclick="$(this).hide();$('#btn_special').show();">
+			<span id="btn_special" class="inv" style="display: none;">
+				<TMPL_IF m_v>
+				<input type="submit" name="reencode_selected" value="<TMPL_VAR lang_reencode>" class="btn2 lmargin10"> &nbsp;
+				</TMPL_IF>
+				<TMPL_IF m_i>
+				<input type="submit" name="rethumb_selected" value="<TMPL_VAR lang_regen_thumb>" class="btn2 lmargin10">
+				</TMPL_IF>
+			</span>
+		
+			</TD>
+		</TR>
+		</Table>
+	</div>
+</div>
 <TMPL_VAR paging>
 <br>
 </Form>
 
 <script language="JavaScript">
 $(document).ready(function(){
-    $("#expand_mass_search").click( function(){
-        $("#expand_mass_search").hide("normal", function(){
+    $("#btn1").click( function(){
+        $("#btn1").hide("normal", function(){
             $("#mass_search").show("normal");
             });
     });
@@ -113,3 +124,4 @@ $(document).ready(function(){
     });
 });
 </script>
+<br /><br />

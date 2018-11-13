@@ -1,5 +1,12 @@
+<TMPL_IF my_login>
+	<link rel="stylesheet" type="text/css" href="<TMPL_VAR site_url>/css/dashboard-menu.css"/>
+</TMPL_IF>
+<style type="text/css">
+.SidemenuPanel ul.otherMenus li.activefaq{background:#363636; border-left:2px solid #131313; cursor:pointer}
+.SidemenuPanel ul.otherMenus li.activefaq i{color:#fff;}
+</style>
 <h2><TMPL_VAR lang_check> <TMPL_VAR site_name> <TMPL_VAR lang_urls_for_avail></h2>
-<div style="width:620px;text-align:left;">
+<div style="text-align:left;" class="col-10">
 
 <Table class="tbl1" cellpadding=2>
 <TMPL_LOOP list>

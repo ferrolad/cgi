@@ -1,4 +1,9 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
 <h2 style="margin:2px;">Files Import from <TMPL_VAR srv_name> server</h2>
+<div class="overflow">
 Manually upload files to <b>ImportFiles</b> folder on FileServer, then use Import.<br><br>
 <Table class="tbl1" cellpadding=2 cellspacing=1>
 <TR class="hdr"><TD>Filename</TD><TD>Size</TD></TR>
@@ -18,3 +23,5 @@ Add files to user: <input type="text" name="usr_login" value="<TMPL_VAR my_login
 <input type="submit" name="import" value="Import files above to system">
 <br><br>
 </Form>
+</div>
+<br /><br />

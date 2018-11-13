@@ -1,3 +1,7 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.4.0/ui-bootstrap.min.js"></script>
 
@@ -9,6 +13,10 @@
 
 <br>
 <a href="<TMPL_VAR site_url>/?op=admin_transfer_list"><TMPL_VAR lang_transfer_queue></a>
+<TMPL_IF m_e>
+|
+<a href="<TMPL_VAR site_url>/?op=admin_enc_list">Encoding queue</a>
+</TMPL_IF>
 
 <br><br>
 <TMPL_IF msg><b class="ok"><TMPL_VAR msg></b><br><br></TMPL_IF>
@@ -17,6 +25,8 @@
 <Form method="POST">
 <input type="hidden" name="op" value="admin_servers">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
+<div class="table_border">
+<div class="tableFlow">
 <Table name="servers" class="tbl1" cellspacing=1 cellpadding=3>
 <TR class="hdr">
 <TD></TD>
@@ -48,6 +58,8 @@
 <input type="submit" id="update_srv_stats" name="update_srv_stats" value="<TMPL_VAR lang_update_srv_stats>" class="">
 </TD></TR>
 </Table>
+</div>
+</div>
 <br>
 <input type="button" name="add_server" value="+ <TMPL_VAR lang_add_new_server> " onClick="document.location='?op=admin_server_add'" style="width: 140px;">
 &nbsp;
@@ -59,6 +71,8 @@
 <input type="hidden" name="op" value="admin_servers">
 <input type="hidden" name="transfer_files" value="1">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
+<div class="table_border-small" style="width:280px;">
+<div class="overflow">
 <Table name="transfer_files" class="tbl1 transfer_files" cellpadding=4 cellspacing=1 style="width: 300px">
 <TR class="hdr"><TD><TMPL_VAR lang_transfer_files></TD></TR>
 <TR><TD>
@@ -114,6 +128,8 @@
 <input type="submit" value="  <TMPL_VAR lang_transfer>  ">
 </TD></TR>
 </Table>
+</div>
+</div>
 <style>.transfer_files td { text-align: center; }</style>
 
 <div id="srvSelect" class="modal fade" role="dialog" modal-show="showServerDialog" modal-dismiss="serverDialogSave()">
@@ -208,3 +224,4 @@ app.controller('TransferCtrl', function($scope, $location, $parse) {
 .inactive { opacity: 0.4; pointer-events: none; }
 </style>
 </Form>
+<br /><br /><br /><br />

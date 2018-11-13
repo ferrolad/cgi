@@ -1,9 +1,11 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
 <h2>API stats for <TMPL_VAR domain></h2>
-
 <Form>
 <input type="hidden" name="op" value="admin_external">
 <input type="hidden" name="stats" value="<TMPL_VAR key_id>">
-<input type="hidden" name="token" value="<TMPL_VAR token>">
 From <input type="text" class="date" name="date1" value="<TMPL_VAR date1>" size=10> to <input type="text" class="date" name="date2" value="<TMPL_VAR date2>" size=10>
 <input type="submit" name="show" value="Show">
 </Form>
@@ -16,6 +18,8 @@ No data for selected period
 </div>
 
 <input type='hidden' name='op' value='admin_external'>
+<div class="table_border">
+<div class="tableFlow">
 <table name="stats" class="tbl1" width="80%">
    <tr class="hdr">
       <td>Date</td>
@@ -38,7 +42,8 @@ No data for selected period
       </td>
    </tr>
 </table>
-
+</div>
+</div>
 <link href="<TMPL_VAR site_url>/css/jquery-ui.css" rel="stylesheet"/>
 <script src="<TMPL_VAR site_url>/js/jquery-ui.js"></script>
 <script>
@@ -82,3 +87,4 @@ No data for selected period
     <TMPL_IF list>chart.draw(table, options);</TMPL_IF>
   }
 </script>
+<br /><br /><br /><br />

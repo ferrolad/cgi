@@ -1,12 +1,17 @@
+<style type="text/css">
+#container{ width:90%;}
+select{width:auto}
+</style>
 <h2><TMPL_VAR lang_adm_user_mgmt></h2>
 <a href="?op=admin_users_add"><TMPL_VAR lang_add_new_users></a> &nbsp; 
 <a href="?op=admin_mass_email"><TMPL_VAR lang_send_mass_email></a> &nbsp; 
 <a href="?op=admin_bans_list"><TMPL_VAR lang_banned_users_ips></a><br><br>
+<div class="overflow">
 <form style="margin:0;">
 <input type="hidden" name="op" value="admin_users">
 <TMPL_VAR lang_search>:<input type="text" name="key" value="<TMPL_VAR key>" size=16>
 Status:
-<select name="status">
+<select name="status" style="width:auto;">
 <option>--</option>
 <option value="adm"<TMPL_IF search_status_adm> selected</TMPL_IF>>Admin</option>
 <option value="aff_enabled"<TMPL_IF search_status_aff_enabled> selected</TMPL_IF>>Affiliate</option>
@@ -20,9 +25,12 @@ Status:
 </select>
 <input type="submit" value="<TMPL_VAR lang_search>">
 </form>
+</div>
 
 <TMPL_IF msg><p class="ok"><TMPL_VAR msg></p></TMPL_IF>
 
+<div class="table_border">
+<div class="tableFlow">
 <Form method="POST">
 <input type="hidden" name="op" value="admin_users">
 <input type="hidden" name="token" value="<TMPL_VAR token>">
@@ -64,7 +72,8 @@ Status:
 </TD></TR>
 </Table>
 </Form>
-
+</div>
+</div>
 <TMPL_VAR paging>
 <br><br>
 
@@ -88,3 +97,4 @@ Status:
 <TMPL_VAR lang_delete_inactive> <input type="text" name="del_inactive" size=2> <TMPL_VAR lang_days>
 <input type="submit" name="submit_del_inactive" value="<TMPL_VAR lang_submit>">
 </Form>
+<br /><br /><br /><br />
