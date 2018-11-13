@@ -15,23 +15,28 @@
 							</span>
 							<div class="clear"></div>
 							<div style="font-size: 11px;">
-								Uploaded on 
+								<TMPL_VAR lang_uploaded_on>
 								<b><TMPL_VAR created_date></b> 
 								<TMPL_VAR created_time>
 								<TMPL_IF file_usr_login>
 								by 
 								<a href="<TMPL_VAR site_url>/users/<TMPL_VAR file_usr_login>" style="text-decoration: none;"><TMPL_VAR file_usr_login></a>
 								</TMPL_IF>
+<<<<<<< .mine
+                        <TMPL_IF admin> <a href="<TMPL_VAR site_url>/?op=admin_files&del_code=<TMPL_VAR file_code>&token=<TMPL_VAR del_token>" onClick="var x=prompt('<TMPL_VAR lang_delete_file> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined'||x==null)return false;this.href+='&del_info='+x;"><img src="<TMPL_VAR site_url>/images/del.gif" border=0></a></TMPL_IF>
+||||||| .r3
+=======
                         <TMPL_IF admin> <a href="<TMPL_VAR site_url>/?op=admin_files&del_code=<TMPL_VAR file_code>&token=<TMPL_VAR token>" onClick="var x=prompt('<TMPL_VAR lang_delete_file> <TMPL_VAR lang_delete_reason>','');if(typeof(x)=='undefined'||x==null)return false;this.href+='&del_info='+x;"><img src="<TMPL_VAR site_url>/images/del.gif" border=0></a></TMPL_IF>
+>>>>>>> .r4
 							</div>
 						</div>
 					</td>
 					<td>
-						<span class="statd">Downloaded</span>
-						<span><TMPL_VAR file_downloads> times</span>
+						<span class="statd"><TMPL_VAR lang_downloaded></span>
+						<span><TMPL_VAR file_downloads> <TMPL_VAR lang_times></span>
 					</td>
 					<td>
-						<span class="statd">Size</span>
+						<span class="statd"><TMPL_VAR lang_size></span>
 						<span><b><TMPL_VAR fsize></b></span>
 					</td>
 					<td>
@@ -140,20 +145,22 @@
 				
 				<TMPL_IF enable_file_comments>
 				<form>
-					<input type="hidden" name="op" value="comment_add">
+					<input type="hidden" name="op" value="comments">
+					<input type="hidden" name="add" value="1">
+					<input type="hidden" name="token" value="<TMPL_VAR cmt_token>">
 					<input type="hidden" name="cmt_ext_id" value="<TMPL_VAR file_id>">
 					<input type="hidden" name="cmt_type" value="1">
 					<div id="comments">
-						<h2>Comments</h2>
+						<h2><TMPL_VAR lang_comments></h2>
 						<ul id="comments_list">
 							<TMPL_LOOP comments>
 							<TMPL_INCLUDE comment.html>
 							</TMPL_LOOP>
 						</ul>
-						<Textarea name="cmt_text" style="width:578px;display:block;" cols=24 rows=3 id='cmt_txt'></Textarea>
+						<Textarea id="cmt_text" name="cmt_text" style="width:578px;display:block;" cols=24 rows=3 id='cmt_txt'></Textarea>
 						<br/>
 						<div style="text-align: center;">
-							<input type="button" id="comment_btn" value="Comment on this">
+							<input type="button" id="comment_btn" value="<TMPL_VAR lang_comment_on_this>">
 						</div>	
 						<br/>
 						<br/>
@@ -277,7 +284,7 @@
 	});
 	function delComment(cmt_id)
 	{
-		var postdata = { op: 'cmt_del', cmt_id: cmt_id };
+		var postdata = { op: 'comments', del: 1, token: '<TMPL_VAR cmt_token>', cmt_id: cmt_id };
 		$.ajax({ url: '<TMPL_VAR site_url>/', type: "POST", data: postdata, success: function(data)
 		{
 			$('#cmt_' + cmt_id.toString()).remove();
